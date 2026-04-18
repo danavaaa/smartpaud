@@ -1,9 +1,106 @@
 import 'package:flutter/material.dart';
+import '../../services/auth_service.dart';
+import '../admin/admin_dashboard.dart';
+import '../guru/guru_dashboard.dart';
+import '../orang_tua/orang_tua_dashboard.dart';
 
-class LoginPage extends StatelessWidget {
+// Halaman login yang menangani autentikasi dan navigasi berdasarkan peran user
+class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
 
-  // widget untuk halaman login
+  @override
+  State<LoginPage> createState() => _LoginPageState();
+}
+
+// State untuk halaman login yang mengelola input, autentikasi, dan navigasi
+class _LoginPageState extends State<LoginPage> {
+  final emailController = TextEditingController();
+  final passwordController = TextEditingController();
+  final authService = AuthService();
+
+  bool isLoading = false;
+  // Fungsi untuk menangani proses login, autentikasi, dan navigasi berdasarkan peran user
+  Future<void> login() async {
+    try {
+      setState(() => isLoading = true);
+      // Panggil metode signIn dari AuthService untuk melakukan autentikasi
+      await authService.signIn(
+        email: emailController.text.trim(),
+        password: passwordController.text.trim(),
+      );
+
+      final profile =
+          await authService
+              .getCurrentUserProfile(); // Ambil profil user setelah login
+
+      if (!mounted) return;
+
+      if (profile == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          // Tampilkan pesan jika profil user tidak ditemukan
+          const SnackBar(content: Text('Profil user tidak ditemukan')),
+        );
+        return;
+      }
+      // Navigasi berdasarkan peran user yang diambil dari profil
+      final role = profile['role'];
+
+      if (role == 'admin') {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => const AdminDashboardPage()),
+        );
+      } else if (role == 'guru') {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => const GuruDashboardPage()),
+        );
+      } else if (role == 'orang_tua') {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => const OrangTuaDashboardPage()),
+        );
+      } else {
+        // Tampilkan pesan jika peran user tidak valid
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('Role tidak valid')));
+      }
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Login gagal: $e')));
+    } finally {
+      if (mounted) {
+        setState(() => isLoading = false);
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    emailController.dispose();
+    passwordController.dispose();
+    super.dispose();
+  }
+
+  // Fungsi untuk membuat dekorasi input yang konsisten di seluruh halaman login
+  InputDecoration customInputDecoration(String hintText) {
+    return InputDecoration(
+      hintText: hintText,
+      hintStyle: const TextStyle(fontSize: 16, color: Colors.black87),
+      filled: true,
+      fillColor: const Color(0xFFF7F4F4),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(6),
+        borderSide: BorderSide.none,
+      ),
+    );
+  }
+
+  // tampilan halaman login
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -18,7 +115,6 @@ class LoginPage extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   const SizedBox(height: 40),
-
                   const Text(
                     'SmartPAUD',
                     textAlign: TextAlign.center,
@@ -28,9 +124,7 @@ class LoginPage extends StatelessWidget {
                       color: Colors.black,
                     ),
                   ),
-
                   const SizedBox(height: 12),
-
                   const Text(
                     'Aplikasi Monitoring Kegiatan\nAnak Usia Dini',
                     textAlign: TextAlign.center,
@@ -40,54 +134,18 @@ class LoginPage extends StatelessWidget {
                       color: Colors.black,
                     ),
                   ),
-
                   const SizedBox(height: 48),
-
                   TextField(
-                    decoration: InputDecoration(
-                      hintText: 'Email',
-                      hintStyle: const TextStyle(
-                        fontSize: 16,
-                        color: Colors.black87,
-                      ),
-                      filled: true,
-                      fillColor: const Color(0xFFF7F4F4),
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 18,
-                      ),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(6),
-                        borderSide: BorderSide.none,
-                      ),
-                    ),
+                    controller: emailController,
+                    decoration: customInputDecoration('Email'),
                   ),
-
                   const SizedBox(height: 24),
-
                   TextField(
+                    controller: passwordController,
                     obscureText: true,
-                    decoration: InputDecoration(
-                      hintText: 'Password',
-                      hintStyle: const TextStyle(
-                        fontSize: 16,
-                        color: Colors.black87,
-                      ),
-                      filled: true,
-                      fillColor: const Color(0xFFF7F4F4),
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 18,
-                      ),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(6),
-                        borderSide: BorderSide.none,
-                      ),
-                    ),
+                    decoration: customInputDecoration('Password'),
                   ),
-
                   const SizedBox(height: 32),
-
                   Container(
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(8),
@@ -103,7 +161,7 @@ class LoginPage extends StatelessWidget {
                       width: 132,
                       height: 42,
                       child: ElevatedButton(
-                        onPressed: () {},
+                        onPressed: isLoading ? null : login,
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xFFD9D4D4),
                           foregroundColor: Colors.black,
@@ -116,11 +174,10 @@ class LoginPage extends StatelessWidget {
                             fontWeight: FontWeight.w500,
                           ),
                         ),
-                        child: const Text('Login'),
+                        child: Text(isLoading ? 'Loading...' : 'Login'),
                       ),
                     ),
                   ),
-
                   const SizedBox(height: 80),
                 ],
               ),
