@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'periode_ajaran_form_page.dart';
 import 'periode_ajaran_model.dart';
+import 'periode_ajaran_service.dart';
 
 // halaman untuk menampilkan daftar periode ajaran
 class PeriodeAjaranPage extends StatefulWidget {
@@ -13,30 +14,44 @@ class PeriodeAjaranPage extends StatefulWidget {
 // state untuk halaman periode ajaran
 // berisi data dummy dan fungsi navigasi ke form tambah/edit periode ajaran
 class _PeriodeAjaranPageState extends State<PeriodeAjaranPage> {
-  final List<PeriodeAjaranModel> dataList = [
-    PeriodeAjaranModel(
-      id: '1',
-      tahunAjaran: '2024/2025',
-      semester: 'Semester 1',
-      tanggalMulai: '15 Juli 2024',
-      tanggalSelesai: '20 Desember 2024',
-      isActive: true,
-    ),
-    PeriodeAjaranModel(
-      id: '2',
-      tahunAjaran: '2024/2025',
-      semester: 'Semester 2',
-      tanggalMulai: '8 Januari 2025',
-      tanggalSelesai: '21 Juni 2025',
-      isActive: true,
-    ),
-  ];
+  final _service = PeriodeAjaranService();
+  // data dummy untuk menampilkan daftar periode ajaran
+  List<PeriodeAjaranModel> dataList = [];
+  bool isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    fetchData();
+  }
+
+  // fungsi untuk mengambil data periode ajaran dari service
+  Future<void> fetchData() async {
+    try {
+      setState(() => isLoading = true);
+      final result = await _service.getAllPeriodeAjaran();
+      if (!mounted) return;
+      setState(() => dataList = result);
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Gagal mengambil data: $e')));
+    } finally {
+      if (mounted) setState(() => isLoading = false);
+    }
+  }
+
   // fungsi untuk navigasi ke halaman form tambah/edit periode ajaran
   Future<void> goToForm({PeriodeAjaranModel? item}) async {
-    await Navigator.push(
+    final result = await Navigator.push(
       context,
       MaterialPageRoute(builder: (_) => PeriodeAjaranFormPage(periode: item)),
     );
+    // jika result true, berarti data berhasil disimpan dan perlu refresh data
+    if (result == true) {
+      fetchData();
+    }
   }
 
   // widget untuk menampilkan card periode ajaran
@@ -53,7 +68,11 @@ class _PeriodeAjaranPageState extends State<PeriodeAjaranPage> {
         children: [
           Expanded(
             child: DefaultTextStyle(
-              style: const TextStyle(color: Colors.black, fontSize: 12),
+              style: const TextStyle(
+                color: Colors.black,
+                fontSize: 12,
+                fontFamily: 'Poppins',
+              ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -66,14 +85,8 @@ class _PeriodeAjaranPageState extends State<PeriodeAjaranPage> {
                     ),
                   ),
                   const SizedBox(height: 2),
-                  Text(
-                    item.semester,
-                    style: const TextStyle(fontFamily: 'Poppins'),
-                  ),
-                  Text(
-                    item.tanggalMulai,
-                    style: const TextStyle(fontFamily: 'Poppins'),
-                  ),
+                  Text(item.semester),
+                  Text(item.tanggalMulai),
                   Text(item.tanggalSelesai),
                   Text('Status: ${item.isActive ? 'Aktif' : 'Tidak Aktif'}'),
                 ],
@@ -82,26 +95,30 @@ class _PeriodeAjaranPageState extends State<PeriodeAjaranPage> {
           ),
           // tombol edit
           const SizedBox(width: 8),
-          SizedBox(
-            height: 28,
-            child: ElevatedButton(
-              onPressed: () => goToForm(item: item),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFD9D4D4),
-                foregroundColor: Colors.black,
-                elevation: 3,
-                padding: const EdgeInsets.symmetric(horizontal: 14),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(14),
-                ),
-                textStyle: const TextStyle(
-                  fontSize: 11,
-                  fontWeight: FontWeight.w500,
-                  fontFamily: 'Poppins',
+          Column(
+            children: [
+              SizedBox(
+                height: 28,
+                child: ElevatedButton(
+                  onPressed: () => goToForm(item: item),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFFD9D4D4),
+                    foregroundColor: Colors.black,
+                    elevation: 3,
+                    padding: const EdgeInsets.symmetric(horizontal: 14),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    textStyle: const TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w500,
+                      fontFamily: 'Poppins',
+                    ),
+                  ),
+                  child: const Text('Edit'),
                 ),
               ),
-              child: const Text('Edit'),
-            ),
+            ],
           ),
         ],
       ),
@@ -165,14 +182,29 @@ class _PeriodeAjaranPageState extends State<PeriodeAjaranPage> {
                 ),
               ),
               const SizedBox(height: 22),
+              // daftar periode ajaran
               Expanded(
-                child: ListView.builder(
-                  itemCount: dataList.length,
-                  itemBuilder: (context, index) {
-                    return buildPeriodCard(dataList[index]);
-                    // menampilkan kartu periode ajaran untuk setiap item dalam dataList
-                  },
-                ),
+                child:
+                    // jika sedang loading, tampilkan indikator loading
+                    isLoading
+                        ? const Center(child: CircularProgressIndicator())
+                        : dataList.isEmpty
+                        ? const Center(
+                          // jika tidak ada data, tampilkan pesan kosong
+                          child: Text(
+                            'Tidak ada data periode ajaran',
+                            style: TextStyle(fontFamily: 'Poppins'),
+                          ),
+                        )
+                        : RefreshIndicator(
+                          onRefresh: fetchData,
+                          child: ListView.builder(
+                            itemCount: dataList.length,
+                            itemBuilder: (context, index) {
+                              return buildPeriodCard(dataList[index]);
+                            },
+                          ),
+                        ),
               ),
             ],
           ),

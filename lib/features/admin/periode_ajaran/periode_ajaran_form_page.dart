@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'periode_ajaran_model.dart';
+import 'periode_ajaran_service.dart';
 
 // halaman form tambah/edit periode ajaran
 class PeriodeAjaranFormPage extends StatefulWidget {
@@ -17,8 +18,12 @@ class _PeriodeAjaranFormPageState extends State<PeriodeAjaranFormPage> {
   final _tanggalMulaiController = TextEditingController();
   final _tanggalSelesaiController = TextEditingController();
 
-  String? selectedSemester; // menyimpan pilihan semester
-  bool isActive = true; // menyimpan status  periode ajaran
+  // instance service untuk mengelola data periode ajaran
+  final _service = PeriodeAjaranService();
+  // variabel untuk menyimpan pilihan semester dan status aktif periode ajaran
+  String? selectedSemester;
+  bool isActive = true;
+  bool isLoading = false;
 
   bool get isEdit => widget.periode != null;
 
@@ -48,7 +53,11 @@ class _PeriodeAjaranFormPageState extends State<PeriodeAjaranFormPage> {
   InputDecoration customInputDecoration(String hint) {
     return InputDecoration(
       hintText: hint,
-      hintStyle: const TextStyle(fontSize: 12, color: Color(0xFFB8B1B1)),
+      hintStyle: const TextStyle(
+        fontSize: 12,
+        color: Color(0xFFB8B1B1),
+        fontFamily: 'Poppins',
+      ),
       filled: true,
       fillColor: const Color(0xFFF7F4F4),
       contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
@@ -71,7 +80,11 @@ class _PeriodeAjaranFormPageState extends State<PeriodeAjaranFormPage> {
         alignment: Alignment.centerLeft,
         child: Text(
           text,
-          style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
+          style: const TextStyle(
+            fontSize: 13,
+            fontWeight: FontWeight.w500,
+            fontFamily: 'Poppins',
+          ),
         ),
       ),
     );
@@ -83,7 +96,7 @@ class _PeriodeAjaranFormPageState extends State<PeriodeAjaranFormPage> {
     required VoidCallback onTap,
   }) {
     return SizedBox(
-      width: 90,
+      width: 95,
       height: 32,
       child: ElevatedButton(
         onPressed: onTap,
@@ -94,7 +107,11 @@ class _PeriodeAjaranFormPageState extends State<PeriodeAjaranFormPage> {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
           ),
-          textStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
+          textStyle: const TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.w500,
+            fontFamily: 'Poppins',
+          ),
         ),
         child: Text(title),
       ),
@@ -113,6 +130,55 @@ class _PeriodeAjaranFormPageState extends State<PeriodeAjaranFormPage> {
     // jika user memilih tanggal, format dan isi controller dengan tanggal yang dipilih
     if (picked != null) {
       controller.text = picked.toIso8601String().split('T').first;
+    }
+  }
+
+  // fungsi untuk menyimpan data periode ajaran, baik untuk tambah maupun edit
+  Future<void> saveData() async {
+    // validasi sederhana untuk memastikan semua field wajib diisi
+    if (_tahunAjaranController.text.trim().isEmpty ||
+        selectedSemester == null ||
+        _tanggalMulaiController.text.trim().isEmpty ||
+        _tanggalSelesaiController.text.trim().isEmpty) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Semua field wajib diisi')));
+      return;
+    }
+
+    try {
+      setState(() => isLoading = true);
+      if (isEdit) {
+        // jika mode edit, panggil fungsi update dengan id periode yang sudah ada
+        await _service.updatePeriodeAjaran(
+          id: widget.periode!.id,
+          tahunAjaran: _tahunAjaranController.text.trim(),
+          semester: selectedSemester!,
+          tanggalMulai: _tanggalMulaiController.text.trim(),
+          tanggalSelesai: _tanggalSelesaiController.text.trim(),
+          isActive: isActive,
+        );
+      } else {
+        // jika mode tambah, panggil fungsi add tanpa id
+        await _service.addPeriodeAjaran(
+          tahunAjaran: _tahunAjaranController.text.trim(),
+          semester: selectedSemester!,
+          tanggalMulai: _tanggalMulaiController.text.trim(),
+          tanggalSelesai: _tanggalSelesaiController.text.trim(),
+          isActive: isActive,
+        );
+      }
+      // setelah berhasil menyimpan data, kembali ke halaman sebelumnya dengan hasil true
+      if (!mounted) return;
+      Navigator.pop(context, true);
+    } catch (e) {
+      // jika terjadi error saat menyimpan data, tampilkan pesan error menggunakan SnackBar
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Gagal menyimpan data: $e')));
+    } finally {
+      if (mounted) setState(() => isLoading = false);
     }
   }
 
@@ -226,7 +292,10 @@ class _PeriodeAjaranFormPageState extends State<PeriodeAjaranFormPage> {
                             },
                             title: const Text(
                               'Aktif',
-                              style: TextStyle(fontSize: 12),
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontFamily: 'Poppins',
+                              ),
                             ),
                             dense: true,
                           ),
@@ -243,7 +312,10 @@ class _PeriodeAjaranFormPageState extends State<PeriodeAjaranFormPage> {
                             },
                             title: const Text(
                               'Tidak Aktif',
-                              style: TextStyle(fontSize: 12),
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontFamily: 'Poppins',
+                              ),
                             ),
                             dense: true,
                           ),
@@ -256,10 +328,8 @@ class _PeriodeAjaranFormPageState extends State<PeriodeAjaranFormPage> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         buildActionButton(
-                          title: 'Simpan',
-                          onTap: () {
-                            Navigator.pop(context);
-                          },
+                          title: isLoading ? 'isLoading...' : 'Simpan',
+                          onTap: isLoading ? () => {} : saveData,
                         ),
                         const SizedBox(width: 18),
                         buildActionButton(
