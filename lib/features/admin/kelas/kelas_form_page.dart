@@ -1,15 +1,18 @@
 import 'package:flutter/material.dart';
+import 'kelas_service.dart';
 
 // Halaman form untuk menambah atau mengedit data kelas
 class KelasFormPage extends StatefulWidget {
+  final String? id;
   final String? namaKelas;
-  final String? periodeAjaran;
+  final String? idPeriode;
   final bool? isActive;
 
   const KelasFormPage({
     super.key,
+    this.id,
     this.namaKelas,
-    this.periodeAjaran,
+    this.idPeriode,
     this.isActive,
   });
 
@@ -19,33 +22,92 @@ class KelasFormPage extends StatefulWidget {
 
 // State dari halaman form kelas
 class _KelasFormPageState extends State<KelasFormPage> {
-  // Controller untuk input nama kelas
   final _namaKelasController = TextEditingController();
 
-  // Menyimpan pilihan periode ajaran
-  String? selectedPeriode;
+  final _service = KelasService();
 
+  List<Map<String, dynamic>> periodeList = [];
+  // Menyimpan pilihan periode ajaran
+  String? selectedPeriodeId;
   // Menyimpan status kelas, default aktif
   bool isActive = true;
+  bool isLoading = false;
 
   // Mengecek apakah halaman sedang dalam mode edit
-  bool get isEdit => widget.namaKelas != null;
+  bool get isEdit => widget.id != null;
 
   @override
   void initState() {
     super.initState();
+    _namaKelasController.text = widget.namaKelas ?? '';
+    selectedPeriodeId = widget.idPeriode;
+    isActive = widget.isActive ?? true;
+    fetchPeriodeList();
+  }
 
-    // Jika mode edit, isi field form dengan data lama
-    if (isEdit) {
-      _namaKelasController.text = widget.namaKelas!;
-      selectedPeriode = widget.periodeAjaran;
-      isActive = widget.isActive ?? true;
+  // Fungsi untuk mengambil daftar periode ajaran dari server
+  Future<void> fetchPeriodeList() async {
+    try {
+      final result = await _service.getAllPeriodeAjaran();
+      if (!mounted) return;
+      setState(() {
+        periodeList = result;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Gagal mengambil periode ajaran: $e')),
+      );
+    }
+  }
+
+  // Fungsi untuk menyimpan data kelas, baik untuk tambah maupun edit
+  Future<void> saveData() async {
+    if (_namaKelasController.text.trim().isEmpty || selectedPeriodeId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Nama kelas dan periode wajib diisi')),
+      );
+      return;
+    }
+    // Menampilkan loading saat proses penyimpanan data
+    try {
+      setState(() => isLoading = true);
+      // jika dalam mode edit, panggil fungsi update kelas
+      if (isEdit) {
+        await _service.updateKelas(
+          id: widget.id!,
+          namaKelas: _namaKelasController.text.trim(),
+          idPeriode: selectedPeriodeId!,
+          isActive: isActive,
+        );
+      }
+      // Jika tidak dalam mode edit, maka tambahkan data kelas baru dengan memanggil fungsi addKelas
+      else {
+        await _service.addKelas(
+          namaKelas: _namaKelasController.text.trim(),
+          idPeriode: selectedPeriodeId!,
+          isActive: isActive,
+        );
+      }
+      // jika berhasil menyimpan data, maka kembali ke halaman sebelumnya dengan mengirim nilai true untuk menandakan bahwa data telah berubah dan perlu direfresh
+      if (!mounted) return;
+      Navigator.pop(context, true);
+    } catch (e) {
+      // Menampilkan pesan error jika gagal menyimpan data kelas
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Gagal menyimpan data: $e')));
+    } finally {
+      // Menghentikan loading setelah proses selesai, baik berhasil maupun gagal
+      if (mounted) {
+        setState(() => isLoading = false);
+      }
     }
   }
 
   @override
   void dispose() {
-    // bersihkan controller saat halaman ditutup
     _namaKelasController.dispose();
     super.dispose();
   }
@@ -166,25 +228,25 @@ class _KelasFormPageState extends State<KelasFormPage> {
                   // Input pilihan periode ajaran
                   buildLabel('Periode Ajaran'),
                   DropdownButtonFormField<String>(
-                    value: selectedPeriode,
+                    // Menampilkan nilai periode ajaran yang dipilih
+                    value: selectedPeriodeId,
+                    // Membuat daftar pilihan periode ajaran dari data yang diambil dari server
                     decoration: customInputDecoration('Pilih Periode Ajaran'),
-                    items: const [
-                      DropdownMenuItem(
-                        value: '2024/2025 - Semester 1',
-                        child: Text('2024/2025 - Semester 1'),
-                      ),
-                      DropdownMenuItem(
-                        value: '2024/2025 - Semester 2',
-                        child: Text('2024/2025 - Semester 2'),
-                      ),
-                      DropdownMenuItem(
-                        value: '2025/2026 - Semester 1',
-                        child: Text('2025/2026 - Semester 1'),
-                      ),
-                    ],
+                    // Membuat daftar pilihan periode ajaran dari data yang diambil dari server
+                    items:
+                        periodeList.map((periode) {
+                          // Membuat label untuk setiap pilihan periode ajaran dengan format "tahun ajaran - semester"
+                          final label =
+                              '${periode['tahun_ajaran']} - ${periode['semester']}';
+                          return DropdownMenuItem<String>(
+                            // Membuat item dropdown untuk setiap periode ajaran dengan nilai id periode ajaran
+                            value: periode['id'],
+                            child: Text(label),
+                          );
+                        }).toList(),
                     onChanged: (value) {
                       // Mengubah nilai periode ajaran yang dipilih
-                      setState(() => selectedPeriode = value);
+                      setState(() => selectedPeriodeId = value);
                     },
                   ),
                   const SizedBox(height: 12),
@@ -199,9 +261,7 @@ class _KelasFormPageState extends State<KelasFormPage> {
                           value: true,
                           groupValue: isActive,
                           onChanged: (value) {
-                            if (value != null) {
-                              setState(() => isActive = value);
-                            }
+                            if (value != null) setState(() => isActive = value);
                           },
                           title: const Text(
                             'Aktif',
@@ -219,10 +279,7 @@ class _KelasFormPageState extends State<KelasFormPage> {
                           value: false,
                           groupValue: isActive,
                           onChanged: (value) {
-                            if (value != null) {
-                              // Mengubah status kelas menjadi tidak aktif
-                              setState(() => isActive = value);
-                            }
+                            if (value != null) setState(() => isActive = value);
                           },
                           title: const Text(
                             'Tidak Aktif',
@@ -243,10 +300,8 @@ class _KelasFormPageState extends State<KelasFormPage> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       buildActionButton(
-                        title: 'Simpan',
-                        onTap: () {
-                          Navigator.pop(context);
-                        },
+                        title: isLoading ? 'Loading' : 'Simpan',
+                        onTap: isLoading ? () {} : saveData,
                       ),
                       const SizedBox(width: 18),
                       buildActionButton(

@@ -1,17 +1,71 @@
 import 'package:flutter/material.dart';
 import 'kelas_form_page.dart';
+import 'kelas_model.dart';
+import 'kelas_service.dart';
 
 // Halaman untuk menampilkan dan mengelola daftar kelas
-class KelasPage extends StatelessWidget {
+class KelasPage extends StatefulWidget {
   const KelasPage({super.key});
 
+  @override
+  State<KelasPage> createState() => _KelasPageState();
+}
+
+// State untuk halaman KelasPage
+class _KelasPageState extends State<KelasPage> {
+  final _service = KelasService();
+  // List untuk menyimpan data kelas yang diambil dari server
+  List<KelasModel> dataList = [];
+  bool isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    fetchData();
+  }
+
+  // Fungsi untuk mengambil data kelas dari server
+  Future<void> fetchData() async {
+    try {
+      setState(() => isLoading = true);
+      final result = await _service.getAllKelas();
+      if (!mounted) return;
+      setState(() => dataList = result);
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+        // Menampilkan pesan error jika gagal mengambil data kelas
+      ).showSnackBar(SnackBar(content: Text('Gagal mengambil data kelas: $e')));
+    } finally {
+      if (mounted) setState(() => isLoading = false);
+    }
+  }
+
+  // Fungsi untuk membuka halaman form kelas, baik untuk tambah maupun edit
+  Future<void> goToForm({KelasModel? item}) async {
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        // Membuka halaman form kelas, mengirim data kelas jika untuk edit
+        builder:
+            (_) => KelasFormPage(
+              id: item?.id,
+              // Mengirim data kelas yang akan diedit, jika ada
+              namaKelas: item?.namaKelas,
+              idPeriode: item?.idPeriode,
+              isActive: item?.isActive,
+            ),
+      ),
+    );
+    // jika hasil dari halaman form adalah true, maka refresh data kelas untuk menampilkan perubahan terbaru
+    if (result == true) {
+      fetchData();
+    }
+  }
+
   // Fungsi untuk membuat kartu data kelas
-  Widget buildKelasCard({
-    required String namaKelas,
-    required String periodeAjaran,
-    required String status,
-    required BuildContext context,
-  }) {
+  Widget buildKelasCard(KelasModel item) {
     return Container(
       // Memberi jarak antar kartu
       margin: const EdgeInsets.only(bottom: 18),
@@ -37,17 +91,17 @@ class KelasPage extends StatelessWidget {
         children: [
           // Menampilkan nama kelas sebagai judul utama
           Text(
-            namaKelas,
+            item.namaKelas,
             style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
           ),
 
           const SizedBox(height: 6),
 
           // Menampilkan informasi periode ajaran
-          Text('Periode Ajaran: $periodeAjaran'),
+          Text('Periode Ajaran: ${item.periodeAjaran}'),
 
           // Menampilkan status kelas
-          Text('Status: $status'),
+          Text('Status: ${item.isActive ? 'Aktif' : 'Tidak Aktif'}'),
 
           const SizedBox(height: 10),
 
@@ -59,19 +113,7 @@ class KelasPage extends StatelessWidget {
                 height: 30,
                 child: ElevatedButton(
                   // Fungsi tombol edit
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder:
-                            (_) => KelasFormPage(
-                              namaKelas: namaKelas,
-                              periodeAjaran: periodeAjaran,
-                              isActive: status == 'Aktif',
-                            ),
-                      ),
-                    );
-                  },
+                  onPressed: () => goToForm(item: item),
                   // Mengatur tampilan tombol edit
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFFD9D4D4),
@@ -85,7 +127,6 @@ class KelasPage extends StatelessWidget {
                       fontWeight: FontWeight.w500,
                     ),
                   ),
-
                   child: const Text('Edit'),
                 ),
               ),
@@ -133,12 +174,7 @@ class KelasPage extends StatelessWidget {
                 height: 38,
                 child: ElevatedButton(
                   // Fungsi tombol tambah kelas
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (_) => const KelasFormPage()),
-                    );
-                  },
+                  onPressed: () => goToForm(),
 
                   // Mengatur tampilan tombol
                   style: ElevatedButton.styleFrom(
@@ -159,33 +195,21 @@ class KelasPage extends StatelessWidget {
 
             // Expanded digunakan agar ListView mengisi sisa ruang
             Expanded(
-              child: ListView(
-                children: [
-                  // Menampilkan data kelas pertama (data dummy)
-                  buildKelasCard(
-                    namaKelas: 'Kelas A1',
-                    periodeAjaran: '2024/2025 - Semester 1',
-                    status: 'Aktif',
-                    context: context,
-                  ),
-
-                  // Menampilkan data kelas kedua (data dummy)
-                  buildKelasCard(
-                    namaKelas: 'Kelas A2',
-                    periodeAjaran: '2024/2025 - Semester 2',
-                    status: 'Aktif',
-                    context: context,
-                  ),
-
-                  // Menampilkan data kelas ketiga
-                  buildKelasCard(
-                    namaKelas: 'Kelas B1',
-                    periodeAjaran: '2025/2026 - Semester 1',
-                    status: 'Tidak Aktif',
-                    context: context,
-                  ),
-                ],
-              ),
+              child:
+                  isLoading
+                      ? const Center(child: CircularProgressIndicator())
+                      : dataList.isEmpty
+                      // Menampilkan pesan jika tidak ada data kelas
+                      ? const Center(child: Text('Belum ada data kelas'))
+                      : RefreshIndicator(
+                        onRefresh: fetchData,
+                        child: ListView.builder(
+                          itemCount: dataList.length,
+                          itemBuilder: (context, index) {
+                            return buildKelasCard(dataList[index]);
+                          },
+                        ),
+                      ),
             ),
           ],
         ),
