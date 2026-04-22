@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'periode_ajaran/periode_ajaran_page.dart';
 import 'kelas/kelas_page.dart';
+import 'penugasan_guru/penugasan_guru_page.dart';
 
 // halaman dashboard utama admin
 class AdminDashboardPage extends StatelessWidget {
@@ -105,6 +106,19 @@ class AdminDashboardPage extends StatelessWidget {
                   Navigator.push(
                     context,
                     MaterialPageRoute(builder: (_) => const KelasPage()),
+                  );
+                },
+              ),
+              // menu kelola penugasan guru
+              buildMenuButton(
+                context: context,
+                title: 'Penugasan Guru',
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const PenugasanGuruPage(),
+                    ),
                   );
                 },
               ),
