@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'kelas_form_page.dart';
 
 // Halaman untuk menampilkan dan mengelola daftar kelas
 class KelasPage extends StatelessWidget {
@@ -58,8 +59,19 @@ class KelasPage extends StatelessWidget {
                 height: 30,
                 child: ElevatedButton(
                   // Fungsi tombol edit
-                  onPressed: () {},
-
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder:
+                            (_) => KelasFormPage(
+                              namaKelas: namaKelas,
+                              periodeAjaran: periodeAjaran,
+                              isActive: status == 'Aktif',
+                            ),
+                      ),
+                    );
+                  },
                   // Mengatur tampilan tombol edit
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFFD9D4D4),
@@ -120,8 +132,13 @@ class KelasPage extends StatelessWidget {
               child: SizedBox(
                 height: 38,
                 child: ElevatedButton(
-                  // Fungsi tombol tambah kelas masih kosong
-                  onPressed: () {},
+                  // Fungsi tombol tambah kelas
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => const KelasFormPage()),
+                    );
+                  },
 
                   // Mengatur tampilan tombol
                   style: ElevatedButton.styleFrom(
