@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'penugasan_guru_form_page.dart';
 
 // Halaman untuk menampilkan dan mengelola daftar penugasan guru
 class PenugasanGuruPage extends StatelessWidget {
@@ -10,6 +11,7 @@ class PenugasanGuruPage extends StatelessWidget {
     required String kelas,
     required String peran,
     required String status,
+    required String periode,
     required BuildContext context,
   }) {
     return Container(
@@ -62,7 +64,21 @@ class PenugasanGuruPage extends StatelessWidget {
                 height: 30,
                 child: ElevatedButton(
                   // Fungsi tombol edit
-                  onPressed: () {},
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder:
+                            (_) => PenugasanGuruFormPage(
+                              namaGuru: namaGuru,
+                              namaKelas: kelas,
+                              periode: periode,
+                              peran: peran,
+                              isActive: status == 'Aktif',
+                            ),
+                      ),
+                    );
+                  },
 
                   // Mengatur tampilan tombol edit
                   style: ElevatedButton.styleFrom(
@@ -125,7 +141,14 @@ class PenugasanGuruPage extends StatelessWidget {
                 height: 38,
                 child: ElevatedButton(
                   // Fungsi tombol tambah penugasan
-                  onPressed: () {},
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const PenugasanGuruFormPage(),
+                      ),
+                    );
+                  },
 
                   // Mengatur tampilan tombol
                   style: ElevatedButton.styleFrom(
@@ -154,6 +177,7 @@ class PenugasanGuruPage extends StatelessWidget {
                     kelas: 'Kelas A1',
                     peran: 'Wali Kelas',
                     status: 'Aktif',
+                    periode: '2024-2025',
                     context: context,
                   ),
 
@@ -163,6 +187,7 @@ class PenugasanGuruPage extends StatelessWidget {
                     kelas: 'Kelas A2',
                     peran: 'Guru Pendamping',
                     status: 'Aktif',
+                    periode: '2024-2025',
                     context: context,
                   ),
 
@@ -172,6 +197,7 @@ class PenugasanGuruPage extends StatelessWidget {
                     kelas: 'Kelas B1',
                     peran: 'Wali Kelas',
                     status: 'Tidak Aktif',
+                    periode: '2024-2025',
                     context: context,
                   ),
                 ],
