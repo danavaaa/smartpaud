@@ -1,18 +1,19 @@
 import 'package:flutter/material.dart';
+import 'penugasan_guru_service.dart';
 
 // Halaman form untuk menambah atau mengedit data penugasan guru
 class PenugasanGuruFormPage extends StatefulWidget {
-  final String? namaGuru;
-  final String? namaKelas;
-  final String? periode;
+  final String? id;
+  final String? idGuru;
+  final String? idKelas;
   final String? peran;
   final bool? isActive;
 
   const PenugasanGuruFormPage({
     super.key,
-    this.namaGuru,
-    this.namaKelas,
-    this.periode,
+    this.id,
+    this.idGuru,
+    this.idKelas,
     this.peran,
     this.isActive,
   });
@@ -23,11 +24,12 @@ class PenugasanGuruFormPage extends StatefulWidget {
 
 // State dari halaman form penugasan guru
 class _PenugasanGuruFormPageState extends State<PenugasanGuruFormPage> {
+  final PenugasanGuruService _service = PenugasanGuruService();
   // Menyimpan pilihan guru
-  String? selectedGuru;
+  String? selectedGuruId;
 
   // Menyimpan pilihan kelas
-  String? selectedKelas;
+  String? selectedKelasId;
 
   // Menyimpan pilihan periode
   String? selectedPeriode;
@@ -38,20 +40,103 @@ class _PenugasanGuruFormPageState extends State<PenugasanGuruFormPage> {
   // Menyimpan status penugasan, default aktif
   bool isActive = true;
 
+  // Menyimpan status loading saat menyimpan data
+  bool isLoading = false;
+
   // Mengecek apakah halaman sedang dalam mode edit
-  bool get isEdit => widget.namaGuru != null;
+  bool get isEdit => widget.id != null;
+
+  // Menyimpan data dropdown guru dan kelas
+  List<dynamic> guruList = [];
+  List<dynamic> kelasList = [];
 
   @override
   void initState() {
     super.initState();
 
-    // Jika mode edit, isi field form dengan data lama
-    if (isEdit) {
-      selectedGuru = widget.namaGuru;
-      selectedKelas = widget.namaKelas;
-      selectedPeriode = widget.periode;
-      selectedPeran = widget.peran;
-      isActive = widget.isActive ?? true;
+    // Jika dalam mode edit, isi field dengan data yang sudah ada
+    selectedGuruId = widget.idGuru;
+    selectedKelasId = widget.idKelas;
+    selectedPeran = widget.peran;
+    isActive = widget.isActive ?? true;
+    // Ambil data dropdown guru dan kelas saat halaman pertama kali dibuka
+    fetchDropdownData();
+  }
+
+  // Fungsi untuk mengambil data guru dan kelas yang akan digunakan pada dropdown form
+  Future<void> fetchDropdownData() async {
+    try {
+      // Mengambil seluruh data guru dari service
+      final guruResult = await _service.getAllGuru();
+
+      // Mengambil seluruh data kelas dari service
+      final kelasResult = await _service.getAllKelas();
+
+      if (!mounted) return;
+
+      // Menyimpan hasil data guru dan kelas ke state agar dropdown bisa menampilkan pilihan
+      setState(() {
+        guruList = guruResult;
+        kelasList = kelasResult;
+      });
+    } catch (e) {
+      // Jika terjadi error, tampilkan pesan gagal ke user
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Gagal mengambil data dropdown: $e')),
+      );
+    }
+  }
+
+  // Fungsi untuk menyimpan data penugasan guru (tambah data baru maupun edit data lama)
+  Future<void> saveData() async {
+    // Validasi: pastikan semua field penting sudah dipilih
+    if (selectedGuruId == null ||
+        selectedKelasId == null ||
+        selectedPeran == null) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Semua field wajib diisi')));
+      return;
+    }
+
+    try {
+      // Mengaktifkan loading agar tombol/input bisa dinonaktifkan
+      setState(() => isLoading = true);
+
+      // Jika mode edit, update data yang sudah ada
+      if (isEdit) {
+        await _service.updatePenugasanGuru(
+          id: widget.id!,
+          idGuru: selectedGuruId!,
+          idKelas: selectedKelasId!,
+          peranGuru: selectedPeran!,
+          isActive: isActive,
+        );
+      } else {
+        // Jika bukan mode edit, tambahkan data baru
+        await _service.addPenugasanGuru(
+          idGuru: selectedGuruId!,
+          idKelas: selectedKelasId!,
+          peranGuru: selectedPeran!,
+          isActive: isActive,
+        );
+      }
+
+      // Setelah berhasil simpan, kembali ke halaman sebelumnya
+      if (!mounted) return;
+      Navigator.pop(context, true);
+    } catch (e) {
+      // Jika terjadi error saat menyimpan data, tampilkan pesan gagal ke user
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Gagal menyimpan data: $e')));
+    } finally {
+      // Setelah proses selesai, matikan loading
+      if (mounted) {
+        setState(() => isLoading = false);
+      }
     }
   }
 
@@ -102,7 +187,7 @@ class _PenugasanGuruFormPageState extends State<PenugasanGuruFormPage> {
     required VoidCallback onTap,
   }) {
     return SizedBox(
-      width: 86,
+      width: 95,
       height: 32,
       child: ElevatedButton(
         onPressed: onTap,
@@ -163,25 +248,18 @@ class _PenugasanGuruFormPageState extends State<PenugasanGuruFormPage> {
                   // Dropdown untuk memilih guru
                   buildLabel('Guru'),
                   DropdownButtonFormField<String>(
-                    value: selectedGuru,
+                    value: selectedGuruId,
                     decoration: customInputDecoration('Pilih Guru'),
-                    items: const [
-                      DropdownMenuItem(
-                        value: 'Sri Rahmawati',
-                        child: Text('Sri Rahmawati'),
-                      ),
-                      DropdownMenuItem(
-                        value: 'Endang Purwati',
-                        child: Text('Endang Purwati'),
-                      ),
-                      DropdownMenuItem(
-                        value: 'Santi Wulandari',
-                        child: Text('Santi Wulandari'),
-                      ),
-                    ],
+                    items:
+                        guruList.map((guru) {
+                          final label = guru['nama'] ?? guru['email'] ?? '-';
+                          return DropdownMenuItem<String>(
+                            value: guru['id_user'],
+                            child: Text(label),
+                          );
+                        }).toList(),
                     onChanged: (value) {
-                      // Menyimpan guru yang dipilih
-                      setState(() => selectedGuru = value);
+                      setState(() => selectedGuruId = value);
                     },
                   ),
                   const SizedBox(height: 12),
@@ -189,51 +267,17 @@ class _PenugasanGuruFormPageState extends State<PenugasanGuruFormPage> {
                   // Dropdown untuk memilih kelas
                   buildLabel('Kelas'),
                   DropdownButtonFormField<String>(
-                    value: selectedKelas,
+                    value: selectedKelasId,
                     decoration: customInputDecoration('Pilih Kelas'),
-                    items: const [
-                      DropdownMenuItem(
-                        value: 'Kelas A1',
-                        child: Text('Kelas A1'),
-                      ),
-                      DropdownMenuItem(
-                        value: 'Kelas A2',
-                        child: Text('Kelas A2'),
-                      ),
-                      DropdownMenuItem(
-                        value: 'Kelas B1',
-                        child: Text('Kelas B1'),
-                      ),
-                    ],
+                    items:
+                        kelasList.map((kelas) {
+                          return DropdownMenuItem<String>(
+                            value: kelas['id'],
+                            child: Text(kelas['nama_kelas']),
+                          );
+                        }).toList(),
                     onChanged: (value) {
-                      // Menyimpan kelas yang dipilih
-                      setState(() => selectedKelas = value);
-                    },
-                  ),
-                  const SizedBox(height: 12),
-
-                  // Dropdown untuk memilih periode ajaran
-                  buildLabel('Periode'),
-                  DropdownButtonFormField<String>(
-                    value: selectedPeriode,
-                    decoration: customInputDecoration('Pilih Periode'),
-                    items: const [
-                      DropdownMenuItem(
-                        value: '2024/2025 - Semester 1',
-                        child: Text('2024/2025 - Semester 1'),
-                      ),
-                      DropdownMenuItem(
-                        value: '2024/2025 - Semester 2',
-                        child: Text('2024/2025 - Semester 2'),
-                      ),
-                      DropdownMenuItem(
-                        value: '2025/2026 - Semester 1',
-                        child: Text('2025/2026 - Semester 1'),
-                      ),
-                    ],
-                    onChanged: (value) {
-                      // Menyimpan periode yang dipilih
-                      setState(() => selectedPeriode = value);
+                      setState(() => selectedKelasId = value);
                     },
                   ),
                   const SizedBox(height: 12),
@@ -315,11 +359,8 @@ class _PenugasanGuruFormPageState extends State<PenugasanGuruFormPage> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       buildActionButton(
-                        title: 'Simpan',
-                        onTap: () {
-                          // Saat ini hanya kembali ke halaman sebelumnya tanpa menyimpan perubahan
-                          Navigator.pop(context);
-                        },
+                        title: isLoading ? 'Loading' : 'Simpan',
+                        onTap: isLoading ? () {} : saveData,
                       ),
                       const SizedBox(width: 18),
                       buildActionButton(

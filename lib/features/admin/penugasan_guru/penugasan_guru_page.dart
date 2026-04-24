@@ -1,17 +1,88 @@
 import 'package:flutter/material.dart';
 import 'penugasan_guru_form_page.dart';
+import 'penugasan_guru_model.dart';
+import 'penugasan_guru_service.dart';
 
 // Halaman untuk menampilkan dan mengelola daftar penugasan guru
-class PenugasanGuruPage extends StatelessWidget {
+class PenugasanGuruPage extends StatefulWidget {
   const PenugasanGuruPage({super.key});
+
+  @override
+  State<PenugasanGuruPage> createState() => _PenugasanGuruPageState();
+}
+
+// State untuk halaman PenugasanGuruPage
+class _PenugasanGuruPageState extends State<PenugasanGuruPage> {
+  final _service = PenugasanGuruService();
+
+  // List untuk menyimpan seluruh data penugasan guru
+  List<PenugasanGuruModel> dataList = [];
+
+  // Penanda apakah halaman sedang memuat data
+  bool isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+
+    fetchData();
+  }
+
+  // Fungsi untuk mengambil seluruh data penugasan guru
+  Future<void> fetchData() async {
+    try {
+      // Mengaktifkan loading sebelum proses ambil data dimulai
+      setState(() => isLoading = true);
+
+      // Memanggil service untuk mengambil semua data penugasan guru
+      final result = await _service.getAllPenugasanGuru();
+
+      // Cek apakah widget masih aktif sebelum memanggil setState
+      if (!mounted) return;
+
+      // Menyimpan data hasil query ke dalam dataList
+      setState(() => dataList = result);
+    } catch (e) {
+      // Jika terjadi error saat mengambil data,
+      // tampilkan pesan gagal ke user
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Gagal mengambil data penugasan: $e')),
+      );
+    } finally {
+      // Setelah proses selesai, matikan loading
+      if (mounted) {
+        setState(() => isLoading = false);
+      }
+    }
+  }
+
+  // Fungsi untuk pindah ke halaman form penugasan guru
+  // Jika item ada, form digunakan untuk edit
+  // Jika item null, form digunakan untuk tambah data baru
+  Future<void> goToForm({PenugasanGuruModel? item}) async {
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder:
+            (_) => PenugasanGuruFormPage(
+              id: item?.id,
+              idGuru: item?.idGuru,
+              idKelas: item?.idKelas,
+              peran: item?.peran,
+              isActive: item?.isActive,
+            ),
+      ),
+    );
+
+    if (result == true) {
+      fetchData();
+    }
+  }
 
   // Fungsi untuk membuat kartu data penugasan guru
   Widget buildPenugasanCard({
-    required String namaGuru,
-    required String kelas,
-    required String peran,
-    required String status,
-    required String periode,
+    required PenugasanGuruModel item,
     required BuildContext context,
   }) {
     return Container(
@@ -39,20 +110,20 @@ class PenugasanGuruPage extends StatelessWidget {
         children: [
           // Menampilkan nama guru sebagai judul utama
           Text(
-            namaGuru,
+            item.namaGuru,
             style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
           ),
 
           const SizedBox(height: 6),
 
           // Menampilkan informasi kelas
-          Text('Kelas: $kelas'),
+          Text('Kelas: ${item.namaKelas}'),
 
           // Menampilkan peran guru
-          Text('Peran: $peran'),
+          Text('Peran: ${item.peran}'),
 
           // Menampilkan status penugasan
-          Text('Status: $status'),
+          Text('Status: ${item.isActive ? 'Aktif' : 'Tidak Aktif'}'),
 
           const SizedBox(height: 10),
 
@@ -64,21 +135,7 @@ class PenugasanGuruPage extends StatelessWidget {
                 height: 30,
                 child: ElevatedButton(
                   // Fungsi tombol edit
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder:
-                            (_) => PenugasanGuruFormPage(
-                              namaGuru: namaGuru,
-                              namaKelas: kelas,
-                              periode: periode,
-                              peran: peran,
-                              isActive: status == 'Aktif',
-                            ),
-                      ),
-                    );
-                  },
+                  onPressed: () => goToForm(item: item),
 
                   // Mengatur tampilan tombol edit
                   style: ElevatedButton.styleFrom(
@@ -141,14 +198,7 @@ class PenugasanGuruPage extends StatelessWidget {
                 height: 38,
                 child: ElevatedButton(
                   // Fungsi tombol tambah penugasan
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => const PenugasanGuruFormPage(),
-                      ),
-                    );
-                  },
+                  onPressed: () => goToForm(),
 
                   // Mengatur tampilan tombol
                   style: ElevatedButton.styleFrom(
@@ -167,41 +217,28 @@ class PenugasanGuruPage extends StatelessWidget {
 
             const SizedBox(height: 20),
 
-            // Expanded digunakan agar ListView mengisi sisa ruang
             Expanded(
-              child: ListView(
-                children: [
-                  // Data dummy penugasan guru pertama
-                  buildPenugasanCard(
-                    namaGuru: 'Sri Rahmawati',
-                    kelas: 'Kelas A1',
-                    peran: 'Wali Kelas',
-                    status: 'Aktif',
-                    periode: '2024-2025',
-                    context: context,
-                  ),
-
-                  // Data dummy penugasan guru kedua
-                  buildPenugasanCard(
-                    namaGuru: 'Endang Purwati',
-                    kelas: 'Kelas A2',
-                    peran: 'Guru Pendamping',
-                    status: 'Aktif',
-                    periode: '2024-2025',
-                    context: context,
-                  ),
-
-                  // Data dummy penugasan guru ketiga
-                  buildPenugasanCard(
-                    namaGuru: 'Santi Wulandari',
-                    kelas: 'Kelas B1',
-                    peran: 'Wali Kelas',
-                    status: 'Tidak Aktif',
-                    periode: '2024-2025',
-                    context: context,
-                  ),
-                ],
-              ),
+              child:
+                  isLoading
+                      ? const Center(
+                        child: CircularProgressIndicator(),
+                      ) // Menampilkan indikator loading saat data sedang dimuat
+                      : dataList.isEmpty
+                      ? const Center(
+                        child: Text('Belum ada data penugasan'),
+                      ) // Menampilkan pesan jika tidak ada data penugasan
+                      : RefreshIndicator(
+                        onRefresh: fetchData,
+                        child: ListView.builder(
+                          itemCount: dataList.length,
+                          itemBuilder: (context, index) {
+                            return buildPenugasanCard(
+                              item: dataList[index],
+                              context: context,
+                            );
+                          },
+                        ),
+                      ),
             ),
           ],
         ),
