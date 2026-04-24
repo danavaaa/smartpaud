@@ -3,6 +3,7 @@ import 'periode_ajaran/periode_ajaran_page.dart';
 import 'kelas/kelas_page.dart';
 import 'penugasan_guru/penugasan_guru_page.dart';
 import 'guru/guru_page.dart';
+import 'siswa/siswa_page.dart';
 
 // halaman dashboard utama admin
 class AdminDashboardPage extends StatelessWidget {
@@ -131,6 +132,17 @@ class AdminDashboardPage extends StatelessWidget {
                   Navigator.push(
                     context,
                     MaterialPageRoute(builder: (_) => const GuruPage()),
+                  );
+                },
+              ),
+              // menu kelola siswa
+              buildMenuButton(
+                context: context,
+                title: 'Kelola Data Siswa',
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const SiswaPage()),
                   );
                 },
               ),
