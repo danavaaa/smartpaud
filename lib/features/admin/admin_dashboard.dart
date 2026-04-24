@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'periode_ajaran/periode_ajaran_page.dart';
 import 'kelas/kelas_page.dart';
 import 'penugasan_guru/penugasan_guru_page.dart';
+import 'guru/guru_page.dart';
 
 // halaman dashboard utama admin
 class AdminDashboardPage extends StatelessWidget {
@@ -119,6 +120,17 @@ class AdminDashboardPage extends StatelessWidget {
                     MaterialPageRoute(
                       builder: (_) => const PenugasanGuruPage(),
                     ),
+                  );
+                },
+              ),
+              // menu kelola guru
+              buildMenuButton(
+                context: context,
+                title: 'Kelola Data Guru',
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const GuruPage()),
                   );
                 },
               ),
