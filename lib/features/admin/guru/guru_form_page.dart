@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'guru_service.dart';
 
 // Halaman form untuk menambah atau mengedit data guru
 class GuruFormPage extends StatefulWidget {
+  final String? idUser;
   final String? namaGuru;
   final String? email;
   final String? noHp;
@@ -9,6 +11,7 @@ class GuruFormPage extends StatefulWidget {
 
   const GuruFormPage({
     super.key,
+    this.idUser,
     this.namaGuru,
     this.email,
     this.noHp,
@@ -24,10 +27,15 @@ class _GuruFormPageState extends State<GuruFormPage> {
   final _namaGuruController = TextEditingController();
   final _emailController = TextEditingController();
   final _noHpController = TextEditingController();
+
+  final _service = GuruService();
+
   bool isActive = true;
+  bool isLoading = false;
 
   // Mengecek apakah halaman sedang dalam mode edit
-  bool get isEdit => widget.email != null;
+  // Jika idUser tidak null dan tidak kosong, berarti dalam mode edit
+  bool get isEdit => widget.idUser != null && widget.idUser!.isNotEmpty;
 
   @override
   void initState() {
@@ -38,6 +46,58 @@ class _GuruFormPageState extends State<GuruFormPage> {
     _emailController.text = widget.email ?? '';
     _noHpController.text = widget.noHp ?? '';
     isActive = widget.isActive ?? true;
+  }
+
+  // Fungsi untuk menyimpan data guru (baik tambah maupun edit)
+  Future<void> saveData() async {
+    // Validasi: nama guru dan email tidak boleh kosong
+    if (_namaGuruController.text.trim().isEmpty ||
+        _emailController.text.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Nama dan email wajib diisi')),
+      );
+      return;
+    }
+
+    try {
+      setState(() => isLoading = true);
+
+      // Jika mode edit, update data guru yang sudah ada
+      if (isEdit) {
+        await _service.updateGuru(
+          idUser: widget.idUser!,
+          nama: _namaGuruController.text.trim(),
+          email: _emailController.text.trim(),
+          noHp: _noHpController.text.trim(),
+          isActive: isActive,
+        );
+      } else {
+        // Jika bukan mode edit, tambahkan data guru baru
+        await _service.addGuru(
+          nama: _namaGuruController.text.trim(),
+          email: _emailController.text.trim(),
+          noHp: _noHpController.text.trim(),
+          isActive: isActive,
+        );
+      }
+
+      // Jika berhasil, kembali ke halaman sebelumnya
+      // sambil mengirim nilai true sebagai tanda sukses
+      if (!mounted) return;
+      Navigator.pop(context, true);
+    } catch (e) {
+      // Jika terjadi error saat menyimpan data,
+      // tampilkan pesan gagal ke user
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Gagal menyimpan data: $e')));
+    } finally {
+      // Setelah proses selesai, matikan loading
+      if (mounted) {
+        setState(() => isLoading = false);
+      }
+    }
   }
 
   @override
@@ -165,6 +225,8 @@ class _GuruFormPageState extends State<GuruFormPage> {
                   buildLabel('Email'),
                   TextField(
                     controller: _emailController,
+                    enabled:
+                        !isEdit, // Email bisa diisi saat tambah, tidak bisa diubah saat edit
                     decoration: customInputDecoration('contoh@email.com'),
                   ),
                   const SizedBox(height: 12),
@@ -232,11 +294,8 @@ class _GuruFormPageState extends State<GuruFormPage> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       buildActionButton(
-                        title: 'Simpan',
-                        onTap: () {
-                          // kembali ke halaman sebelumnya dengan menyimpan data yang diinput
-                          Navigator.pop(context);
-                        },
+                        title: isLoading ? 'Loading' : 'Simpan',
+                        onTap: isLoading ? () {} : saveData,
                       ),
                       const SizedBox(width: 18),
                       buildActionButton(

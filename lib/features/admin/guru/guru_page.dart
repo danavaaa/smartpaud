@@ -1,18 +1,83 @@
 import 'package:flutter/material.dart';
 import 'guru_form_page.dart';
+import 'guru_model.dart';
+import 'guru_service.dart';
 
 // Halaman untuk menampilkan dan mengelola data guru
-class GuruPage extends StatelessWidget {
+class GuruPage extends StatefulWidget {
   const GuruPage({super.key});
 
+  @override
+  State<GuruPage> createState() => _GuruPageState();
+}
+
+class _GuruPageState extends State<GuruPage> {
+  final _service = GuruService();
+
+  // List untuk menyimpan seluruh data guru
+  List<GuruModel> dataList = [];
+
+  // Penanda apakah halaman sedang memuat data
+  bool isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+
+    // Saat halaman pertama kali dibuka, ambil data guru dari database
+    fetchData();
+  }
+
+  // Fungsi untuk mengambil seluruh data guru
+  Future<void> fetchData() async {
+    try {
+      // Mengaktifkan loading sebelum proses ambil data dimulai
+      setState(() => isLoading = true);
+
+      // Memanggil service untuk mengambil semua data guru
+      final result = await _service.getAllGuru();
+
+      if (!mounted) return;
+
+      // Menyimpan data hasil query ke dalam dataList
+      setState(() => dataList = result);
+    } catch (e) {
+      // Jika terjadi error saat mengambil data, tampilkan pesan gagal ke user
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Gagal mengambil data guru: $e')));
+    } finally {
+      // Setelah proses selesai, matikan loading
+      if (mounted) {
+        setState(() => isLoading = false);
+      }
+    }
+  }
+
+  // Fungsi untuk pindah ke halaman form guru (baik untuk tambah maupun edit)
+  Future<void> goToForm({GuruModel? item}) async {
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder:
+            (_) => GuruFormPage(
+              idUser: item?.idUser,
+              namaGuru: item?.nama,
+              email: item?.email,
+              noHp: item?.noHp,
+              isActive: item?.isActive ?? false,
+            ),
+      ),
+    );
+
+    if (result == true) {
+      fetchData();
+    }
+  }
+
   // Fungsi untuk membuat kartu data guru
-  Widget buildGuruCard({
-    required String namaGuru,
-    required String email,
-    required String noHp,
-    required String status,
-    required BuildContext context,
-  }) {
+  Widget buildGuruCard(GuruModel item) {
     return Container(
       // Memberi jarak antar kartu
       margin: const EdgeInsets.only(bottom: 18),
@@ -38,20 +103,20 @@ class GuruPage extends StatelessWidget {
         children: [
           // Menampilkan nama guru sebagai judul utama kartu
           Text(
-            namaGuru,
+            item.nama,
             style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
           ),
 
           const SizedBox(height: 6),
 
           // Menampilkan email guru
-          Text('Email: $email'),
+          Text('Email: ${item.email}'),
 
           // Menampilkan nomor HP guru
-          Text('No HP: $noHp'),
+          Text('No HP: ${item.noHp}'),
 
           // Menampilkan status guru
-          Text('Status: $status'),
+          Text('Status: ${item.isActive ? "Aktif" : "Tidak Aktif"}'),
 
           const SizedBox(height: 10),
 
@@ -63,20 +128,7 @@ class GuruPage extends StatelessWidget {
                 height: 30,
                 child: ElevatedButton(
                   // tombol edit
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder:
-                            (_) => GuruFormPage(
-                              namaGuru: namaGuru,
-                              email: email,
-                              noHp: noHp,
-                              isActive: status == 'Aktif',
-                            ),
-                      ),
-                    );
-                  },
+                  onPressed: () => goToForm(item: item),
 
                   // Mengatur tampilan tombol edit
                   style: ElevatedButton.styleFrom(
@@ -136,12 +188,7 @@ class GuruPage extends StatelessWidget {
                 height: 38,
                 child: ElevatedButton(
                   // tombol tambah
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (_) => const GuruFormPage()),
-                    );
-                  },
+                  onPressed: () => goToForm(),
 
                   // Mengatur tampilan tombol tambah
                   style: ElevatedButton.styleFrom(
@@ -159,29 +206,22 @@ class GuruPage extends StatelessWidget {
             ),
 
             const SizedBox(height: 20),
-
+            // Bagian untuk menampilkan daftar guru atau indikator loading
             Expanded(
-              child: ListView(
-                children: [
-                  // Menampilkan data guru pertama
-                  buildGuruCard(
-                    namaGuru: 'Nur Jannah',
-                    email: 'nurjannah@example.com',
-                    noHp: '081234567890',
-                    status: 'Aktif',
-                    context: context,
-                  ),
-
-                  // Menampilkan data guru kedua
-                  buildGuruCard(
-                    namaGuru: 'Endah Sari',
-                    email: 'endahsari@example.com',
-                    noHp: '081298765432',
-                    status: 'Aktif',
-                    context: context,
-                  ),
-                ],
-              ),
+              child:
+                  isLoading
+                      ? const Center(child: CircularProgressIndicator())
+                      : dataList.isEmpty
+                      ? const Center(child: Text('Belum ada data guru'))
+                      : RefreshIndicator(
+                        onRefresh: fetchData,
+                        child: ListView.builder(
+                          itemCount: dataList.length,
+                          itemBuilder: (context, index) {
+                            return buildGuruCard(dataList[index]);
+                          },
+                        ),
+                      ),
             ),
           ],
         ),
