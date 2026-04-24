@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'guru_form_page.dart';
 
 // Halaman untuk menampilkan dan mengelola data guru
 class GuruPage extends StatelessWidget {
@@ -61,8 +62,21 @@ class GuruPage extends StatelessWidget {
               SizedBox(
                 height: 30,
                 child: ElevatedButton(
-                  // Untuk tahap ini tombol edit belum diberi aksi
-                  onPressed: () {},
+                  // tombol edit
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder:
+                            (_) => GuruFormPage(
+                              namaGuru: namaGuru,
+                              email: email,
+                              noHp: noHp,
+                              isActive: status == 'Aktif',
+                            ),
+                      ),
+                    );
+                  },
 
                   // Mengatur tampilan tombol edit
                   style: ElevatedButton.styleFrom(
@@ -122,7 +136,12 @@ class GuruPage extends StatelessWidget {
                 height: 38,
                 child: ElevatedButton(
                   // tombol tambah
-                  onPressed: () {},
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => const GuruFormPage()),
+                    );
+                  },
 
                   // Mengatur tampilan tombol tambah
                   style: ElevatedButton.styleFrom(
