@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'siswa_form_page.dart';
 
 // Halaman untuk menampilkan dan mengelola data siswa
 class SiswaPage extends StatelessWidget {
@@ -9,6 +10,7 @@ class SiswaPage extends StatelessWidget {
     required String nama,
     required String kelas,
     required String status,
+    required BuildContext context,
   }) {
     return Container(
       // Memberi jarak antar kartu
@@ -64,7 +66,19 @@ class SiswaPage extends StatelessWidget {
                 height: 30,
                 child: ElevatedButton(
                   // aksi saat tombol edit di tekan
-                  onPressed: () {},
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder:
+                            (_) => SiswaFormPage(
+                              nama: nama,
+                              kelas: kelas,
+                              isActive: status == 'Aktif',
+                            ),
+                      ),
+                    );
+                  },
 
                   // Mengatur tampilan tombol edit
                   style: ElevatedButton.styleFrom(
@@ -124,7 +138,12 @@ class SiswaPage extends StatelessWidget {
                 height: 38,
                 child: ElevatedButton(
                   // aksi saat tombol tambah di tekan
-                  onPressed: () {},
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => const SiswaFormPage()),
+                    );
+                  },
 
                   // Mengatur tampilan tombol tambah
                   style: ElevatedButton.styleFrom(
@@ -154,6 +173,7 @@ class SiswaPage extends StatelessWidget {
                     nama: 'Rasya Atallah',
                     kelas: 'Kelas A1',
                     status: 'Aktif',
+                    context: context,
                   ),
 
                   // Menampilkan data siswa kedua
@@ -161,6 +181,7 @@ class SiswaPage extends StatelessWidget {
                     nama: 'Kirana Larasati',
                     kelas: 'Kelas B1',
                     status: 'Tidak Aktif',
+                    context: context,
                   ),
                 ],
               ),
