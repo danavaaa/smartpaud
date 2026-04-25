@@ -1,17 +1,83 @@
 import 'package:flutter/material.dart';
 import 'siswa_form_page.dart';
+import 'siswa_model.dart';
+import 'siswa_service.dart';
 
 // Halaman untuk menampilkan dan mengelola data siswa
-class SiswaPage extends StatelessWidget {
+class SiswaPage extends StatefulWidget {
   const SiswaPage({super.key});
 
+  @override
+  State<SiswaPage> createState() => _SiswaPageState();
+}
+
+// State untuk halaman SiswaPage
+class _SiswaPageState extends State<SiswaPage> {
+  final _service = SiswaService();
+
+  // List untuk menyimpan seluruh data siswa
+  List<SiswaModel> dataList = [];
+
+  bool isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+
+    // Saat halaman pertama kali dibuka, langsung ambil data siswa dari database
+
+    fetchData();
+  }
+
+  // Fungsi untuk mengambil seluruh data siswa
+  Future<void> fetchData() async {
+    try {
+      // Mengaktifkan loading sebelum proses ambil data dimulai
+      setState(() => isLoading = true);
+
+      // Memanggil service untuk mengambil semua data siswa
+      final result = await _service.getAllSiswa();
+
+      if (!mounted) return;
+
+      // Menyimpan data hasil query ke dalam dataList
+      setState(() => dataList = result);
+    } catch (e) {
+      // Jika terjadi error saat mengambil data, tampilkan pesan gagal ke user
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Gagal mengambil data siswa: $e')));
+    } finally {
+      // Setelah proses selesai, matikan loading
+      if (mounted) {
+        setState(() => isLoading = false);
+      }
+    }
+  }
+
+  // Fungsi untuk pindah ke halaman form siswa
+  Future<void> goToForm({SiswaModel? item}) async {
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder:
+            (_) => SiswaFormPage(
+              id: item?.id,
+              nama: item?.namaSiswa,
+              idKelas: item?.idKelas,
+              isActive: item?.isActive,
+            ),
+      ),
+    );
+
+    if (result == true) {
+      fetchData();
+    }
+  }
+
   // Fungsi untuk membuat kartu data siswa
-  Widget buildSiswaCard({
-    required String nama,
-    required String kelas,
-    required String status,
-    required BuildContext context,
-  }) {
+  Widget buildSiswaCard(SiswaModel item, BuildContext context) {
     return Container(
       // Memberi jarak antar kartu
       margin: const EdgeInsets.only(bottom: 18),
@@ -37,7 +103,7 @@ class SiswaPage extends StatelessWidget {
         children: [
           // Menampilkan nama siswa sebagai judul utama kartu
           Text(
-            nama,
+            item.namaSiswa,
             style: const TextStyle(
               fontSize: 15,
               fontWeight: FontWeight.w600,
@@ -48,11 +114,14 @@ class SiswaPage extends StatelessWidget {
           const SizedBox(height: 6),
 
           // Menampilkan kelas siswa
-          Text('Kelas: $kelas', style: const TextStyle(fontFamily: 'Poppins')),
+          Text(
+            'Kelas: ${item.namaKelas}',
+            style: const TextStyle(fontFamily: 'Poppins'),
+          ),
 
           // Menampilkan status siswa
           Text(
-            'Status: $status',
+            'Status: ${item.isActive ? "Aktif" : "Tidak Aktif"}',
             style: const TextStyle(fontFamily: 'Poppins'),
           ),
 
@@ -66,19 +135,7 @@ class SiswaPage extends StatelessWidget {
                 height: 30,
                 child: ElevatedButton(
                   // aksi saat tombol edit di tekan
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder:
-                            (_) => SiswaFormPage(
-                              nama: nama,
-                              kelas: kelas,
-                              isActive: status == 'Aktif',
-                            ),
-                      ),
-                    );
-                  },
+                  onPressed: () => goToForm(item: item),
 
                   // Mengatur tampilan tombol edit
                   style: ElevatedButton.styleFrom(
@@ -138,12 +195,7 @@ class SiswaPage extends StatelessWidget {
                 height: 38,
                 child: ElevatedButton(
                   // aksi saat tombol tambah di tekan
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (_) => const SiswaFormPage()),
-                    );
-                  },
+                  onPressed: () => goToForm(),
 
                   // Mengatur tampilan tombol tambah
                   style: ElevatedButton.styleFrom(
@@ -166,25 +218,22 @@ class SiswaPage extends StatelessWidget {
             const SizedBox(height: 20),
 
             Expanded(
-              child: ListView(
-                children: [
-                  // Menampilkan data siswa pertama
-                  buildSiswaCard(
-                    nama: 'Rasya Atallah',
-                    kelas: 'Kelas A1',
-                    status: 'Aktif',
-                    context: context,
-                  ),
-
-                  // Menampilkan data siswa kedua
-                  buildSiswaCard(
-                    nama: 'Kirana Larasati',
-                    kelas: 'Kelas B1',
-                    status: 'Tidak Aktif',
-                    context: context,
-                  ),
-                ],
-              ),
+              child:
+                  isLoading // Jika sedang memuat data, tampilkan indikator loading
+                      ? const Center(child: CircularProgressIndicator())
+                      : dataList
+                          .isEmpty // Jika tidak ada data siswa, tampilkan pesan kosong
+                      ? const Center(child: Text('Belum ada data siswa'))
+                      : RefreshIndicator(
+                        // Jika ada data siswa, tampilkan dalam bentuk list dengan fitur pull-to-refresh
+                        onRefresh: fetchData,
+                        child: ListView.builder(
+                          itemCount: dataList.length,
+                          itemBuilder: (context, index) {
+                            return buildSiswaCard(dataList[index], context);
+                          },
+                        ),
+                      ),
             ),
           ],
         ),

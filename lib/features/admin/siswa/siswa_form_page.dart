@@ -1,12 +1,22 @@
 import 'package:flutter/material.dart';
+import 'siswa_service.dart';
 
 // Halaman form untuk menambah atau mengedit data siswa
 class SiswaFormPage extends StatefulWidget {
+  final String? id;
   final String? nama;
   final String? kelas;
+  final String? idKelas;
   final bool? isActive;
 
-  const SiswaFormPage({super.key, this.nama, this.kelas, this.isActive});
+  const SiswaFormPage({
+    super.key,
+    this.id,
+    this.nama,
+    this.kelas,
+    this.idKelas,
+    this.isActive,
+  });
 
   @override
   State<SiswaFormPage> createState() => _SiswaFormPageState();
@@ -16,23 +26,102 @@ class SiswaFormPage extends StatefulWidget {
 class _SiswaFormPageState extends State<SiswaFormPage> {
   // Controller untuk input nama siswa
   final _namaController = TextEditingController();
+  final _service = SiswaService();
 
   // Menyimpan kelas yang dipilih
   String? selectedKelas;
 
+  List<Map<String, dynamic>> kelasList = [];
+  String? selectedKelasId;
+
   // Menyimpan status siswa
   bool isActive = true;
 
+  bool isLoading = false;
+
   // Mengecek apakah halaman sedang dalam mode edit
-  bool get isEdit => widget.nama != null;
+  bool get isEdit => widget.id != null;
 
   @override
   void initState() {
     super.initState();
 
     _namaController.text = widget.nama ?? '';
-    selectedKelas = widget.kelas;
+    selectedKelasId = widget.idKelas;
     isActive = widget.isActive ?? true;
+
+    fetchKelasList();
+  }
+
+  // Fungsi untuk mengambil daftar kelas
+  Future<void> fetchKelasList() async {
+    try {
+      // Mengambil seluruh data kelas
+      final result = await _service.getAllKelas();
+
+      // agar aman sebelum memanggil setState
+      if (!mounted) return;
+
+      // Menyimpan hasil data kelas ke dalam state agar bisa digunakan untuk dropdown
+      setState(() {
+        kelasList = result;
+      });
+    } catch (e) {
+      // Jika terjadi error saat mengambil data kelas,
+      // tampilkan pesan gagal ke user
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Gagal mengambil data kelas: $e')));
+    }
+  }
+
+  // Fungsi untuk menyimpan data siswa (baik tambah maupun edit)
+  Future<void> saveData() async {
+    // Validasi: nama siswa dan kelas wajib diisi
+    if (_namaController.text.trim().isEmpty || selectedKelasId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Nama siswa dan kelas wajib diisi')),
+      );
+      return;
+    }
+
+    try {
+      // Mengaktifkan loading agar UI menandakan proses sedang berjalan
+      setState(() => isLoading = true);
+
+      // Jika mode edit, update data siswa yang sudah ada
+      if (isEdit) {
+        await _service.updateSiswa(
+          id: widget.id!,
+          namaSiswa: _namaController.text.trim(),
+          idKelas: selectedKelasId!,
+          isActive: isActive,
+        );
+      } else {
+        // Jika bukan mode edit, tambahkan data siswa baru
+        await _service.addSiswa(
+          namaSiswa: _namaController.text.trim(),
+          idKelas: selectedKelasId!,
+          isActive: isActive,
+        );
+      }
+
+      // Jika proses berhasil, kembali ke halaman sebelumnya
+      if (!mounted) return;
+      Navigator.pop(context, true);
+    } catch (e) {
+      // Jika terjadi error saat menyimpan data, tampilkan pesan gagal ke user
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Gagal menyimpan data: $e')));
+    } finally {
+      // Setelah proses selesai, matikan loading
+      if (mounted) {
+        setState(() => isLoading = false);
+      }
+    }
   }
 
   @override
@@ -155,21 +244,17 @@ class _SiswaFormPageState extends State<SiswaFormPage> {
                   // Dropdown untuk memilih kelas siswa
                   buildLabel('Kelas'),
                   DropdownButtonFormField<String>(
-                    value: selectedKelas,
+                    value: selectedKelasId,
                     decoration: customInputDecoration('Pilih Kelas'),
-                    items: const [
-                      DropdownMenuItem(
-                        value: 'Kelas A1',
-                        child: Text('Kelas A1'),
-                      ),
-                      DropdownMenuItem(
-                        value: 'Kelas B1',
-                        child: Text('Kelas B1'),
-                      ),
-                    ],
+                    items:
+                        kelasList.map((kelas) {
+                          return DropdownMenuItem<String>(
+                            value: kelas['id'],
+                            child: Text(kelas['nama_kelas']),
+                          );
+                        }).toList(),
                     onChanged: (value) {
-                      // Menyimpan kelas yang dipilih
-                      setState(() => selectedKelas = value);
+                      setState(() => selectedKelasId = value);
                     },
                   ),
                   const SizedBox(height: 12),
@@ -184,10 +269,7 @@ class _SiswaFormPageState extends State<SiswaFormPage> {
                           value: true,
                           groupValue: isActive,
                           onChanged: (value) {
-                            if (value != null) {
-                              // Mengubah status siswa menjadi aktif
-                              setState(() => isActive = value);
-                            }
+                            if (value != null) setState(() => isActive = value);
                           },
                           title: const Text(
                             'Aktif',
@@ -229,11 +311,8 @@ class _SiswaFormPageState extends State<SiswaFormPage> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       buildActionButton(
-                        title: 'Simpan',
-                        onTap: () {
-                          // aksi saat tombol simpan ditekan
-                          Navigator.pop(context);
-                        },
+                        title: isLoading ? 'Loading' : 'Simpan',
+                        onTap: isLoading ? () {} : saveData,
                       ),
                       const SizedBox(width: 18),
                       buildActionButton(
