@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'orang_tua_form_page.dart';
 
 // Halaman untuk menampilkan dan mengelola data orang tua
 class OrangTuaPage extends StatelessWidget {
@@ -10,6 +11,7 @@ class OrangTuaPage extends StatelessWidget {
     required String email,
     required String noHp,
     required String status,
+    required BuildContext context,
   }) {
     return Container(
       // Memberi jarak antar kartu
@@ -68,7 +70,20 @@ class OrangTuaPage extends StatelessWidget {
                 height: 30,
                 child: ElevatedButton(
                   // aksi saat tombol edit di tekan
-                  onPressed: () {},
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder:
+                            (_) => OrangTuaFormPage(
+                              nama: nama,
+                              email: email,
+                              noHp: noHp,
+                              isActive: status == 'Aktif',
+                            ),
+                      ),
+                    );
+                  },
 
                   // Mengatur tampilan tombol edit
                   style: ElevatedButton.styleFrom(
@@ -128,8 +143,14 @@ class OrangTuaPage extends StatelessWidget {
                 height: 38,
                 child: ElevatedButton(
                   // aksi saat tombol tambah di tekan
-                  onPressed: () {},
-
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const OrangTuaFormPage(),
+                      ),
+                    );
+                  },
                   // Mengatur tampilan tombol tambah
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFFD9D4D4),
@@ -159,6 +180,7 @@ class OrangTuaPage extends StatelessWidget {
                     email: 'shofiyah@gmail.com',
                     noHp: '081234567890',
                     status: 'Aktif',
+                    context: context,
                   ),
 
                   // Menampilkan data orang tua kedua
@@ -167,6 +189,7 @@ class OrangTuaPage extends StatelessWidget {
                     email: 'ahmad@gmail.com',
                     noHp: '081298765432',
                     status: 'Aktif',
+                    context: context,
                   ),
                 ],
               ),
