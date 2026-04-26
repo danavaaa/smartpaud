@@ -4,6 +4,7 @@ import 'kelas/kelas_page.dart';
 import 'penugasan_guru/penugasan_guru_page.dart';
 import 'guru/guru_page.dart';
 import 'siswa/siswa_page.dart';
+import 'orang_tua/orang_tua_page.dart';
 
 // halaman dashboard utama admin
 class AdminDashboardPage extends StatelessWidget {
@@ -143,6 +144,17 @@ class AdminDashboardPage extends StatelessWidget {
                   Navigator.push(
                     context,
                     MaterialPageRoute(builder: (_) => const SiswaPage()),
+                  );
+                },
+              ),
+              // menu kelola orang tua
+              buildMenuButton(
+                context: context,
+                title: 'Kelola Data Orang Tua',
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const OrangTuaPage()),
                   );
                 },
               ),
