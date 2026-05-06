@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'orang_tua_service.dart';
 
 // Halaman form untuk menambah atau mengedit data orang tua
 class OrangTuaFormPage extends StatefulWidget {
+  final String? idUser;
   final String? nama;
   final String? email;
   final String? noHp;
@@ -9,6 +11,7 @@ class OrangTuaFormPage extends StatefulWidget {
 
   const OrangTuaFormPage({
     super.key,
+    this.idUser,
     this.nama,
     this.email,
     this.noHp,
@@ -30,11 +33,15 @@ class _OrangTuaFormPageState extends State<OrangTuaFormPage> {
   // Controller untuk input nomor HP
   final _noHpController = TextEditingController();
 
+  final _service = OrangTuaService();
+
   // Menyimpan status orang tua, default aktif
   bool isActive = true;
 
+  bool isLoading = false;
+
   // Mengecek apakah halaman sedang dalam mode edit
-  bool get isEdit => widget.email != null;
+  bool get isEdit => widget.idUser != null && widget.idUser!.isNotEmpty;
 
   @override
   void initState() {
@@ -44,6 +51,56 @@ class _OrangTuaFormPageState extends State<OrangTuaFormPage> {
     _emailController.text = widget.email ?? '';
     _noHpController.text = widget.noHp ?? '';
     isActive = widget.isActive ?? true;
+  }
+
+  // Fungsi untuk menyimpan data orang tua (baik tambah maupun edit)
+  Future<void> saveData() async {
+    // Validasi: nama dan email tidak boleh kosong
+    if (_namaController.text.trim().isEmpty ||
+        _emailController.text.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Nama dan email wajib diisi')),
+      );
+      return;
+    }
+
+    try {
+      setState(() => isLoading = true);
+
+      // Jika mode edit, update data orang tua yang sudah ada
+      if (isEdit) {
+        await _service.updateOrangTua(
+          idUser: widget.idUser!,
+          nama: _namaController.text.trim(),
+          email: _emailController.text.trim(),
+          noHp: _noHpController.text.trim(),
+          isActive: isActive,
+        );
+      } else {
+        // Jika bukan mode edit, tambahkan data orang tua baru
+        await _service.addOrangTua(
+          nama: _namaController.text.trim(),
+          email: _emailController.text.trim(),
+          noHp: _noHpController.text.trim(),
+          isActive: isActive,
+        );
+      }
+
+      // Jika berhasil, kembali ke halaman sebelumnya
+      if (!mounted) return;
+      Navigator.pop(context, true);
+    } catch (e) {
+      // Jika terjadi error saat menyimpan data, tampilkan pesan gagal ke user
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Gagal menyimpan data: $e')));
+    } finally {
+      // Setelah proses selesai, matikan loading
+      if (mounted) {
+        setState(() => isLoading = false);
+      }
+    }
   }
 
   @override
@@ -170,6 +227,7 @@ class _OrangTuaFormPageState extends State<OrangTuaFormPage> {
                   buildLabel('Email'),
                   TextField(
                     controller: _emailController,
+                    enabled: !isEdit, // Email tidak bisa diedit saat mode edit
                     decoration: customInputDecoration('contoh@email.com'),
                   ),
                   const SizedBox(height: 12),
@@ -235,11 +293,8 @@ class _OrangTuaFormPageState extends State<OrangTuaFormPage> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       buildActionButton(
-                        title: 'Simpan',
-                        onTap: () {
-                          // menutup halaman form dan menyimpan perubahan
-                          Navigator.pop(context);
-                        },
+                        title: isLoading ? 'Loading' : 'Simpan',
+                        onTap: isLoading ? () {} : saveData,
                       ),
                       const SizedBox(width: 18),
                       buildActionButton(

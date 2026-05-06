@@ -1,18 +1,84 @@
 import 'package:flutter/material.dart';
 import 'orang_tua_form_page.dart';
+import 'orang_tua_model.dart';
+import 'orang_tua_service.dart';
 
 // Halaman untuk menampilkan dan mengelola data orang tua
-class OrangTuaPage extends StatelessWidget {
+class OrangTuaPage extends StatefulWidget {
   const OrangTuaPage({super.key});
 
+  @override
+  State<OrangTuaPage> createState() => _OrangTuaPageState();
+}
+
+// State untuk halaman OrangTuaPage
+class _OrangTuaPageState extends State<OrangTuaPage> {
+  // Instance service untuk mengambil dan mengelola data orang tua dari database
+  final _service = OrangTuaService();
+
+  // List untuk menyimpan seluruh data orang tua
+  List<OrangTuaModel> dataList = [];
+
+  bool isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+
+    // Saat halaman pertama kali dibuka, ambil data orang tua dari database
+    fetchData();
+  }
+
+  // Fungsi untuk mengambil seluruh data orang tua
+  Future<void> fetchData() async {
+    try {
+      // Mengaktifkan loading sebelum proses ambil data dimulai
+      setState(() => isLoading = true);
+
+      // Memanggil service untuk mengambil semua data orang tua
+      final result = await _service.getAllOrangTua();
+
+      if (!mounted) return;
+
+      // Menyimpan data hasil query ke dalam dataList
+      setState(() => dataList = result);
+    } catch (e) {
+      // Jika terjadi error saat mengambil data, tampilkan pesan gagal ke user
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Gagal mengambil data orang tua: $e')),
+      );
+    } finally {
+      // Setelah proses selesai, matikan loading
+      if (mounted) {
+        setState(() => isLoading = false);
+      }
+    }
+  }
+
+  // Fungsi untuk pindah ke halaman form orang tua (untuk tambah atau edit)
+  Future<void> goToForm({OrangTuaModel? item}) async {
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder:
+            (_) => OrangTuaFormPage(
+              idUser: item?.idUser,
+              nama: item?.nama,
+              email: item?.email,
+              noHp: item?.noHp,
+              isActive: item?.isActive,
+            ),
+      ),
+    );
+
+    if (result == true) {
+      fetchData();
+    }
+  }
+
   // Fungsi untuk membuat kartu data orang tua
-  Widget buildOrangTuaCard({
-    required String nama,
-    required String email,
-    required String noHp,
-    required String status,
-    required BuildContext context,
-  }) {
+  Widget buildOrangTuaCard(OrangTuaModel item) {
     return Container(
       // Memberi jarak antar kartu
       margin: const EdgeInsets.only(bottom: 18),
@@ -38,7 +104,7 @@ class OrangTuaPage extends StatelessWidget {
         children: [
           // Menampilkan nama orang tua sebagai judul utama kartu
           Text(
-            nama,
+            item.nama,
             style: const TextStyle(
               fontSize: 15,
               fontWeight: FontWeight.w600,
@@ -49,14 +115,20 @@ class OrangTuaPage extends StatelessWidget {
           const SizedBox(height: 6),
 
           // Menampilkan email orang tua
-          Text('Email: $email', style: const TextStyle(fontFamily: 'Poppins')),
+          Text(
+            'Email: ${item.email}',
+            style: const TextStyle(fontFamily: 'Poppins'),
+          ),
 
           // Menampilkan nomor HP orang tua
-          Text('No HP: $noHp', style: const TextStyle(fontFamily: 'Poppins')),
+          Text(
+            'No HP: ${item.noHp}',
+            style: const TextStyle(fontFamily: 'Poppins'),
+          ),
 
           // Menampilkan status orang tua
           Text(
-            'Status: $status',
+            'Status: ${item.isActive ? 'Aktif' : 'Tidak Aktif'}',
             style: const TextStyle(fontFamily: 'Poppins'),
           ),
 
@@ -70,20 +142,7 @@ class OrangTuaPage extends StatelessWidget {
                 height: 30,
                 child: ElevatedButton(
                   // aksi saat tombol edit di tekan
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder:
-                            (_) => OrangTuaFormPage(
-                              nama: nama,
-                              email: email,
-                              noHp: noHp,
-                              isActive: status == 'Aktif',
-                            ),
-                      ),
-                    );
-                  },
+                  onPressed: () => goToForm(item: item),
 
                   // Mengatur tampilan tombol edit
                   style: ElevatedButton.styleFrom(
@@ -143,14 +202,8 @@ class OrangTuaPage extends StatelessWidget {
                 height: 38,
                 child: ElevatedButton(
                   // aksi saat tombol tambah di tekan
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => const OrangTuaFormPage(),
-                      ),
-                    );
-                  },
+                  onPressed: () => goToForm(),
+
                   // Mengatur tampilan tombol tambah
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFFD9D4D4),
@@ -172,27 +225,20 @@ class OrangTuaPage extends StatelessWidget {
             const SizedBox(height: 20),
 
             Expanded(
-              child: ListView(
-                children: [
-                  // Menampilkan data orang tua pertama
-                  buildOrangTuaCard(
-                    nama: 'Shofiyah',
-                    email: 'shofiyah@gmail.com',
-                    noHp: '081234567890',
-                    status: 'Aktif',
-                    context: context,
-                  ),
-
-                  // Menampilkan data orang tua kedua
-                  buildOrangTuaCard(
-                    nama: 'Ahmad',
-                    email: 'ahmad@gmail.com',
-                    noHp: '081298765432',
-                    status: 'Aktif',
-                    context: context,
-                  ),
-                ],
-              ),
+              child:
+                  isLoading // Jika sedang memuat data, tampilkan indikator loading
+                      ? const Center(child: CircularProgressIndicator())
+                      : dataList.isEmpty
+                      ? const Center(child: Text('Belum ada data orang tua'))
+                      : RefreshIndicator(
+                        onRefresh: fetchData,
+                        child: ListView.builder(
+                          itemCount: dataList.length,
+                          itemBuilder: (context, index) {
+                            return buildOrangTuaCard(dataList[index]);
+                          },
+                        ),
+                      ),
             ),
           ],
         ),
