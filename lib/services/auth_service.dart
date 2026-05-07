@@ -34,4 +34,9 @@ class AuthService {
 
     return data;
   }
+
+  // method untuk logout
+  Future<void> logout() async {
+    await client.auth.signOut();
+  }
 }

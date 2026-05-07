@@ -1,14 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:smartpaud/services/auth_service.dart';
 import 'periode_ajaran/periode_ajaran_page.dart';
 import 'kelas/kelas_page.dart';
 import 'penugasan_guru/penugasan_guru_page.dart';
 import 'guru/guru_page.dart';
 import 'siswa/siswa_page.dart';
 import 'orang_tua/orang_tua_page.dart';
+import '../auth/login_page.dart';
 
 // halaman dashboard utama admin
 class AdminDashboardPage extends StatelessWidget {
   const AdminDashboardPage({super.key});
+
+  // instance service
+  static final _authService = AuthService();
 
   // fungsi untuk membuat tombol menu dashboard
   Widget buildMenuButton({
@@ -59,6 +64,42 @@ class AdminDashboardPage extends StatelessWidget {
     );
   }
 
+  // fungsi tombol logout
+  Widget _buildLogoutButton(BuildContext context) {
+    return SizedBox(
+      width: double.infinity,
+      height: 50,
+      child: ElevatedButton(
+        onPressed: () async {
+          // Memanggil service logout untuk menghapus sesi/token pengguna
+          await _authService.logout();
+
+          if (!context.mounted) return;
+
+          // Navigasi ke LoginPage dan hapus seluruh stack navigasi,
+          // sehingga pengguna tidak bisa kembali ke halaman sebelumnya
+          Navigator.pushAndRemoveUntil(
+            context,
+            MaterialPageRoute(builder: (_) => const LoginPage()),
+            (route) => false, // Hapus semua route yang ada
+          );
+        },
+        style: ElevatedButton.styleFrom(
+          backgroundColor: const Color(0xFFD9D4D4),
+          foregroundColor: Colors.black,
+          elevation: 2, // Bayangan
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20), // Sudut tombol membulat
+          ),
+        ),
+        child: const Text(
+          'LogOut',
+          style: TextStyle(fontSize: 15, fontFamily: 'Poppins'),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -91,73 +132,73 @@ class AdminDashboardPage extends StatelessWidget {
               buildMenuButton(
                 context: context,
                 title: 'Kelola Periode Ajaran',
-                onTap: () {
-                  // navigasi ke halaman periode ajaran
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => const PeriodeAjaranPage(),
+                onTap:
+                    // navigasi ke halaman periode ajaran
+                    () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const PeriodeAjaranPage(),
+                      ),
                     ),
-                  );
-                },
               ),
               // menu kelola kelas
               buildMenuButton(
                 context: context,
                 title: 'Kelola Kelas',
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (_) => const KelasPage()),
-                  );
-                },
+                onTap:
+                    () => Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => const KelasPage()),
+                    ),
               ),
               // menu kelola penugasan guru
               buildMenuButton(
                 context: context,
                 title: 'Penugasan Guru',
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => const PenugasanGuruPage(),
+                onTap:
+                    () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const PenugasanGuruPage(),
+                      ),
                     ),
-                  );
-                },
               ),
               // menu kelola guru
               buildMenuButton(
                 context: context,
                 title: 'Kelola Data Guru',
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (_) => const GuruPage()),
-                  );
-                },
+                onTap:
+                    () => Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => const GuruPage()),
+                    ),
               ),
               // menu kelola siswa
               buildMenuButton(
                 context: context,
                 title: 'Kelola Data Siswa',
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (_) => const SiswaPage()),
-                  );
-                },
+                onTap:
+                    () => Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => const SiswaPage()),
+                    ),
               ),
               // menu kelola orang tua
               buildMenuButton(
                 context: context,
                 title: 'Kelola Data Orang Tua',
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (_) => const OrangTuaPage()),
-                  );
-                },
+                onTap:
+                    () => Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => const OrangTuaPage()),
+                    ),
               ),
+
+              // spacer untuk mendorong tombol logout ke bawah
+              const Spacer(),
+
+              // tombol logout
+              _buildLogoutButton(context),
             ],
           ),
         ),
