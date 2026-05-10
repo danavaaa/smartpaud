@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../services/auth_service.dart';
-import '../admin/admin_dashboard.dart';
-import '../guru/guru_dashboard.dart';
+import '../admin/dashboard/admin_dashboard.dart';
+import '../guru/dashboard/guru_dashboard.dart';
 import '../orang_tua/orang_tua_dashboard.dart';
 
 // Halaman login yang menangani autentikasi dan navigasi berdasarkan peran user

@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:smartpaud/services/auth_service.dart';
-import 'periode_ajaran/periode_ajaran_page.dart';
-import 'kelas/kelas_page.dart';
-import 'penugasan_guru/penugasan_guru_page.dart';
-import 'guru/guru_page.dart';
-import 'siswa/siswa_page.dart';
-import 'orang_tua/orang_tua_page.dart';
-import '../auth/login_page.dart';
+import '../periode_ajaran/periode_ajaran_page.dart';
+import '../kelas/kelas_page.dart';
+import '../penugasan_guru/penugasan_guru_page.dart';
+import '../guru/guru_page.dart';
+import '../siswa/siswa_page.dart';
+import '../orang_tua/orang_tua_page.dart';
+import '../../auth/login_page.dart';
 
 // halaman dashboard utama admin
 class AdminDashboardPage extends StatelessWidget {

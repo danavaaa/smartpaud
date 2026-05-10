@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../data_siswa/data_siswa_page.dart';
 
 // Halaman dashboard untuk guru
 class GuruDashboardPage extends StatelessWidget {
@@ -38,7 +39,12 @@ class GuruDashboardPage extends StatelessWidget {
                 context,
                 icon: Icons.people_outline_rounded,
                 label: 'Data Siswa',
-                onTap: () {},
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const DataSiswaPage()),
+                  );
+                },
               ),
 
               // menu laporan perkembangan
