@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'data_siswa_model.dart';
+import 'detail_siswa.dart';
 
 // halaman data siswa
 class DataSiswaPage extends StatefulWidget {
@@ -27,6 +28,12 @@ class _DataSiswaPageState extends State<DataSiswaPage> {
       kelas: 'A1',
       periode: '2024/2025',
       status: 'Aktif',
+      nis: '12345',
+      tanggalLahir: '2010-01-01',
+      jenisKelamin: 'Perempuan',
+      namaAyah: 'Ayah Aisyah',
+      namaIbu: 'Ibu Aisyah',
+      noHpWali: '081234567890',
     ),
 
     Siswa(
@@ -35,6 +42,12 @@ class _DataSiswaPageState extends State<DataSiswaPage> {
       kelas: 'A1',
       periode: '2024/2025',
       status: 'Aktif',
+      nis: '12346',
+      tanggalLahir: '2010-02-02',
+      jenisKelamin: 'Perempuan',
+      namaAyah: 'Ayah Berliana',
+      namaIbu: 'Ibu Berliana',
+      noHpWali: '081234567891',
     ),
 
     Siswa(
@@ -43,6 +56,12 @@ class _DataSiswaPageState extends State<DataSiswaPage> {
       kelas: 'A1',
       periode: '2024/2025',
       status: 'Aktif',
+      nis: '12347',
+      tanggalLahir: '2010-03-03',
+      jenisKelamin: 'Laki-laki',
+      namaAyah: 'Ayah Cahaya',
+      namaIbu: 'Ibu Cahaya',
+      noHpWali: '081234567892',
     ),
 
     Siswa(
@@ -51,6 +70,12 @@ class _DataSiswaPageState extends State<DataSiswaPage> {
       kelas: 'A1',
       periode: '2024/2025',
       status: 'Aktif',
+      nis: '12348',
+      tanggalLahir: '2010-04-04',
+      jenisKelamin: 'Perempuan',
+      namaAyah: 'Ayah Dian',
+      namaIbu: 'Ibu Dian',
+      noHpWali: '081234567893',
     ),
 
     Siswa(
@@ -59,6 +84,12 @@ class _DataSiswaPageState extends State<DataSiswaPage> {
       kelas: 'B1',
       periode: '2024/2025',
       status: 'Nonaktif',
+      nis: '12349',
+      tanggalLahir: '2010-05-05',
+      jenisKelamin: 'Laki-laki',
+      namaAyah: 'Ayah Eka',
+      namaIbu: 'Ibu Eka',
+      noHpWali: '081234567894',
     ),
   ];
 
@@ -330,81 +361,91 @@ class _DataSiswaPageState extends State<DataSiswaPage> {
     // Mengecek status aktif
     final bool isAktif = siswa.status == 'Aktif';
 
-    return Container(
-      margin: const EdgeInsets.only(bottom: 10),
-
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.04),
-            blurRadius: 6,
-            offset: const Offset(0, 2),
+    return GestureDetector(
+      // aksi ketika card siswa ditekan, menuju ke halaman detail siswa
+      onTap:
+          () => Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => DetailSiswaPage(siswa: siswa)),
           ),
-        ],
-      ),
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 10),
 
-      child: Row(
-        children: [
-          // avatar inisial nama siswa
-          CircleAvatar(
-            radius: 18,
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
 
-            backgroundColor: const Color(0xFFDDE8EF),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
 
-            child: Text(
-              siswa.inisial,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.04),
+              blurRadius: 6,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
 
-              style: const TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w600,
-                color: Color(0xFF185FA5),
-                fontFamily: 'Poppins',
+        child: Row(
+          children: [
+            // avatar inisial nama siswa
+            CircleAvatar(
+              radius: 18,
+
+              backgroundColor: const Color(0xFFDDE8EF),
+
+              child: Text(
+                siswa.inisial,
+
+                style: const TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  color: Color(0xFF185FA5),
+                  fontFamily: 'Poppins',
+                ),
               ),
             ),
-          ),
 
-          const SizedBox(width: 12),
+            const SizedBox(width: 12),
 
-          // Nama siswa
-          Expanded(
-            child: Text(
-              siswa.nama,
+            // Nama siswa
+            Expanded(
+              child: Text(
+                siswa.nama,
 
-              style: const TextStyle(fontSize: 14, fontFamily: 'Poppins'),
-            ),
-          ),
-
-          // Badge status aktif/nonaktif
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-
-            decoration: BoxDecoration(
-              // Warna badge berdasarkan status
-              color:
-                  isAktif ? const Color(0xFFEAF3DE) : const Color(0xFFFCEBEB),
-
-              borderRadius: BorderRadius.circular(20),
+                style: const TextStyle(fontSize: 14, fontFamily: 'Poppins'),
+              ),
             ),
 
-            child: Text(
-              siswa.status,
+            // Badge status aktif/nonaktif
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
 
-              style: TextStyle(
-                fontSize: 11,
-                fontFamily: 'Poppins',
-
-                // Warna text status
+              decoration: BoxDecoration(
+                // Warna badge berdasarkan status
                 color:
-                    isAktif ? const Color(0xFF3B6D11) : const Color(0xFFA32D2D),
+                    isAktif ? const Color(0xFFEAF3DE) : const Color(0xFFFCEBEB),
+
+                borderRadius: BorderRadius.circular(20),
+              ),
+
+              child: Text(
+                siswa.status,
+
+                style: TextStyle(
+                  fontSize: 11,
+                  fontFamily: 'Poppins',
+
+                  // Warna text status
+                  color:
+                      isAktif
+                          ? const Color(0xFF3B6D11)
+                          : const Color(0xFFA32D2D),
+                ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
