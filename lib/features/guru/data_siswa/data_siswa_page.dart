@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'data_siswa_model.dart';
+import 'data_siswa_service.dart';
 import 'detail_siswa.dart';
 
 // halaman data siswa
@@ -12,103 +13,63 @@ class DataSiswaPage extends StatefulWidget {
 
 // state untuk halaman data siswa
 class _DataSiswaPageState extends State<DataSiswaPage> {
-  final TextEditingController _searchController =
-      TextEditingController(); // Controller untuk input pencarian
-  String _selectedKelas = 'Semua'; // Default kelas terpilih
-  String _selectedPeriode = 'Semua'; // Default periode terpilih
+  final _service = SiswaService();
+  final _searchController = TextEditingController();
 
+  List<Siswa> _siswaList = [];
+  List<Map<String, dynamic>> _kelasList = [];
+  bool _isLoading = true;
   // Variabel pencarian
   String _searchQuery = '';
+  // Variabel filter kelas
+  String _selectedKelasId = 'Semua';
+  // Variabel filter periode
+  String _selectedPeriode = 'Semua';
 
-  // data dummy siswa
-  final List<Siswa> _dummySiswa = [
-    Siswa(
-      id: '1',
-      nama: 'Aisyah Putri',
-      kelas: 'A1',
-      periode: '2024/2025',
-      status: 'Aktif',
-      nis: '12345',
-      tanggalLahir: '2010-01-01',
-      jenisKelamin: 'Perempuan',
-      namaAyah: 'Ayah Aisyah',
-      namaIbu: 'Ibu Aisyah',
-      noHpWali: '081234567890',
-    ),
+  @override
+  void initState() {
+    super.initState();
+    _loadData();
+  }
 
-    Siswa(
-      id: '2',
-      nama: 'Berliana Sari',
-      kelas: 'A1',
-      periode: '2024/2025',
-      status: 'Aktif',
-      nis: '12346',
-      tanggalLahir: '2010-02-02',
-      jenisKelamin: 'Perempuan',
-      namaAyah: 'Ayah Berliana',
-      namaIbu: 'Ibu Berliana',
-      noHpWali: '081234567891',
-    ),
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
 
-    Siswa(
-      id: '3',
-      nama: 'Cahaya Nugraha',
-      kelas: 'A1',
-      periode: '2024/2025',
-      status: 'Aktif',
-      nis: '12347',
-      tanggalLahir: '2010-03-03',
-      jenisKelamin: 'Laki-laki',
-      namaAyah: 'Ayah Cahaya',
-      namaIbu: 'Ibu Cahaya',
-      noHpWali: '081234567892',
-    ),
-
-    Siswa(
-      id: '4',
-      nama: 'Dian Rahmawati',
-      kelas: 'A1',
-      periode: '2024/2025',
-      status: 'Aktif',
-      nis: '12348',
-      tanggalLahir: '2010-04-04',
-      jenisKelamin: 'Perempuan',
-      namaAyah: 'Ayah Dian',
-      namaIbu: 'Ibu Dian',
-      noHpWali: '081234567893',
-    ),
-
-    Siswa(
-      id: '5',
-      nama: 'Eka Saputra',
-      kelas: 'B1',
-      periode: '2024/2025',
-      status: 'Nonaktif',
-      nis: '12349',
-      tanggalLahir: '2010-05-05',
-      jenisKelamin: 'Laki-laki',
-      namaAyah: 'Ayah Eka',
-      namaIbu: 'Ibu Eka',
-      noHpWali: '081234567894',
-    ),
-  ];
-
-  // Pilihan kelas
-  final List<String> _kelasList = ['Semua', 'A1', 'B1'];
-
-  // Pilihan periode
-  final List<String> _periodeList = ['Semua', '2024/2025', '2023/2024'];
+  // Ambil data dari Supabase
+  Future<void> _loadData() async {
+    setState(() => _isLoading = true);
+    try {
+      final siswa = await _service.getSiswa();
+      final kelas = await _service.getKelasList();
+      setState(() {
+        _siswaList = siswa;
+        _kelasList = kelas;
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() => _isLoading = false);
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Gagal memuat data: $e')));
+      }
+    }
+  }
 
   // filter data siswa berdasarkan pencarian, kelas, dan periode
   List<Siswa> get _filteredSiswa {
-    return _dummySiswa.where((s) {
+    return _siswaList.where((s) {
       // Filter berdasarkan nama
-      final matchNama = s.nama.toLowerCase().contains(
+      final matchNama = s.namaSiswa.toLowerCase().contains(
         _searchQuery.toLowerCase(),
       );
 
       // Filter berdasarkan kelas
-      final matchKelas = _selectedKelas == 'Semua' || s.kelas == _selectedKelas;
+      final matchKelas =
+          _selectedKelasId == 'Semua' || s.namaKelas == _selectedKelasId;
 
       // Filter berdasarkan periode
       final matchPeriode =
@@ -117,13 +78,6 @@ class _DataSiswaPageState extends State<DataSiswaPage> {
       // Data ditampilkan jika semua kondisi terpenuhi
       return matchNama && matchKelas && matchPeriode;
     }).toList();
-  }
-
-  @override
-  void dispose() {
-    _searchController.dispose();
-
-    super.dispose();
   }
 
   // widget utama halaman data siswa
@@ -139,33 +93,36 @@ class _DataSiswaPageState extends State<DataSiswaPage> {
             // header
             _buildHeader(context),
             Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+              child:
+                  _isLoading
+                      ? const Center(child: CircularProgressIndicator())
+                      : SingleChildScrollView(
+                        padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
 
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
 
-                  children: [
-                    const SizedBox(height: 16),
-                    // search bar
-                    _buildSearchBar(),
+                          children: [
+                            const SizedBox(height: 16),
+                            // search bar
+                            _buildSearchBar(),
 
-                    const SizedBox(height: 12),
-                    // filter untuk kelas dan periode
-                    _buildFilterRow(),
+                            const SizedBox(height: 12),
+                            // filter untuk kelas dan periode
+                            _buildFilterRow(),
 
-                    const SizedBox(height: 16),
-                    // filter data siswa dan tampilkan dalam bentuk card
-                    ..._filteredSiswa.map((s) => _buildSiswaCard(s)),
-                    // Jika data kosong maka tampil empty state
-                    if (_filteredSiswa.isEmpty) _buildEmptyState(),
+                            const SizedBox(height: 16),
+                            // filter data siswa dan tampilkan dalam bentuk card
+                            ..._filteredSiswa.map((s) => _buildSiswaCard(s)),
+                            // Jika data kosong maka tampil empty state
+                            if (_filteredSiswa.isEmpty) _buildEmptyState(),
 
-                    const SizedBox(height: 16),
-                    // catatan footer
-                    _buildFooterNote(),
-                  ],
-                ),
-              ),
+                            const SizedBox(height: 16),
+                            // catatan footer
+                            _buildFooterNote(),
+                          ],
+                        ),
+                      ),
             ),
           ],
         ),
@@ -274,16 +231,66 @@ class _DataSiswaPageState extends State<DataSiswaPage> {
 
   // widget filter untuk kelas dan periode
   Widget _buildFilterRow() {
+    // Buat list unik berdasarkan nama_kelas
+    final seen = <String>{};
+    final kelasItems = <Map<String, dynamic>>[
+      {'nama_kelas': 'Semua'},
+    ];
+    for (final k in _kelasList) {
+      final nama = k['nama_kelas'] as String;
+      if (seen.add(nama)) {
+        kelasItems.add({'nama_kelas': nama});
+      }
+    }
+
+    // Buat list periode unik dari data siswa
+    final periodeSet = <String>{'Semua'};
+    for (final s in _siswaList) {
+      if (s.periode != '-') periodeSet.add(s.periode);
+    }
+    final periodeItems = periodeSet.toList();
+
     return Row(
       children: [
         // Dropdown kelas
         Expanded(
-          child: _buildDropdown(
-            value: _selectedKelas,
-            items: _kelasList,
-
-            // Update kelas terpilih
-            onChanged: (val) => setState(() => _selectedKelas = val!),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(10),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.04),
+                  blurRadius: 6,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: DropdownButtonHideUnderline(
+              child: DropdownButton<String>(
+                value: _selectedKelasId,
+                isExpanded: true,
+                icon: const Icon(
+                  Icons.keyboard_arrow_down_rounded,
+                  color: Colors.grey,
+                ),
+                items:
+                    kelasItems.map((k) {
+                      return DropdownMenuItem<String>(
+                        value: k['nama_kelas'] as String,
+                        child: Text(
+                          k['nama_kelas'] as String,
+                          style: const TextStyle(
+                            fontSize: 13,
+                            fontFamily: 'Poppins',
+                          ),
+                        ),
+                      );
+                    }).toList(),
+                onChanged: (val) => setState(() => _selectedKelasId = val!),
+              ),
+            ),
           ),
         ),
 
@@ -291,68 +298,50 @@ class _DataSiswaPageState extends State<DataSiswaPage> {
 
         // Dropdown periode
         Expanded(
-          child: _buildDropdown(
-            value: _selectedPeriode,
-            items: _periodeList,
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12),
 
-            // Update periode terpilih
-            onChanged: (val) => setState(() => _selectedPeriode = val!),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(10),
+
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.04),
+                  blurRadius: 6,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+
+            child: DropdownButtonHideUnderline(
+              child: DropdownButton<String>(
+                value: _selectedPeriode,
+                isExpanded: true,
+                icon: const Icon(
+                  Icons.keyboard_arrow_down_rounded,
+                  color: Colors.grey,
+                ),
+                items:
+                    periodeItems.map((e) {
+                      return DropdownMenuItem<String>(
+                        value: e,
+
+                        child: Text(
+                          e,
+                          style: const TextStyle(
+                            fontSize: 13,
+                            fontFamily: 'Poppins',
+                          ),
+                        ),
+                      );
+                    }).toList(),
+                onChanged: (val) => setState(() => _selectedPeriode = val!),
+              ),
+            ),
           ),
         ),
       ],
-    );
-  }
-
-  // widget dropdown yang digunakan untuk filter kelas dan periode
-  Widget _buildDropdown({
-    required String value,
-    required List<String> items,
-    required ValueChanged<String?> onChanged,
-  }) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12),
-
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(10),
-
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.04),
-            blurRadius: 6,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-
-      child: DropdownButtonHideUnderline(
-        child: DropdownButton<String>(
-          value: value,
-
-          // List item dropdown
-          items:
-              items.map((e) {
-                return DropdownMenuItem(
-                  value: e,
-
-                  child: Text(
-                    e,
-                    style: const TextStyle(fontSize: 13, fontFamily: 'Poppins'),
-                  ),
-                );
-              }).toList(),
-
-          onChanged: onChanged,
-
-          // Icon dropdown
-          icon: const Icon(
-            Icons.keyboard_arrow_down_rounded,
-            color: Colors.grey,
-          ),
-
-          isExpanded: true,
-        ),
-      ),
     );
   }
 
@@ -411,7 +400,7 @@ class _DataSiswaPageState extends State<DataSiswaPage> {
             // Nama siswa
             Expanded(
               child: Text(
-                siswa.nama,
+                siswa.namaSiswa,
 
                 style: const TextStyle(fontSize: 14, fontFamily: 'Poppins'),
               ),

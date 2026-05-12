@@ -36,7 +36,7 @@ class DetailSiswaPage extends StatelessWidget {
                       // list data informasi
                       rows: [
                         // kelas siswa
-                        _InfoRow(label: 'Kelas', value: siswa.kelas),
+                        _InfoRow(label: 'Kelas', value: siswa.namaKelas),
 
                         // Periode ajaran
                         _InfoRow(label: 'Periode', value: siswa.periode),
@@ -173,7 +173,7 @@ class DetailSiswaPage extends StatelessWidget {
               children: [
                 // Nama siswa
                 Text(
-                  siswa.nama,
+                  siswa.namaSiswa,
 
                   style: const TextStyle(
                     fontSize: 16,
@@ -186,7 +186,7 @@ class DetailSiswaPage extends StatelessWidget {
 
                 // Nomor induk siswa
                 Text(
-                  'NIS · ${siswa.nis}',
+                  'NIS · -',
 
                   style: const TextStyle(
                     fontSize: 12,
