@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'dart:io';
+import 'package:image_picker/image_picker.dart';
 
 class BuatLaporanPage extends StatefulWidget {
   const BuatLaporanPage({super.key});
@@ -19,6 +21,17 @@ class _BuatLaporanPageState extends State<BuatLaporanPage> {
 
   // Menyimpan tanggal laporan yang dipilih
   DateTime? _tanggalLaporan;
+  // Menyimpan file gambar yang dipilih
+  File? _selectedImage;
+  final ImagePicker _picker = ImagePicker();
+  Future<void> _pickImage() async {
+    final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
+    if (image != null) {
+      setState(() {
+        _selectedImage = File(image.path);
+      });
+    }
+  }
 
   @override
   void dispose() {
@@ -292,42 +305,47 @@ class _BuatLaporanPageState extends State<BuatLaporanPage> {
 
   // card untuk upload foto kegiatan literasi membaca anak
   Widget _buildFotoCard() {
-    // Card upload foto
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(20),
+    // Card upload foto dengan GestureDetector agar bisa diklik untuk memilih gambar
+    return GestureDetector(
+      onTap: _pickImage,
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(14),
+        ),
 
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(18),
+        child: Column(
+          children: [
+            Row(
+              children: const [
+                Icon(Icons.camera_alt_outlined, color: Color(0xFF185FA5)),
+                SizedBox(width: 12),
 
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.04),
-            blurRadius: 6,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-
-      child: const Row(
-        children: [
-          // Icon kamera
-          Icon(Icons.camera_alt_outlined, color: Color(0xFF185FA5)),
-
-          SizedBox(width: 14),
-
-          // Text placeholder upload foto
-          Text(
-            'Unggah Foto Kegiatan',
-
-            style: TextStyle(
-              fontSize: 16,
-              color: Colors.grey,
-              fontFamily: 'Poppins',
+                // Text placeholder upload foto
+                Text(
+                  'Unggah Foto Kegiatan',
+                  style: TextStyle(fontFamily: 'Poppins'),
+                ),
+              ],
             ),
-          ),
-        ],
+
+            if (_selectedImage != null) ...[
+              const SizedBox(height: 12),
+              // Menampilkan gambar yang sudah dipilih
+              ClipRRect(
+                borderRadius: BorderRadius.circular(12),
+                child: Image.file(
+                  _selectedImage!,
+                  height: 180,
+                  width: double.infinity,
+                  fit: BoxFit.cover,
+                ),
+              ),
+            ],
+          ],
+        ),
       ),
     );
   }
