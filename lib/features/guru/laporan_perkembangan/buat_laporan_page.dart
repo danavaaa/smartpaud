@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'dart:io';
 import 'package:image_picker/image_picker.dart';
+import 'preview_laporan_page.dart';
 
 class BuatLaporanPage extends StatefulWidget {
   const BuatLaporanPage({super.key});
@@ -13,25 +14,22 @@ class BuatLaporanPage extends StatefulWidget {
 // State dari halaman BuatLaporanPage
 class _BuatLaporanPageState extends State<BuatLaporanPage> {
   final TextEditingController _catatanCtrl = TextEditingController();
-  // List data dummy siswa untuk dropdown
-  final List<String> _siswaList = ['Andi', 'Budi', 'Citra', 'Dina'];
 
-  // Menyimpan siswa yang dipilih
-  String? _selectedSiswa;
+  // Dummy data siswa
+  final List<Map<String, String>> _siswaList = [
+    {'id': '1', 'nama': 'Andi', 'kelas': 'Kelas A1'},
+    {'id': '2', 'nama': 'Budi', 'kelas': 'Kelas A1'},
+    {'id': '3', 'nama': 'Citra', 'kelas': 'Kelas A1'},
+    {'id': '4', 'nama': 'Dina', 'kelas': 'Kelas A1'},
+  ];
 
-  // Menyimpan tanggal laporan yang dipilih
+  Map<String, String>? _selectedSiswa;
   DateTime? _tanggalLaporan;
   // Menyimpan file gambar yang dipilih
   File? _selectedImage;
+  bool _isLoading = false;
+
   final ImagePicker _picker = ImagePicker();
-  Future<void> _pickImage() async {
-    final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
-    if (image != null) {
-      setState(() {
-        _selectedImage = File(image.path);
-      });
-    }
-  }
 
   @override
   void dispose() {
@@ -39,7 +37,15 @@ class _BuatLaporanPageState extends State<BuatLaporanPage> {
     super.dispose();
   }
 
-  // pilih tanggal
+  // Pilih foto dari galeri
+  Future<void> _pickImage() async {
+    final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
+    if (image != null) {
+      setState(() => _selectedImage = File(image.path));
+    }
+  }
+
+  // Buka date picker
   Future<void> _pilihTanggal() async {
     // Menampilkan dialog kalender
     final picked = await showDatePicker(
@@ -61,10 +67,72 @@ class _BuatLaporanPageState extends State<BuatLaporanPage> {
     // Jika user memilih tanggal
     if (picked != null) {
       // Update state agar UI berubah
-      setState(() {
-        _tanggalLaporan = picked;
-      });
+      setState(() => _tanggalLaporan = picked);
     }
+  }
+
+  // Validasi lalu navigasi ke preview
+  Future<void> _generateAi() async {
+    if (_selectedSiswa == null) {
+      _snackbar('Pilih siswa terlebih dahulu');
+      return;
+    }
+    if (_tanggalLaporan == null) {
+      _snackbar('Pilih tanggal laporan');
+      return;
+    }
+    if (_catatanCtrl.text.trim().isEmpty) {
+      _snackbar('Isi catatan literasi membaca terlebih dahulu');
+      return;
+    }
+
+    setState(() => _isLoading = true);
+
+    // Simulasi delay AI
+    await Future.delayed(const Duration(seconds: 2));
+
+    // Hasil simulasi AI
+    final namaSiswa = _selectedSiswa!['nama']!;
+    final ringkasan =
+        'Berdasarkan catatan guru, $namaSiswa menunjukkan '
+        'perkembangan literasi membaca yang positif. '
+        '${_catatanCtrl.text.trim()}';
+
+    const rekomendasi =
+        '1. Bacakan buku cerita bergambar setiap hari minimal 15 menit.\n'
+        '2. Ajak anak menunjuk dan menyebut huruf di lingkungan sekitar.\n'
+        '3. Gunakan kartu huruf untuk mengenalkan bunyi huruf.\n'
+        '4. Beri pujian ketika anak berhasil mengenali kata baru.\n'
+        '5. Libatkan anak dalam kegiatan menulis sederhana.';
+
+    if (!mounted) return;
+    setState(() => _isLoading = false);
+    // Navigasi ke halaman preview dengan membawa data yang diperlukan
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder:
+            (_) => PreviewLaporanPage(
+              idSiswa: _selectedSiswa!['id']!,
+              namaSiswa: _selectedSiswa!['nama']!,
+              namaKelas: _selectedSiswa!['kelas']!,
+              tanggalLaporan: DateFormat('yyyy-MM-dd').format(_tanggalLaporan!),
+              tanggalDisplay: DateFormat(
+                'dd MMMM yyyy',
+                'id_ID',
+              ).format(_tanggalLaporan!),
+              catatanLiterasi: _catatanCtrl.text.trim(),
+              ringkasanAi: ringkasan,
+              rekomendasiAi: rekomendasi,
+              imageFile: _selectedImage,
+            ),
+      ),
+    );
+  }
+
+  // Menampilkan snackbar untuk pesan error atau informasi
+  void _snackbar(String msg) {
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
   }
 
   @override
@@ -120,10 +188,7 @@ class _BuatLaporanPageState extends State<BuatLaporanPage> {
         children: [
           // Tombol kembali
           GestureDetector(
-            onTap: () {
-              // Kembali ke halaman sebelumnya
-              Navigator.pop(context);
-            },
+            onTap: () => Navigator.pop(context),
 
             child: const Icon(Icons.chevron_left_rounded, size: 30),
           ),
@@ -198,7 +263,7 @@ class _BuatLaporanPageState extends State<BuatLaporanPage> {
 
             child: DropdownButtonHideUnderline(
               // Menghilangkan underline bawaan dropdown
-              child: DropdownButton<String>(
+              child: DropdownButton<Map<String, String>>(
                 // Value siswa yang dipilih
                 value: _selectedSiswa,
 
@@ -221,23 +286,16 @@ class _BuatLaporanPageState extends State<BuatLaporanPage> {
                 // Generate item dropdown dari list siswa
                 items:
                     _siswaList.map((siswa) {
-                      return DropdownMenuItem(
+                      return DropdownMenuItem<Map<String, String>>(
                         value: siswa,
 
                         child: Text(
-                          siswa,
+                          siswa['nama']!,
                           style: const TextStyle(fontFamily: 'Poppins'),
                         ),
                       );
                     }).toList(),
-
-                // Saat dropdown berubah
-                onChanged: (value) {
-                  // Simpan value siswa yang dipilih
-                  setState(() {
-                    _selectedSiswa = value;
-                  });
-                },
+                onChanged: (val) => setState(() => _selectedSiswa = val),
               ),
             ),
           ),
@@ -314,8 +372,14 @@ class _BuatLaporanPageState extends State<BuatLaporanPage> {
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(14),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.04),
+              blurRadius: 6,
+              offset: const Offset(0, 2),
+            ),
+          ],
         ),
-
         child: Column(
           children: [
             Row(
@@ -438,11 +502,8 @@ class _BuatLaporanPageState extends State<BuatLaporanPage> {
             height: 52,
 
             child: OutlinedButton(
-              // Action tombol batal
-              onPressed: () {
-                Navigator.pop(context);
-              },
-
+              // Aksi ketika tombol batal ditekan
+              onPressed: () => Navigator.pop(context),
               style: OutlinedButton.styleFrom(
                 backgroundColor: const Color(0xFFF1F1EB),
 
@@ -474,9 +535,8 @@ class _BuatLaporanPageState extends State<BuatLaporanPage> {
             height: 52,
 
             child: ElevatedButton(
-              // Action tombol generate
-              onPressed: () {},
-
+              // Aksi ketika tombol generate ai ditekan
+              onPressed: _isLoading ? null : _generateAi,
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF185FA5),
 
@@ -485,15 +545,25 @@ class _BuatLaporanPageState extends State<BuatLaporanPage> {
                 ),
               ),
 
-              child: const Text(
-                'Generate AI',
+              child:
+                  _isLoading
+                      ? const SizedBox(
+                        width: 22,
+                        height: 22,
+                        child: CircularProgressIndicator(
+                          color: Colors.white,
+                          strokeWidth: 2.5,
+                        ),
+                      )
+                      : const Text(
+                        'Generate AI',
 
-                style: TextStyle(
-                  fontSize: 18,
-                  color: Colors.white,
-                  fontFamily: 'Poppins',
-                ),
-              ),
+                        style: TextStyle(
+                          fontSize: 18,
+                          color: Colors.white,
+                          fontFamily: 'Poppins',
+                        ),
+                      ),
             ),
           ),
         ),
