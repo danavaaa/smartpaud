@@ -3,6 +3,7 @@ import 'package:intl/intl.dart';
 import 'dart:io';
 import 'package:image_picker/image_picker.dart';
 import 'preview_laporan_page.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class BuatLaporanPage extends StatefulWidget {
   const BuatLaporanPage({super.key});
@@ -15,15 +16,35 @@ class BuatLaporanPage extends StatefulWidget {
 class _BuatLaporanPageState extends State<BuatLaporanPage> {
   final TextEditingController _catatanCtrl = TextEditingController();
 
-  // Dummy data siswa
-  final List<Map<String, String>> _siswaList = [
-    {'id': '1', 'nama': 'Andi', 'kelas': 'Kelas A1'},
-    {'id': '2', 'nama': 'Budi', 'kelas': 'Kelas A1'},
-    {'id': '3', 'nama': 'Citra', 'kelas': 'Kelas A1'},
-    {'id': '4', 'nama': 'Dina', 'kelas': 'Kelas A1'},
-  ];
+  // data siswa
+  List<Map<String, dynamic>> _siswaList = [];
+  Map<String, dynamic>? _selectedSiswa;
+  bool _isLoadingSiswa = true;
 
-  Map<String, String>? _selectedSiswa;
+  @override
+  void initState() {
+    super.initState();
+    _loadSiswa();
+  }
+
+  // Memuat data siswa dari Supabase
+  Future<void> _loadSiswa() async {
+    try {
+      final response = await Supabase.instance.client
+          .from('siswa')
+          .select('id, nama_siswa, kelas(nama_kelas)')
+          .eq('is_active', true)
+          .order('nama_siswa');
+
+      setState(() {
+        _siswaList = List<Map<String, dynamic>>.from(response);
+        _isLoadingSiswa = false;
+      });
+    } catch (e) {
+      setState(() => _isLoadingSiswa = false);
+    }
+  }
+
   DateTime? _tanggalLaporan;
   // Menyimpan file gambar yang dipilih
   File? _selectedImage;
@@ -91,8 +112,13 @@ class _BuatLaporanPageState extends State<BuatLaporanPage> {
     // Simulasi delay AI
     await Future.delayed(const Duration(seconds: 2));
 
-    // Hasil simulasi AI
-    final namaSiswa = _selectedSiswa!['nama']!;
+    // Ambil data siswa yang diperlukan untuk laporan
+    final namaSiswa = _selectedSiswa!['nama_siswa'] as String;
+    final idSiswa = _selectedSiswa!['id'] as String;
+    final kelas = _selectedSiswa!['kelas'] as Map<String, dynamic>? ?? {};
+    final namaKelas = kelas['nama_kelas'] as String? ?? '-';
+
+    // Simulasi hasil AI
     final ringkasan =
         'Berdasarkan catatan guru, $namaSiswa menunjukkan '
         'perkembangan literasi membaca yang positif. '
@@ -113,9 +139,9 @@ class _BuatLaporanPageState extends State<BuatLaporanPage> {
       MaterialPageRoute(
         builder:
             (_) => PreviewLaporanPage(
-              idSiswa: _selectedSiswa!['id']!,
-              namaSiswa: _selectedSiswa!['nama']!,
-              namaKelas: _selectedSiswa!['kelas']!,
+              idSiswa: idSiswa,
+              namaSiswa: namaSiswa,
+              namaKelas: namaKelas,
               tanggalLaporan: DateFormat('yyyy-MM-dd').format(_tanggalLaporan!),
               tanggalDisplay: DateFormat(
                 'dd MMMM yyyy',
@@ -236,71 +262,40 @@ class _BuatLaporanPageState extends State<BuatLaporanPage> {
         ],
       ),
 
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Nama kelas
-          const Text(
-            'Kelas A1',
+      child:
+          _isLoadingSiswa
+              ? const Center(child: CircularProgressIndicator())
+              : DropdownButtonHideUnderline(
+                child: DropdownButton<Map<String, dynamic>>(
+                  value: _selectedSiswa,
+                  hint: const Text(
+                    'Pilih Siswa',
 
-            style: TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w600,
-              fontFamily: 'Poppins',
-            ),
-          ),
-
-          const SizedBox(height: 16),
-
-          // Container dropdown
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-
-            decoration: BoxDecoration(
-              color: const Color(0xFFF1F1EB),
-              borderRadius: BorderRadius.circular(14),
-            ),
-
-            child: DropdownButtonHideUnderline(
-              // Menghilangkan underline bawaan dropdown
-              child: DropdownButton<Map<String, String>>(
-                // Value siswa yang dipilih
-                value: _selectedSiswa,
-
-                // Hint ketika belum memilih
-                hint: const Text(
-                  'Pilih Siswa',
-
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: Colors.grey,
-                    fontFamily: 'Poppins',
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: Colors.grey,
+                      fontFamily: 'Poppins',
+                    ),
                   ),
+
+                  isExpanded: true,
+
+                  icon: const Icon(Icons.keyboard_arrow_down_rounded),
+
+                  items:
+                      _siswaList.map((siswa) {
+                        return DropdownMenuItem<Map<String, dynamic>>(
+                          value: siswa,
+
+                          child: Text(
+                            siswa['nama_siswa'] as String,
+                            style: const TextStyle(fontFamily: 'Poppins'),
+                          ),
+                        );
+                      }).toList(),
+                  onChanged: (val) => setState(() => _selectedSiswa = val),
                 ),
-
-                // Dropdown memenuhi lebar container
-                isExpanded: true,
-
-                icon: const Icon(Icons.keyboard_arrow_down_rounded),
-
-                // Generate item dropdown dari list siswa
-                items:
-                    _siswaList.map((siswa) {
-                      return DropdownMenuItem<Map<String, String>>(
-                        value: siswa,
-
-                        child: Text(
-                          siswa['nama']!,
-                          style: const TextStyle(fontFamily: 'Poppins'),
-                        ),
-                      );
-                    }).toList(),
-                onChanged: (val) => setState(() => _selectedSiswa = val),
               ),
-            ),
-          ),
-        ],
-      ),
     );
   }
 

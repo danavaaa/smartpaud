@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'dart:io';
+import 'laporan_service.dart';
 
 // HAlaman preview hasil AI
 class PreviewLaporanPage extends StatefulWidget {
@@ -40,22 +41,41 @@ class _PreviewLaporanPageState extends State<PreviewLaporanPage> {
   Future<void> _simpanLaporan() async {
     // Aktifkan loading
     setState(() => _isSaving = true);
-    await Future.delayed(const Duration(seconds: 1));
+    // Simpan laporan ke database
+    try {
+      final service = LaporanService();
 
-    // Cek apakah widget masih aktif
-    if (!mounted) return;
+      await service.simpanLaporan(
+        idSiswa: widget.idSiswa,
+        tanggalLaporan: widget.tanggalLaporan,
+        catatanLiterasi: widget.catatanLiterasi,
+        ringkasanAi: widget.ringkasanAi,
+        rekomendasiAi: widget.rekomendasiAi,
+      );
 
-    // Menampilkan snackbar sukses
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Laporan berhasil disimpan!'),
+      if (!mounted) return;
 
-        backgroundColor: Color(0xFF3B6D11),
-      ),
-    );
+      // Menampilkan snackbar sukses
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Laporan berhasil disimpan!'),
 
-    // Kembali ke halaman pertama/dashboard
-    Navigator.popUntil(context, (route) => route.isFirst);
+          backgroundColor: Color(0xFF3B6D11),
+        ),
+      );
+
+      // Kembali ke halaman pertama/dashboard
+      Navigator.popUntil(context, (route) => route.isFirst);
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _isSaving = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Gagal menyimpan: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
   }
 
   // Inisial nama siswa untuk avatar
