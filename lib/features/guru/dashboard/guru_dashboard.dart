@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../data_siswa/data_siswa_page.dart';
 import '../laporan_perkembangan/buat_laporan_page.dart';
+import '../riwayat_laporan/riwayat_laporan_page.dart';
 
 // Halaman dashboard untuk guru
 class GuruDashboardPage extends StatelessWidget {
@@ -67,7 +68,13 @@ class GuruDashboardPage extends StatelessWidget {
                 context,
                 icon: Icons.history_rounded,
                 label: 'Riwayat Laporan',
-                onTap: () {},
+                onTap:
+                    () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const RiwayatLaporanPage(),
+                      ),
+                    ),
               ),
 
               // menu profile
