@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../riwayat_laporan/riwayat_laporan_model.dart';
+import 'detail_laporan_page.dart';
 
 // halaman riwayat laporan guru
 class RiwayatLaporanPage extends StatefulWidget {
@@ -360,7 +361,13 @@ class _RiwayatLaporanPageState extends State<RiwayatLaporanPage> {
   Widget _buildLaporanCard(LaporanModel laporan) {
     return GestureDetector(
       // aksi saat card ditekan
-      onTap: () {},
+      onTap:
+          () => Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => DetailLaporanPage(laporan: laporan),
+            ),
+          ),
 
       child: Container(
         margin: const EdgeInsets.only(bottom: 10),
