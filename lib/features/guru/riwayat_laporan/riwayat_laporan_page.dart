@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../riwayat_laporan/riwayat_laporan_model.dart';
 import 'detail_laporan_page.dart';
+import 'riwayat_laporan_service.dart';
 
 // halaman riwayat laporan guru
 class RiwayatLaporanPage extends StatefulWidget {
@@ -22,64 +23,10 @@ class _RiwayatLaporanPageState extends State<RiwayatLaporanPage> {
   // Filter periode default
   String _selectedPeriode = 'Semua';
 
-  // Data dummy laporan
-  final List<LaporanModel> _laporanList = [
-    LaporanModel(
-      id: '1',
-
-      namaSiswa: 'Rasya Atallah',
-
-      namaKelas: 'Kelas B',
-
-      tanggal: '16 Mei 2026',
-
-      catatanLiterasi: 'Anak lancar membaca halaman 10 tanpa bantuan guru.',
-
-      ringkasanAi:
-          'Rasya menunjukkan perkembangan literasi membaca yang sangat positif.',
-
-      rekomendasiAi:
-          '1. Bacakan buku cerita bergambar setiap hari minimal 15 menit.\n'
-          '2. Ajak anak menunjuk dan menyebut huruf di lingkungan sekitar.',
-    ),
-
-    LaporanModel(
-      id: '2',
-
-      namaSiswa: 'Syakila Ramadhani',
-
-      namaKelas: 'Kelas A',
-
-      tanggal: '14 Mei 2026',
-
-      catatanLiterasi: 'Anak mulai mengenal huruf vokal dengan baik.',
-
-      ringkasanAi: 'Syakila menunjukkan kemajuan dalam pengenalan huruf vokal.',
-
-      rekomendasiAi:
-          '1. Gunakan kartu huruf untuk mengenalkan bunyi huruf.\n'
-          '2. Beri pujian ketika anak berhasil mengenali kata baru.',
-    ),
-
-    LaporanModel(
-      id: '3',
-
-      namaSiswa: 'Kirana Larasati',
-
-      namaKelas: 'Kelas A',
-
-      tanggal: '10 Mei 2026',
-
-      catatanLiterasi: 'Anak dapat membaca kata-kata sederhana dengan baik.',
-
-      ringkasanAi:
-          'Kirana menunjukkan kemampuan membaca kata sederhana yang baik.',
-
-      rekomendasiAi:
-          '1. Latih membaca buku bergambar sederhana.\n'
-          '2. Libatkan anak dalam kegiatan menulis sederhana.',
-    ),
-  ];
+  // Service untuk mengambil data laporan
+  final _service = RiwayatLaporanService();
+  List<LaporanModel> _laporanList = [];
+  bool _isLoading = true;
 
   // list kelas unik dari data laporan untuk dropdown filter
   List<String> get _kelasItems {
@@ -130,34 +77,65 @@ class _RiwayatLaporanPageState extends State<RiwayatLaporanPage> {
             _buildHeader(context),
 
             Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
+              child:
+                  _isLoading // Tampilkan loading indicator saat data sedang dimuat
+                      ? const Center(child: CircularProgressIndicator())
+                      : SingleChildScrollView(
+                        padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
 
-                child: Column(
-                  children: [
-                    // Search bar
-                    _buildSearchBar(),
+                        child: Column(
+                          children: [
+                            // Search bar
+                            _buildSearchBar(),
 
-                    const SizedBox(height: 10),
+                            const SizedBox(height: 10),
 
-                    // Filter dropdown
-                    _buildFilterRow(),
+                            // Filter dropdown
+                            _buildFilterRow(),
 
-                    const SizedBox(height: 14),
+                            const SizedBox(height: 14),
 
-                    // Generate card laporan
-                    ..._filtered.map((l) => _buildLaporanCard(l)),
+                            // Generate card laporan
+                            ..._filtered.map((l) => _buildLaporanCard(l)),
 
-                    // Empty state jika data kosong
-                    if (_filtered.isEmpty) _buildEmptyState(),
-                  ],
-                ),
-              ),
+                            // Empty state jika data kosong
+                            if (_filtered.isEmpty) _buildEmptyState(),
+                          ],
+                        ),
+                      ),
             ),
           ],
         ),
       ),
     );
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _loadData();
+  }
+
+  // method untuk mengambil data laporan dari service dan mengupdate state halaman
+  Future<void> _loadData() async {
+    setState(() => _isLoading = true);
+    try {
+      final data = await _service.getLaporan();
+      // Ambil data laporan dari service
+      setState(() {
+        _laporanList = data;
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() => _isLoading = false);
+      // Hentikan loading jika terjadi error
+      if (mounted) {
+        // Tampilkan pesan error jika gagal mengambil data
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Gagal memuat data: $e')));
+      }
+    }
   }
 
   // header halaman dengan tombol kembali dan judul

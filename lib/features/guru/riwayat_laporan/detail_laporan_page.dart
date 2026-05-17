@@ -206,6 +206,39 @@ class DetailLaporanPage extends StatelessWidget {
 
   // card foto kegiatan
   Widget _buildFotoCard() {
+    if (laporan.fotoUrl != null && laporan.fotoUrl!.isNotEmpty) {
+      // Jika ada URL foto yang valid, coba tampilkan gambarnya
+      return Container(
+        width: double.infinity,
+        height: 180,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(14),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.04),
+              blurRadius: 6,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: ClipRRect(
+          // Pastikan foto juga memiliki border radius yang sama
+          borderRadius: BorderRadius.circular(14),
+          child: Image.network(
+            laporan.fotoUrl!,
+            fit: BoxFit.cover,
+            errorBuilder: (_, __, ___) => _buildFotoPlaceholder(),
+            // Tampilkan placeholder jika gambar gagal dimuat
+          ),
+        ),
+      );
+    }
+
+    // Jika tidak ada foto, tampilkan placeholder
+    return _buildFotoPlaceholder();
+  }
+
+  Widget _buildFotoPlaceholder() {
     return Container(
       width: double.infinity,
 
@@ -226,35 +259,28 @@ class DetailLaporanPage extends StatelessWidget {
           ),
         ],
       ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
 
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(14),
+        children: [
+          // Icon placeholder
+          Icon(Icons.image_outlined, size: 48, color: Colors.grey.shade400),
 
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+          const SizedBox(height: 8),
 
-          children: [
-            // Icon placeholder
-            Icon(Icons.image_outlined, size: 48, color: Colors.grey.shade400),
+          // Text utama
+          Text(
+            'Foto Kegiatan',
 
-            const SizedBox(height: 8),
+            style: TextStyle(
+              fontSize: 13,
 
-            // Text utama
-            Text(
-              'Foto Kegiatan',
+              color: Colors.grey.shade400,
 
-              style: TextStyle(
-                fontSize: 13,
-
-                color: Colors.grey.shade400,
-
-                fontFamily: 'Poppins',
-              ),
+              fontFamily: 'Poppins',
             ),
-
-            const SizedBox(height: 4),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
