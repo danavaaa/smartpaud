@@ -1,8 +1,56 @@
 import 'package:flutter/material.dart';
+import 'profile_model.dart';
+import 'profile_service.dart';
 
 // Halaman profile guru
-class ProfilePage extends StatelessWidget {
+class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
+
+  // state utama halaman profile
+  @override
+  State<ProfilePage> createState() => _ProfilePageState();
+}
+
+class _ProfilePageState extends State<ProfilePage> {
+  final _service = ProfileService();
+  // menyimpan data profile guru
+  ProfileModel? _profile;
+  // menyimpan dftar kelas yang diampu
+  List<KelasModel> _kelasList = [];
+  // status loading
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadProfile(); // memuat data profile saat halaman dibuka
+  }
+
+  // function untuk mengambil data profile dan kelas dari database
+  Future<void> _loadProfile() async {
+    setState(() => _isLoading = true); // tampilkan loading
+    try {
+      // ambil data profile berdasarkan email
+      final profile = await _service.getProfile('guru@smartpaud.com');
+      // ambil data kelas berdasarkan id_guru
+      final kelas = await _service.getKelasDiampu(profile.id);
+
+      setState(() {
+        _profile = profile; // simpan profile
+        _kelasList = kelas; // simpan daftar kelas
+        _isLoading = false; // selesai loading
+      });
+    } catch (e) {
+      // handle eror
+      setState(() => _isLoading = false);
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+          // tampilkan snackbar eror
+        ).showSnackBar(SnackBar(content: Text('Gagal memuat profil: $e')));
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -17,28 +65,32 @@ class ProfilePage extends StatelessWidget {
             _buildHeader(context),
             // Konten utama halaman
             Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
+              child:
+                  _isLoading
+                      ? const Center(child: CircularProgressIndicator())
+                      : SingleChildScrollView(
+                        padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
 
-                child: Column(
-                  children: [
-                    // card avatar, nama, dan badge role
-                    _buildAvatarCard(),
+                        child: Column(
+                          children: [
+                            // card avatar, nama, dan badge role
+                            _buildAvatarCard(),
 
-                    const SizedBox(height: 12),
-                    // card informasi akun
-                    _buildInfoAkunCard(),
+                            const SizedBox(height: 12),
+                            // card informasi akun
+                            _buildInfoAkunCard(),
 
-                    const SizedBox(height: 12),
-                    // card daftar kelas yang diampu
-                    _buildKelasDiampuCard(),
+                            const SizedBox(height: 12),
+                            // card daftar kelas yang diampu
+                            _buildKelasDiampuCard(),
 
-                    const SizedBox(height: 12),
-                    // tombol logout
-                    _buildLogoutButton(context),
-                  ],
-                ),
-              ),
+                            const SizedBox(height: 12),
+                            // tombol logout
+                            _buildLogoutButton(context),
+                            const SizedBox(height: 8),
+                          ],
+                        ),
+                      ),
             ),
           ],
         ),
@@ -79,6 +131,7 @@ class ProfilePage extends StatelessWidget {
 
   // Card avatar, nama, dan badge role guru
   Widget _buildAvatarCard() {
+    final peran = _kelasList.isNotEmpty ? _kelasList.first.peranGuru : '-';
     return Container(
       width: double.infinity,
 
@@ -123,10 +176,10 @@ class ProfilePage extends StatelessWidget {
           ),
 
           const SizedBox(height: 12),
-          // nama guru dummy
-          const Text(
-            'Siti Rahmawati, M.Pd',
-            style: TextStyle(
+          // nama guru
+          Text(
+            _profile?.nama ?? '-',
+            style: const TextStyle(
               fontSize: 16,
 
               fontWeight: FontWeight.w600,
@@ -147,9 +200,9 @@ class ProfilePage extends StatelessWidget {
               borderRadius: BorderRadius.circular(20),
             ),
 
-            child: const Text(
-              'Guru Pendamping',
-              style: TextStyle(
+            child: Text(
+              peran,
+              style: const TextStyle(
                 fontSize: 12,
 
                 fontFamily: 'Poppins',
@@ -213,7 +266,7 @@ class ProfilePage extends StatelessWidget {
 
             label: 'Nama',
 
-            value: 'Siti Rahmawati',
+            value: _profile?.nama ?? '-',
           ),
 
           const Divider(height: 16, thickness: 0.5),
@@ -224,7 +277,7 @@ class ProfilePage extends StatelessWidget {
 
             label: 'Email',
 
-            value: 'siti@smartpaud.com',
+            value: _profile?.email ?? '-',
           ),
 
           const Divider(height: 16, thickness: 0.5),
@@ -235,18 +288,18 @@ class ProfilePage extends StatelessWidget {
 
             label: 'No. HP',
 
-            value: '0812-3456-7890',
+            value: _profile?.noHp ?? '-',
           ),
 
           const Divider(height: 16, thickness: 0.5),
 
           // status aktif guru
           _buildInfoRow(
-            icon: Icons.work_outline_rounded,
+            icon: Icons.verified_outlined,
 
             label: 'Status',
 
-            value: 'Aktif',
+            value: _profile?.statusText ?? '-',
           ),
         ],
       ),
@@ -299,24 +352,6 @@ class ProfilePage extends StatelessWidget {
 
   // card daftar kelas yang diampu oleh guru
   Widget _buildKelasDiampuCard() {
-    final List<Map<String, String>> kelasList = [
-      {
-        'nama': 'Kelas A1',
-
-        'peran': 'Wali Kelas',
-
-        'periode': '2024/2025 – Smstr 1',
-      },
-
-      {
-        'nama': 'Kelas B1',
-
-        'peran': 'Guru Pendamping',
-
-        'periode': '2024/2025 – Smstr 1',
-      },
-    ];
-
     return Container(
       width: double.infinity,
 
@@ -360,68 +395,78 @@ class ProfilePage extends StatelessWidget {
           const SizedBox(height: 12),
 
           // kelas yang diampu guru
-          ...kelasList.map(
-            (kelas) => Padding(
-              padding: const EdgeInsets.only(bottom: 8),
+          if (_kelasList.isEmpty)
+            const Text(
+              'Belum ada kelas yang diampu',
+              style: TextStyle(
+                fontSize: 12,
+                color: Colors.grey,
+                fontFamily: 'Poppins',
+              ),
+            )
+          else
+            ..._kelasList.map(
+              (k) => Padding(
+                padding: const EdgeInsets.only(bottom: 8),
 
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 10,
-                ),
-
-                decoration: BoxDecoration(
-                  color: Colors.white,
-
-                  border: Border.all(
-                    color: Colors.grey.withOpacity(0.5),
-
-                    width: 0.5,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 10,
                   ),
-                ),
 
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(
+                      color: Colors.grey.withOpacity(0.5),
 
-                        children: [
-                          // Nama kelas
-                          Text(
-                            kelas['nama']!,
-
-                            style: const TextStyle(
-                              fontSize: 13,
-
-                              fontWeight: FontWeight.w500,
-
-                              fontFamily: 'Poppins',
-                            ),
-                          ),
-
-                          const SizedBox(height: 2),
-
-                          // Role dan periode
-                          Text(
-                            '${kelas['peran']} · ${kelas['periode']}',
-
-                            style: const TextStyle(
-                              fontSize: 11,
-
-                              color: Colors.grey,
-
-                              fontFamily: 'Poppins',
-                            ),
-                          ),
-                        ],
-                      ),
+                      width: 0.5,
                     ),
-                  ],
+                  ),
+
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+
+                          children: [
+                            // Nama kelas
+                            Text(
+                              k.namaKelas,
+
+                              style: const TextStyle(
+                                fontSize: 13,
+
+                                fontWeight: FontWeight.w500,
+
+                                fontFamily: 'Poppins',
+                              ),
+                            ),
+
+                            const SizedBox(height: 2),
+
+                            // Role dan periode
+                            Text(
+                              '${k.peranGuru} · ${k.periode}',
+
+                              style: const TextStyle(
+                                fontSize: 11,
+
+                                color: Colors.grey,
+
+                                fontFamily: 'Poppins',
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
-          ),
         ],
       ),
     );
