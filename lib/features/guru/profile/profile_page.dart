@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'profile_model.dart';
 import 'profile_service.dart';
+import '../../auth/login_page.dart';
 
 // Halaman profile guru
 class ProfilePage extends StatefulWidget {
@@ -476,8 +477,69 @@ class _ProfilePageState extends State<ProfilePage> {
   Widget _buildLogoutButton(BuildContext context) {
     return GestureDetector(
       // aksi ketika tombol ditekan
-      onTap: () {},
+      onTap: () {
+        // Tampilkan dialog konfirmasi sebelum logout
+        showDialog(
+          context: context,
+          builder:
+              (ctx) => AlertDialog(
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                title: const Text(
+                  'Konfirmasi Logout',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    fontFamily: 'Poppins',
+                  ),
+                ),
+                content: const Text(
+                  'Apakah kamu yakin ingin keluar?',
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontFamily: 'Poppins',
+                    color: Colors.grey,
+                  ),
+                ),
+                actions: [
+                  // Tombol batal
+                  TextButton(
+                    onPressed: () => Navigator.pop(ctx),
+                    child: const Text(
+                      'Batal',
+                      style: TextStyle(
+                        fontFamily: 'Poppins',
+                        color: Colors.grey,
+                      ),
+                    ),
+                  ),
 
+                  // Tombol logout
+                  TextButton(
+                    onPressed: () {
+                      Navigator.pop(ctx); // tutup dialog
+
+                      // Kembali ke halaman login dan hapus semua route
+                      Navigator.pushAndRemoveUntil(
+                        context,
+                        MaterialPageRoute(builder: (_) => const LoginPage()),
+                        (route) => false,
+                      );
+                    },
+                    child: const Text(
+                      'Logout',
+                      style: TextStyle(
+                        fontFamily: 'Poppins',
+                        color: Color(0xFFA32D2D),
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+        );
+      },
       child: Container(
         width: double.infinity,
 
@@ -496,6 +558,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
           children: [
             // Text logout
+            SizedBox(width: 10),
             Text(
               'Logout',
 
