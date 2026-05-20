@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../riwayat_perkembangan/riwayat_perkembangan_page.dart';
 
 // Halaman dashboard orang tua
 class OrangTuaDashboardPage extends StatefulWidget {
@@ -89,7 +90,13 @@ class _OrangTuaDashboardPageState extends State<OrangTuaDashboardPage> {
               _buildMenuItem(
                 icon: Icons.description_outlined,
                 label: 'Riwayat Perkembangan',
-                onTap: () {},
+                onTap:
+                    () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const RiwayatPerkembanganPage(),
+                      ),
+                    ),
               ),
 
               // halaman profile orang tua
