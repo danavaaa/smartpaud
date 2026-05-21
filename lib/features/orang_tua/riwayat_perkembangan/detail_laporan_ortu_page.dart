@@ -1,25 +1,12 @@
 import 'package:flutter/material.dart';
+import 'riwayat_ortu_model.dart';
 
 class DetailLaporanOrtuPage extends StatelessWidget {
   // Data laporan yang dikirim dari halaman sebelumnya
-  final Map<String, dynamic> laporan;
+  final LaporanOrtuModel laporan;
 
   // Constructor menerima data laporan
   const DetailLaporanOrtuPage({super.key, required this.laporan});
-
-  // Helper untuk membuat inisial dari nama siswa
-  String _inisial(String nama) {
-    // Memisahkan nama berdasarkan spasi
-    final parts = nama.trim().split(' ');
-
-    // Jika nama lebih dari satu kata, ambil 2 huruf awal
-    if (parts.length >= 2) {
-      return '${parts[0][0]}${parts[1][0]}'.toUpperCase();
-    }
-
-    // Jika hanya satu kata, ambil 1 huruf awal
-    return parts[0][0].toUpperCase();
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -53,7 +40,7 @@ class DetailLaporanOrtuPage extends StatelessWidget {
                       title: 'Ringkasan Literasi Membaca',
 
                       // Mengambil data ringkasan dari laporan
-                      content: laporan['ringkasan'] ?? '-',
+                      content: laporan.ringkasanAi,
                     ),
                     const SizedBox(height: 12),
 
@@ -63,7 +50,7 @@ class DetailLaporanOrtuPage extends StatelessWidget {
                       title: 'Rekomendasi Stimulasi Lanjutan',
 
                       // Mengambil data rekomendasi dari laporan
-                      content: laporan['rekomendasi'] ?? '-',
+                      content: laporan.rekomendasiAi,
                     ),
                   ],
                 ),
@@ -137,7 +124,7 @@ class DetailLaporanOrtuPage extends StatelessWidget {
 
             child: Text(
               // Mengambil inisial dari nama siswa
-              _inisial(laporan['nama_siswa'] ?? '-'),
+              laporan.inisial,
 
               style: const TextStyle(
                 fontSize: 14,
@@ -157,7 +144,7 @@ class DetailLaporanOrtuPage extends StatelessWidget {
               children: [
                 // Nama siswa
                 Text(
-                  laporan['nama_siswa'] ?? '-',
+                  laporan.namaSiswa,
 
                   style: const TextStyle(
                     fontSize: 14,
@@ -170,7 +157,7 @@ class DetailLaporanOrtuPage extends StatelessWidget {
 
                 // Menampilkan nama kelas dan tanggal laporan
                 Text(
-                  '${laporan['nama_kelas'] ?? '-'} · ${laporan['tanggal'] ?? '-'}',
+                  '${laporan.namaKelas} · ${laporan.tanggal}',
 
                   style: const TextStyle(
                     fontSize: 11,
@@ -183,7 +170,7 @@ class DetailLaporanOrtuPage extends StatelessWidget {
           ),
 
           // Badge "Baru" jika laporan masih baru
-          if (laporan['isNew'] == true)
+          if (laporan.isNew)
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
 
@@ -210,11 +197,8 @@ class DetailLaporanOrtuPage extends StatelessWidget {
 
   // Widget card foto kegiatan
   Widget _buildFotoCard() {
-    // Mengambil URL foto dari data laporan
-    final String? fotoUrl = laporan['foto_url'];
-
     // Jika foto tersedia
-    if (fotoUrl != null && fotoUrl.isNotEmpty) {
+    if (laporan.fotoUrl != null && laporan.fotoUrl!.isNotEmpty) {
       return Container(
         width: double.infinity,
         height: 180,
@@ -236,7 +220,7 @@ class DetailLaporanOrtuPage extends StatelessWidget {
 
           child: Image.network(
             // Menampilkan gambar dari URL
-            fotoUrl,
+            laporan.fotoUrl!,
 
             fit: BoxFit.cover,
 

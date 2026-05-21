@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'riwayat_ortu_model.dart';
+import 'riwayat_ortu_service.dart';
 import 'detail_laporan_ortu_page.dart';
 
 // Halaman riwayat perkembangan orang tua
@@ -11,16 +13,23 @@ class RiwayatPerkembanganPage extends StatefulWidget {
 }
 
 class _RiwayatPerkembanganPageState extends State<RiwayatPerkembanganPage> {
-  // Dummy list anak
-  final List<Map<String, String>> _anakList = [
-    {'id': '1', 'nama': 'Richa'},
-    {'id': '2', 'nama': 'Richie'},
-  ];
+  // Instance service untuk mengambil data dari database
+  final _service = RiwayatLaporanOrtuService();
 
-  // Menyimpan anak yang sedang dipilih
-  Map<String, String>? _selectedAnak;
+  // Menyimpan daftar anak milik orang tua
+  List<AnakOrtuModel> _anakList = [];
+  // Menyimpan anak yang sedang dipilih pada dropdown
+  AnakOrtuModel? _selectedAnak;
 
-  // Dummy filter periode yang sedang dipilih
+  // Menyimpan daftar laporan perkembangan siswa
+  List<LaporanOrtuModel> _laporanList = [];
+
+  // Status loading saat data anak sedang diambil
+  bool _isLoadingAnak = true;
+
+  // Status loading saat data laporan sedang diambil
+  bool _isLoadingLaporan = false;
+  // Filter periode yang sedang dipilih
   String _selectedPeriode = 'Semua Periode';
 
   // List pilihan periode nanti diambil dari tabel periode ajaran
@@ -30,59 +39,84 @@ class _RiwayatPerkembanganPageState extends State<RiwayatPerkembanganPage> {
     '2024/2025 – Semester 2',
   ];
 
-  // Dummy data laporan perkembangan
-  final List<Map<String, dynamic>> _laporanList = [
-    {
-      'id': '1',
-      'nama_siswa': 'Richa',
-      'nama_kelas': 'Kelas A',
-      // Tanggal laporan dibuat
-      'tanggal': '20 Mei 2025',
-
-      // Preview singkat isi laporan
-      'preview': 'Anak dapat menggunting sesuai pola gambar dengan baik.',
-
-      // Ringkasan hasil analisis
-      'ringkasan':
-          'Berdasarkan catatan guru, anak menunjukkan perkembangan literasi membaca yang positif.',
-
-      // Rekomendasi tindak lanjut
-      'rekomendasi':
-          '1. Bacakan buku cerita bergambar setiap hari minimal 15 menit.\n2. Ajak anak menunjuk dan menyebut huruf di lingkungan sekitar.',
-
-      // Penanda laporan terbaru
-      'isNew': true,
-    },
-    {
-      'id': '2',
-      'nama_siswa': 'Richa',
-      'nama_kelas': 'Kelas A',
-      'tanggal': '19 Mei 2025',
-      'preview': 'Anak dapat menyebutkan angka 1 sampai 10 dengan urut.',
-      'ringkasan': 'Anak menunjukkan kemampuan literasi membaca yang baik.',
-      'rekomendasi':
-          '1. Latih membaca buku bergambar sederhana.\n2. Libatkan anak dalam kegiatan menulis sederhana.',
-      'isNew': false,
-    },
-    {
-      'id': '3',
-      'nama_siswa': 'Richa',
-      'nama_kelas': 'Kelas A',
-      'tanggal': '15 Mei 2025',
-      'preview': 'Anak mulai mengenal huruf vokal A, I, U, E, O.',
-      'ringkasan': 'Anak mulai mengenal huruf vokal dengan baik dan konsisten.',
-      'rekomendasi':
-          '1. Gunakan kartu huruf untuk mengenalkan bunyi huruf.\n2. Beri pujian ketika anak berhasil mengenali kata baru.',
-      'isNew': false,
-    },
-  ];
+  final String _emailOrangTua = 'ortu@smartpaud.com';
 
   @override
   void initState() {
     super.initState();
+    _loadAnak();
+  }
 
-    // Otomatis pilih anak pertama saat halaman dibuka
-    _selectedAnak = _anakList.first;
+  // Fungsi untuk mengambil daftar anak berdasarkan akun orang tua
+  Future<void> _loadAnak() async {
+    // Set loading anak menjadi true
+    setState(() => _isLoadingAnak = true);
+
+    try {
+      // Ambil id_orang_tua berdasarkan email login
+      final idOrangTua = await _service.getIdOrangTua(_emailOrangTua);
+
+      // Jika id_orang_tua tidak ditemukan
+      if (idOrangTua == null) {
+        // Matikan loading
+        setState(() => _isLoadingAnak = false);
+        return;
+      }
+
+      // Ambil daftar anak dari database
+      final list = await _service.getAnakList(idOrangTua);
+
+      // Update state setelah data berhasil didapat
+      setState(() {
+        _anakList = list;
+        _isLoadingAnak = false;
+
+        // Jika daftar anak tidak kosong
+        if (list.isNotEmpty) {
+          // Otomatis pilih anak aktif pertama
+          _selectedAnak = list.firstWhere(
+            (a) => a.isActive,
+
+            // Jika tidak ada yang aktif, pilih data pertama
+            orElse: () => list.first,
+          );
+
+          // Load laporan berdasarkan anak yang dipilih
+          _loadLaporan(_selectedAnak!.id);
+        }
+      });
+    } catch (e) {
+      // Jika error, matikan loading
+      setState(() => _isLoadingAnak = false);
+
+      // Cek apakah widget masih aktif
+      if (mounted) {
+        // Tampilkan pesan error
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Gagal memuat data: $e')));
+      }
+    }
+  }
+
+  // Function untuk mengambil daftar laporan berdasarkan id siswa
+  Future<void> _loadLaporan(String idSiswa) async {
+    // Set loading laporan menjadi true
+    setState(() => _isLoadingLaporan = true);
+
+    try {
+      // Ambil data laporan dari database
+      final list = await _service.getLaporan(idSiswa);
+
+      // Update state setelah data berhasil didapat
+      setState(() {
+        _laporanList = list;
+        _isLoadingLaporan = false;
+      });
+    } catch (e) {
+      // Jika error, matikan loading
+      setState(() => _isLoadingLaporan = false);
+    }
   }
 
   @override
@@ -98,28 +132,32 @@ class _RiwayatPerkembanganPageState extends State<RiwayatPerkembanganPage> {
             _buildHeader(context),
 
             Expanded(
-              child: SingleChildScrollView(
-                // Padding isi halaman
-                padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
+              child:
+                  _isLoadingAnak
+                      ? const Center(child: CircularProgressIndicator())
+                      : SingleChildScrollView(
+                        padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
 
-                child: Column(
-                  children: [
-                    // Dropdown untuk memilih anak
-                    _buildDropdownAnak(),
-                    const SizedBox(height: 10),
+                        child: Column(
+                          children: [
+                            // Dropdown untuk memilih anak
+                            _buildDropdownAnak(),
+                            const SizedBox(height: 10),
 
-                    // Dropdown filter periode ajaran
-                    _buildFilterPeriode(),
-                    const SizedBox(height: 14),
+                            // Dropdown filter periode ajaran
+                            _buildFilterPeriode(),
+                            const SizedBox(height: 14),
+                            if (_isLoadingLaporan)
+                              const Center(child: CircularProgressIndicator())
+                            else ...[
+                              ..._laporanList.map((l) => _buildLaporanCard(l)),
 
-                    // Generate list laporan
-                    ..._laporanList.map((l) => _buildLaporanCard(l)),
-
-                    // Empty state jika tidak ada laporan
-                    if (_laporanList.isEmpty) _buildEmptyState(),
-                  ],
-                ),
-              ),
+                              // Empty state jika tidak ada laporan
+                              if (_laporanList.isEmpty) _buildEmptyState(),
+                            ],
+                          ],
+                        ),
+                      ),
             ),
           ],
         ),
@@ -158,6 +196,18 @@ class _RiwayatPerkembanganPageState extends State<RiwayatPerkembanganPage> {
 
   // Dropdown untuk memilih anak
   Widget _buildDropdownAnak() {
+    // Jika daftar anak kosong
+    if (_anakList.isEmpty) {
+      // Tampilkan pesan
+      return const Text(
+        'Tidak ada data anak',
+        style: TextStyle(
+          fontSize: 12,
+          color: Colors.grey,
+          fontFamily: 'Poppins',
+        ),
+      );
+    }
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14),
 
@@ -175,7 +225,7 @@ class _RiwayatPerkembanganPageState extends State<RiwayatPerkembanganPage> {
       ),
 
       child: DropdownButtonHideUnderline(
-        child: DropdownButton<Map<String, String>>(
+        child: DropdownButton<AnakOrtuModel>(
           // Anak yang sedang dipilih
           value: _selectedAnak,
 
@@ -189,7 +239,7 @@ class _RiwayatPerkembanganPageState extends State<RiwayatPerkembanganPage> {
           // Generate item dropdown dari _anakList
           items:
               _anakList.map((anak) {
-                return DropdownMenuItem<Map<String, String>>(
+                return DropdownMenuItem<AnakOrtuModel>(
                   value: anak,
 
                   child: Row(
@@ -203,7 +253,7 @@ class _RiwayatPerkembanganPageState extends State<RiwayatPerkembanganPage> {
 
                       // Nama anak
                       Text(
-                        anak['nama']!,
+                        anak.nama,
                         style: const TextStyle(
                           fontSize: 13,
                           fontFamily: 'Poppins',
@@ -219,6 +269,7 @@ class _RiwayatPerkembanganPageState extends State<RiwayatPerkembanganPage> {
             if (val != null) {
               // Update state anak yang dipilih
               setState(() => _selectedAnak = val);
+              _loadLaporan(val.id);
             }
           },
         ),
@@ -270,10 +321,7 @@ class _RiwayatPerkembanganPageState extends State<RiwayatPerkembanganPage> {
 
           // Saat periode dipilih
           onChanged: (val) {
-            if (val != null) {
-              // Update filter periode
-              setState(() => _selectedPeriode = val);
-            }
+            if (val != null) setState(() => _selectedPeriode = val);
           },
         ),
       ),
@@ -281,10 +329,7 @@ class _RiwayatPerkembanganPageState extends State<RiwayatPerkembanganPage> {
   }
 
   // card laporan
-  Widget _buildLaporanCard(Map<String, dynamic> laporan) {
-    // Cek apakah laporan baru
-    final bool isNew = laporan['isNew'] as bool;
-
+  Widget _buildLaporanCard(LaporanOrtuModel laporan) {
     return GestureDetector(
       // aksi ketika card di klik
       onTap:
@@ -320,7 +365,7 @@ class _RiwayatPerkembanganPageState extends State<RiwayatPerkembanganPage> {
                 // Tanggal laporan
                 Expanded(
                   child: Text(
-                    laporan['tanggal'],
+                    laporan.tanggal,
                     style: const TextStyle(
                       fontSize: 13,
                       fontWeight: FontWeight.w500,
@@ -330,7 +375,7 @@ class _RiwayatPerkembanganPageState extends State<RiwayatPerkembanganPage> {
                 ),
 
                 // Badge "Baru" jika laporan terbaru
-                if (isNew)
+                if (laporan.isNew)
                   Container(
                     padding: const EdgeInsets.symmetric(
                       horizontal: 10,
@@ -357,7 +402,7 @@ class _RiwayatPerkembanganPageState extends State<RiwayatPerkembanganPage> {
 
             // Preview isi laporan
             Text(
-              laporan['preview'],
+              laporan.preview,
               style: const TextStyle(
                 fontSize: 11,
                 color: Colors.grey,
