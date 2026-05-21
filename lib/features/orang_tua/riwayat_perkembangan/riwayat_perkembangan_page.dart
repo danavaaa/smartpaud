@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'detail_laporan_ortu_page.dart';
 
 // Halaman riwayat perkembangan orang tua
 class RiwayatPerkembanganPage extends StatefulWidget {
@@ -33,7 +34,8 @@ class _RiwayatPerkembanganPageState extends State<RiwayatPerkembanganPage> {
   final List<Map<String, dynamic>> _laporanList = [
     {
       'id': '1',
-
+      'nama_siswa': 'Richa',
+      'nama_kelas': 'Kelas A',
       // Tanggal laporan dibuat
       'tanggal': '20 Mei 2025',
 
@@ -53,6 +55,8 @@ class _RiwayatPerkembanganPageState extends State<RiwayatPerkembanganPage> {
     },
     {
       'id': '2',
+      'nama_siswa': 'Richa',
+      'nama_kelas': 'Kelas A',
       'tanggal': '19 Mei 2025',
       'preview': 'Anak dapat menyebutkan angka 1 sampai 10 dengan urut.',
       'ringkasan': 'Anak menunjukkan kemampuan literasi membaca yang baik.',
@@ -62,6 +66,8 @@ class _RiwayatPerkembanganPageState extends State<RiwayatPerkembanganPage> {
     },
     {
       'id': '3',
+      'nama_siswa': 'Richa',
+      'nama_kelas': 'Kelas A',
       'tanggal': '15 Mei 2025',
       'preview': 'Anak mulai mengenal huruf vokal A, I, U, E, O.',
       'ringkasan': 'Anak mulai mengenal huruf vokal dengan baik dan konsisten.',
@@ -280,7 +286,14 @@ class _RiwayatPerkembanganPageState extends State<RiwayatPerkembanganPage> {
     final bool isNew = laporan['isNew'] as bool;
 
     return GestureDetector(
-      onTap: () {},
+      // aksi ketika card di klik
+      onTap:
+          () => Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => DetailLaporanOrtuPage(laporan: laporan),
+            ),
+          ),
 
       child: Container(
         margin: const EdgeInsets.only(bottom: 10),
