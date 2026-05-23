@@ -1,30 +1,76 @@
 import 'package:flutter/material.dart';
 import '../../auth/login_page.dart';
+import 'profile_ortu_model.dart';
+import 'profile_ortu_service.dart';
 
-class ProfileOrtuPage extends StatelessWidget {
+class ProfileOrtuPage extends StatefulWidget {
   const ProfileOrtuPage({super.key});
 
-  // Dummy data
-  final String _nama = 'Khadijah';
+  @override
+  State<ProfileOrtuPage> createState() => _ProfileOrtuPageState();
+}
+
+// State untuk halaman ProfileOrtuPage
+class _ProfileOrtuPageState extends State<ProfileOrtuPage> {
+  // Membuat object service untuk mengambil data dari Supabase
+  final _service = ProfileOrtuService();
+
+  // Menyimpan data profil orang tua (nullable karena awalnya belum ada data)
+  ProfileOrtuModel? _profile;
+
+  // Menyimpan daftar data anak (awal kosong)
+  List<AnakProfileModel> _anakList = [];
+
+  // Status loading, default true karena data belum dimuat
+  bool _isLoading = true;
+
+  // Email orang tua yang digunakan untuk mengambil data profil
   final String _email = 'ortu@smartpaud.com';
-  final String _noHp = '0812-3456-7890';
-  final bool _isActive = true;
 
-  // Dummy data anak
-  static const List<Map<String, dynamic>> _anakList = [
-    {
-      'nama': 'Kirana Larasati',
-      'namaKelas': 'Kelas A',
-      'periode': '2024/2025 – Semester 1',
-      'isActive': true,
-    },
-  ];
+  @override
+  void initState() {
+    super.initState();
 
-  // Inisial nama untuk avatar
-  String _inisial(String nama) {
-    final parts = nama.trim().split(' ');
-    if (parts.length >= 2) return '${parts[0][0]}${parts[1][0]}'.toUpperCase();
-    return parts[0][0].toUpperCase();
+    // Saat halaman pertama kali dibuka,otomatis panggil function untuk load data profil
+    _loadProfile();
+  }
+
+  Future<void> _loadProfile() async {
+    // Tampilkan loading sebelum mulai ambil data
+    setState(() => _isLoading = true);
+
+    try {
+      // Ambil data profil orang tua berdasarkan email
+      final profile = await _service.getProfile(_email);
+
+      // Ambil id_orang_tua berdasarkan email
+      final idOrangTua = await _service.getIdOrangTua(_email);
+
+      // Siapkan list kosong untuk data anak
+      List<AnakProfileModel> anak = [];
+
+      // Kalau id_orang_tua ada, ambil daftar anak
+      if (idOrangTua != null) {
+        anak = await _service.getAnakList(idOrangTua);
+      }
+
+      // Update state setelah semua data berhasil diambil
+      setState(() {
+        _profile = profile; // simpan data profil ke state
+        _anakList = anak; // simpan daftar anak ke state
+        _isLoading = false; // matikan loading
+      });
+    } catch (e) {
+      // Kalau error, matikan loading
+      setState(() => _isLoading = false);
+
+      // Cek apakah widget masih ada di tree sebelum show SnackBar
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Gagal memuat profil: $e')));
+      }
+    }
   }
 
   @override
@@ -38,28 +84,31 @@ class ProfileOrtuPage extends StatelessWidget {
             // header
             _buildHeader(context),
             Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
-                child: Column(
-                  children: [
-                    // Avatar,nama dan badge
-                    _buildAvatarCard(),
-                    const SizedBox(height: 12),
+              child:
+                  _isLoading
+                      ? const Center(child: CircularProgressIndicator())
+                      : SingleChildScrollView(
+                        padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
+                        child: Column(
+                          children: [
+                            // Avatar,nama dan badge
+                            _buildAvatarCard(),
+                            const SizedBox(height: 12),
 
-                    // Informasi akun
-                    _buildInfoAkunCard(),
-                    const SizedBox(height: 12),
+                            // Informasi akun
+                            _buildInfoAkunCard(),
+                            const SizedBox(height: 12),
 
-                    // Data anak
-                    _buildDataAnakCard(),
-                    const SizedBox(height: 32),
+                            // Data anak
+                            _buildDataAnakCard(),
+                            const SizedBox(height: 32),
 
-                    // Tombol logout
-                    _buildLogoutButton(context),
-                    const SizedBox(height: 8),
-                  ],
-                ),
-              ),
+                            // Tombol logout
+                            _buildLogoutButton(),
+                            const SizedBox(height: 8),
+                          ],
+                        ),
+                      ),
             ),
           ],
         ),
@@ -129,7 +178,7 @@ class ProfileOrtuPage extends StatelessWidget {
 
           // Nama
           Text(
-            _nama,
+            _profile?.nama ?? '-',
             style: const TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w600,
@@ -193,28 +242,28 @@ class ProfileOrtuPage extends StatelessWidget {
           _buildInfoRow(
             icon: Icons.person_outline_rounded,
             label: 'Nama',
-            value: _nama,
+            value: _profile?.nama ?? '-',
           ),
           const Divider(height: 16, thickness: 0.5),
           // Baris informasi email
           _buildInfoRow(
             icon: Icons.email_outlined,
             label: 'Email',
-            value: _email,
+            value: _profile?.email ?? '-',
           ),
           const Divider(height: 16, thickness: 0.5),
           // // Baris informasi No Hp
           _buildInfoRow(
             icon: Icons.phone_outlined,
             label: 'No. HP',
-            value: _noHp,
+            value: _profile?.noHp ?? '-',
           ),
           const Divider(height: 16, thickness: 0.5),
           // Baris informasi status akun
           _buildInfoRow(
             icon: Icons.verified_outlined,
             label: 'Status',
-            value: _isActive ? 'Aktif' : 'Nonaktif',
+            value: _profile?.statusText ?? '-',
           ),
         ],
       ),
@@ -284,106 +333,115 @@ class ProfileOrtuPage extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 12),
-
-          // loop semua data anak dari _anakList
-          ..._anakList.map(
-            (anak) => Padding(
-              padding: const EdgeInsets.only(bottom: 8),
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 10,
-                ),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  border: Border.all(
-                    color: Colors.grey.withOpacity(0.2),
-                    width: 0.5,
+          // Cek apakah daftar anak kosong, jika kosong, tampilkan teks informasi ke user
+          if (_anakList.isEmpty)
+            const Text(
+              'Belum ada data anak',
+              style: TextStyle(
+                fontSize: 12,
+                color: Colors.grey,
+                fontFamily: 'Poppins',
+              ),
+            )
+          else
+            ..._anakList.map(
+              (anak) => Padding(
+                padding: const EdgeInsets.only(bottom: 8),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 10,
                   ),
-                ),
-                child: Row(
-                  children: [
-                    // Avatar inisial anak
-                    CircleAvatar(
-                      radius: 16,
-                      backgroundColor: Colors.white,
-                      child: Text(
-                        _inisial(anak['nama']), // ambil inisial nama anak
-                        style: const TextStyle(
-                          fontSize: 11,
-                          fontWeight: FontWeight.w600,
-                          color: Color(0xFF185FA5),
-                          fontFamily: 'Poppins',
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    border: Border.all(
+                      color: Colors.grey.withOpacity(0.2),
+                      width: 0.5,
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      // Avatar inisial anak
+                      CircleAvatar(
+                        radius: 16,
+                        backgroundColor: Colors.white,
+                        child: Text(
+                          anak.inisial, // ambil inisial nama anak
+                          style: const TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w600,
+                            color: Color(0xFF185FA5),
+                            fontFamily: 'Poppins',
+                          ),
                         ),
                       ),
-                    ),
-                    const SizedBox(width: 10),
+                      const SizedBox(width: 10),
 
-                    // Nama, kelas dan periode
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            anak['nama'],
-                            style: const TextStyle(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w500,
-                              fontFamily: 'Poppins',
+                      // Nama, kelas dan periode
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              anak.nama,
+                              style: const TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w500,
+                                fontFamily: 'Poppins',
+                              ),
                             ),
-                          ),
-                          const SizedBox(height: 2),
+                            const SizedBox(height: 2),
 
-                          // info kelas dan periode
-                          Text(
-                            '${anak['namaKelas']} · ${anak['periode']}',
-                            style: const TextStyle(
-                              fontSize: 11,
-                              color: Colors.grey,
-                              fontFamily: 'Poppins',
+                            // info kelas dan periode
+                            Text(
+                              '${anak.namaKelas} · ${anak.periode}',
+                              style: const TextStyle(
+                                fontSize: 11,
+                                color: Colors.grey,
+                                fontFamily: 'Poppins',
+                              ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
-                    ),
 
-                    // Badge status anak
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 3,
-                      ),
-                      decoration: BoxDecoration(
-                        color:
-                            anak['isActive']
-                                ? const Color(0xFFEAF3DE)
-                                : const Color(0xFFFCEBEB),
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: Text(
-                        anak['isActive'] ? 'Aktif' : 'Nonaktif',
-                        style: TextStyle(
-                          fontSize: 11,
-                          fontFamily: 'Poppins',
+                      // Badge status anak
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 3,
+                        ),
+                        decoration: BoxDecoration(
                           color:
-                              anak['isActive']
-                                  ? const Color(0xFF3B6D11)
-                                  : const Color(0xFFA32D2D),
+                              anak.isActive
+                                  ? const Color(0xFFEAF3DE)
+                                  : const Color(0xFFFCEBEB),
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Text(
+                          anak.statusText,
+                          style: TextStyle(
+                            fontSize: 11,
+                            fontFamily: 'Poppins',
+                            color:
+                                anak.isActive
+                                    ? const Color(0xFF3B6D11)
+                                    : const Color(0xFFA32D2D),
+                          ),
                         ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ),
-          ),
         ],
       ),
     );
   }
 
   // Tombol Logout
-  Widget _buildLogoutButton(BuildContext context) {
+  Widget _buildLogoutButton() {
     return GestureDetector(
       // aksi saat tombol ditekan, tampilkan dialog konfirmasi
       onTap: () {
