@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../riwayat_perkembangan/riwayat_perkembangan_page.dart';
+import '../profile/profile_ortu_page.dart';
 
 // Halaman dashboard orang tua
 class OrangTuaDashboardPage extends StatefulWidget {
@@ -103,7 +104,12 @@ class _OrangTuaDashboardPageState extends State<OrangTuaDashboardPage> {
               _buildMenuItem(
                 icon: Icons.person_outline_rounded,
                 label: 'Profile Saya',
-                onTap: () {},
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const ProfileOrtuPage()),
+                  );
+                },
               ),
             ],
           ),
