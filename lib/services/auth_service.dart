@@ -1,4 +1,5 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
+import '../services/user_session.dart';
 
 // service untuk autentikasi menggunakan Supabase
 class AuthService {
@@ -19,9 +20,7 @@ class AuthService {
   //  method untuk mendapatkan profil user yang sedang login
   Future<Map<String, dynamic>?> getCurrentUserProfile() async {
     final user = currentUser; // mendapatkan user yang sedang login
-    if (user == null)
-      return null; // jika tidak ada user yang sedang login, kembalikan null
-    // mengambil data profil user dari tabel 'users' berdasarkan id_auth yang sesuai dengan id user yang sedang login
+    if (user == null) return null;
     final data =
         await client // mengakses tabel 'users' di database Supabase
             .from('users')
@@ -35,8 +34,9 @@ class AuthService {
     return data;
   }
 
-  // method untuk logout
+  // logout dan clear session
   Future<void> logout() async {
+    UserSession().clear(); // hapus data session
     await client.auth.signOut();
   }
 }

@@ -3,10 +3,19 @@ import '../data_siswa/data_siswa_page.dart';
 import '../laporan_perkembangan/buat_laporan_page.dart';
 import '../riwayat_laporan/riwayat_laporan_page.dart';
 import '../profile/profile_page.dart';
+import '../../../services/user_session.dart';
 
 // Halaman dashboard untuk guru
-class GuruDashboardPage extends StatelessWidget {
+class GuruDashboardPage extends StatefulWidget {
   const GuruDashboardPage({super.key});
+
+  @override
+  State<GuruDashboardPage> createState() => _GuruDashboardPageState();
+}
+
+class _GuruDashboardPageState extends State<GuruDashboardPage> {
+  // Ambil nama guru dari session
+  String get _namaGuru => UserSession().nama ?? 'Guru';
 
   @override
   Widget build(BuildContext context) {
@@ -131,14 +140,7 @@ class GuruDashboardPage extends StatelessWidget {
           const SizedBox(height: 8),
 
           // sapaan guru
-          const Text(
-            'Halo, Bu ......',
-            style: TextStyle(
-              fontSize: 15,
-              fontWeight: FontWeight.w500,
-              fontFamily: 'Poppins',
-            ),
-          ),
+          Text('Halo, $_namaGuru 👋'),
 
           // keterangan kelas yang diampu
           const Text(

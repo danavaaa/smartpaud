@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'profile_model.dart';
 import 'profile_service.dart';
 import '../../auth/login_page.dart';
+import '../../../services/user_session.dart';
+import '../../../services/auth_service.dart';
 
 // Halaman profile guru
 class ProfilePage extends StatefulWidget {
@@ -32,7 +34,8 @@ class _ProfilePageState extends State<ProfilePage> {
     setState(() => _isLoading = true); // tampilkan loading
     try {
       // ambil data profile berdasarkan email
-      final profile = await _service.getProfile('guru@smartpaud.com');
+      final email = UserSession().email ?? '';
+      final profile = await _service.getProfile(email);
       // ambil data kelas berdasarkan id_guru
       final kelas = await _service.getKelasDiampu(profile.id);
 
@@ -517,10 +520,11 @@ class _ProfilePageState extends State<ProfilePage> {
 
                   // Tombol logout
                   TextButton(
-                    onPressed: () {
-                      Navigator.pop(ctx); // tutup dialog
-
-                      // Kembali ke halaman login dan hapus semua route
+                    onPressed: () async {
+                      Navigator.pop(ctx);
+                      await AuthService()
+                          .logout(); // hapus session dan  keluar Supabase
+                      if (!mounted) return;
                       Navigator.pushAndRemoveUntil(
                         context,
                         MaterialPageRoute(builder: (_) => const LoginPage()),

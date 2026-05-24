@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'riwayat_ortu_model.dart';
 import 'riwayat_ortu_service.dart';
 import 'detail_laporan_ortu_page.dart';
+import '../../../services/user_session.dart';
 
 // Halaman riwayat perkembangan orang tua
 class RiwayatPerkembanganPage extends StatefulWidget {
@@ -39,7 +40,8 @@ class _RiwayatPerkembanganPageState extends State<RiwayatPerkembanganPage> {
     '2024/2025 – Semester 2',
   ];
 
-  final String _emailOrangTua = 'ortu@smartpaud.com';
+  // ambil email orang tua dari usersession
+  String get _emailOrangTua => UserSession().email ?? '';
 
   @override
   void initState() {

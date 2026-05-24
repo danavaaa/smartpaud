@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import '../../auth/login_page.dart';
 import 'profile_ortu_model.dart';
 import 'profile_ortu_service.dart';
+import '../../../services/user_session.dart';
+import '../../../services/auth_service.dart';
 
 class ProfileOrtuPage extends StatefulWidget {
   const ProfileOrtuPage({super.key});
@@ -25,7 +27,7 @@ class _ProfileOrtuPageState extends State<ProfileOrtuPage> {
   bool _isLoading = true;
 
   // Email orang tua yang digunakan untuk mengambil data profil
-  final String _email = 'ortu@smartpaud.com';
+  String get _email => UserSession().email ?? '';
 
   @override
   void initState() {
@@ -484,8 +486,11 @@ class _ProfileOrtuPageState extends State<ProfileOrtuPage> {
                   ),
                   // Tombol logout
                   TextButton(
-                    onPressed: () {
-                      Navigator.pop(ctx); // tutup dialog dulu
+                    onPressed: () async {
+                      Navigator.pop(ctx);
+                      await AuthService()
+                          .logout(); // hapus session dan keluar dari Supabase
+                      if (!mounted) return;
                       Navigator.pushAndRemoveUntil(
                         context,
                         MaterialPageRoute(builder: (_) => const LoginPage()),

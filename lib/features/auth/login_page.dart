@@ -3,6 +3,7 @@ import '../../services/auth_service.dart';
 import '../admin/dashboard/admin_dashboard.dart';
 import '../guru/dashboard/guru_dashboard.dart';
 import '../orang_tua/dashboard/orang_tua_dashboard.dart';
+import '../../services/user_session.dart';
 
 // Halaman login yang menangani autentikasi dan navigasi berdasarkan peran user
 class LoginPage extends StatefulWidget {
@@ -42,7 +43,8 @@ class _LoginPageState extends State<LoginPage> {
         );
         return;
       }
-      // Navigasi berdasarkan peran user yang diambil dari profil
+      // Simpan ke session agar data user dapat dipakai dihalaman lain tanpa ambil ulang dari database
+      UserSession().setFromProfile(profile);
       final role = profile['role'];
 
       if (role == 'admin') {
@@ -72,9 +74,7 @@ class _LoginPageState extends State<LoginPage> {
         context,
       ).showSnackBar(SnackBar(content: Text('Login gagal: $e')));
     } finally {
-      if (mounted) {
-        setState(() => isLoading = false);
-      }
+      if (mounted) setState(() => isLoading = false);
     }
   }
 
