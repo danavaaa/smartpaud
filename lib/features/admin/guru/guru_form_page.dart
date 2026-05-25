@@ -27,11 +27,13 @@ class _GuruFormPageState extends State<GuruFormPage> {
   final _namaGuruController = TextEditingController();
   final _emailController = TextEditingController();
   final _noHpController = TextEditingController();
+  final _passwordController = TextEditingController();
 
   final _service = GuruService();
 
   bool isActive = true;
   bool isLoading = false;
+  bool _obscurePassword = true; // digunakan untuk show/hide password
 
   // Mengecek apakah halaman sedang dalam mode edit
   // Jika idUser tidak null dan tidak kosong, berarti dalam mode edit
@@ -59,6 +61,17 @@ class _GuruFormPageState extends State<GuruFormPage> {
       return;
     }
 
+    // Validasi password hanya saat tambah baru
+    // Jika mode tambah data (bukan edit), cek apakah password yang diinput kurang dari 6 karakter
+    if (!isEdit && _passwordController.text.trim().length < 6) {
+      // Tampilkan pesan eror dibawah layar
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Password minimal 6 karakter')),
+      );
+      // hentikan proses simpan agar data tidak lanjut di proses
+      return;
+    }
+
     try {
       setState(() => isLoading = true);
 
@@ -78,6 +91,7 @@ class _GuruFormPageState extends State<GuruFormPage> {
           email: _emailController.text.trim(),
           noHp: _noHpController.text.trim(),
           isActive: isActive,
+          password: _passwordController.text.trim(),
         );
       }
 
@@ -94,9 +108,7 @@ class _GuruFormPageState extends State<GuruFormPage> {
       ).showSnackBar(SnackBar(content: Text('Gagal menyimpan data: $e')));
     } finally {
       // Setelah proses selesai, matikan loading
-      if (mounted) {
-        setState(() => isLoading = false);
-      }
+      if (mounted) setState(() => isLoading = false);
     }
   }
 
@@ -105,6 +117,7 @@ class _GuruFormPageState extends State<GuruFormPage> {
     _namaGuruController.dispose();
     _emailController.dispose();
     _noHpController.dispose();
+    _passwordController.dispose();
     super.dispose();
   }
 
@@ -239,7 +252,39 @@ class _GuruFormPageState extends State<GuruFormPage> {
                   ),
                   const SizedBox(height: 12),
 
-                  // Pilihan status guru
+                  // Jika bukan mode edit, tampilkan field password
+                  if (!isEdit) ...[
+                    buildLabel('Password'),
+                    TextField(
+                      controller: _passwordController,
+                      // controller untuk mengambil input password
+                      obscureText: _obscurePassword,
+                      // jika true maka password disembunyikan (....), jika false maka password akan terlihat
+                      decoration: customInputDecoration(
+                        'Min. 6 karakter',
+                      ).copyWith(
+                        // icon disebelah kanan
+                        suffixIcon: GestureDetector(
+                          // aksi saat icon ditekan show/hide password
+                          onTap:
+                              () => setState(
+                                () => _obscurePassword = !_obscurePassword,
+                              ),
+                          child: Icon(
+                            // jika password sedang disembunyikan, tampilkan icon mata tertutup
+                            _obscurePassword
+                                ? Icons.visibility_off_outlined
+                                : Icons.visibility_outlined,
+                            size: 18,
+                            color: Colors.grey,
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                  ],
+
+                  // Status Guru
                   buildLabel('Status Guru'),
                   Row(
                     children: [
@@ -249,10 +294,7 @@ class _GuruFormPageState extends State<GuruFormPage> {
                           value: true,
                           groupValue: isActive,
                           onChanged: (value) {
-                            if (value != null) {
-                              // Mengubah status guru menjadi aktif
-                              setState(() => isActive = value);
-                            }
+                            if (value != null) setState(() => isActive = value);
                           },
                           title: const Text(
                             'Aktif',
@@ -270,10 +312,7 @@ class _GuruFormPageState extends State<GuruFormPage> {
                           value: false,
                           groupValue: isActive,
                           onChanged: (value) {
-                            if (value != null) {
-                              // Mengubah status guru menjadi tidak aktif
-                              setState(() => isActive = value);
-                            }
+                            if (value != null) setState(() => isActive = value);
                           },
                           title: const Text(
                             'Tidak Aktif',
@@ -300,10 +339,7 @@ class _GuruFormPageState extends State<GuruFormPage> {
                       const SizedBox(width: 18),
                       buildActionButton(
                         title: 'Batal',
-                        onTap: () {
-                          // Menutup halaman form tanpa menyimpan perubahan
-                          Navigator.pop(context);
-                        },
+                        onTap: () => Navigator.pop(context),
                       ),
                     ],
                   ),

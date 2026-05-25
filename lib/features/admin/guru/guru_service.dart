@@ -20,22 +20,43 @@ class GuruService {
     return (response as List).map((item) => GuruModel.fromJson(item)).toList();
   }
 
-  // Fungsi untuk menambahkan data guru baru
+  // Fungsi untuk menambahkan data guru baru (buat akun Auth dulu, lalu insert ke users)
   Future<void> addGuru({
     required String nama,
     required String email,
     required String noHp,
     required bool isActive,
+    required String password,
   }) async {
-    // Menyimpan data baru ke tabel 'users'
-    // role otomatis diisi 'guru'
+    // Simpan session admin yang sedang login, agar nanti setelah membuat akun guru, admin bisa login kembali
+    final adminSession = client.auth.currentSession;
+
+    // Buat akun Auth Supabase (akun login guru)
+    final authResponse = await client.auth.signUp(
+      email: email,
+      password: password,
+    );
+
+    // ambil id user dari database
+    final idAuth = authResponse.user?.id;
+    // jika id tidak ada, maka pembuatan akun gagal
+    if (idAuth == null) throw Exception('Gagal membuat akun auth');
+
+    // simpan data tambahan ke tabel users
+    // id_auth dihubungkan dengan akun auth supabase yang baru dibuat
     await client.from('users').insert({
+      'id_auth': idAuth, // id dari auth.users
       'nama': nama,
       'email': email,
       'no_hp': noHp,
       'role': 'guru',
       'is_active': isActive,
     });
+
+    // Kembalikan session admin agar admin tetap login
+    if (adminSession?.refreshToken != null) {
+      await client.auth.setSession(adminSession!.refreshToken!);
+    }
   }
 
   // Fungsi untuk mengupdate data guru yang sudah ada
