@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import '../riwayat_perkembangan/riwayat_perkembangan_page.dart';
+import '../riwayat_perkembangan/riwayat_ortu_model.dart';
+import '../riwayat_perkembangan/riwayat_ortu_service.dart';
 import '../profile/profile_ortu_page.dart';
+import '../../../services/user_session.dart';
 
 // Halaman dashboard orang tua
 class OrangTuaDashboardPage extends StatefulWidget {
@@ -11,36 +14,100 @@ class OrangTuaDashboardPage extends StatefulWidget {
 }
 
 class _OrangTuaDashboardPageState extends State<OrangTuaDashboardPage> {
-  // Dummy nama orang tua
-  final String _namaOrangTua = 'Bapak ...';
+  // object service digunakan untuk mengambil data dari database
+  final _service = RiwayatLaporanOrtuService();
 
-  // Dummy list anak
-  final List<Map<String, String>> _anakList = [
-    {'id': '1', 'nama': 'Richa', 'status': 'Aktif'},
-    {'id': '2', 'nama': 'Richie', 'status': 'Tidak Aktif'},
-  ];
+  // Getter untuk mengambil nama orang tua dari session
+  String get _namaOrangTua => UserSession().nama ?? 'Orang Tua';
 
-  // Menyimpan anak yang sedang dipilih di dropdown
-  Map<String, String>? _selectedAnak;
+  // Menyimpan daftar anak milik orang tua, awalnya list kosong
+  List<AnakOrtuModel> _anakList = [];
 
-  // Dummy laporan perkembangan terbaru
-  final List<Map<String, String>> _laporanList = [
-    {
-      'tanggal': '16 Mei 2026',
-      'catatan': 'Anak lancar membaca halaman 10 tanpa bantuan guru.',
-    },
-    {
-      'tanggal': '14 Mei 2026',
-      'catatan': 'Anak mulai mengenal huruf vokal dengan baik.',
-    },
-  ];
+  // Menyimpan data anak yang sedang dipilih
+  AnakOrtuModel? _selectedAnak;
+
+  // Menyimpan daftar laporan perkembangan anak
+  List<LaporanOrtuModel> _laporanList = [];
+
+  // Status loading saat mengambil data anak
+  bool _isLoadingAnak = true;
+
+  // Status loading saat mengambil data laporan
+  bool _isLoadingLaporan = false;
 
   @override
   void initState() {
     super.initState();
+    _loadAnak();
+  }
 
-    // Otomatis pilih anak pertama saat halaman dibuka
-    _selectedAnak = _anakList.first;
+  Future<void> _loadAnak() async {
+    // Aktifkan loading sebelum mulai ambil data anak
+    setState(() => _isLoadingAnak = true);
+
+    try {
+      // Ambil email orang tua dari session
+      final email = UserSession().email ?? '';
+
+      // Cari id_orang_tua berdasarkan email
+      final idOrangTua = await _service.getIdOrangTua(email);
+
+      // Kalau id_orang_tua tidak ditemukan
+      if (idOrangTua == null) {
+        // Matikan loading
+        setState(() => _isLoadingAnak = false);
+
+        // Hentikan function
+        return;
+      }
+
+      // Ambil daftar anak berdasarkan id_orang_tua
+      final list = await _service.getAnakList(idOrangTua);
+
+      setState(() {
+        // Simpan daftar anak ke state
+        _anakList = list;
+
+        // Loading selesai
+        _isLoadingAnak = false;
+
+        // Kalau ada data anak
+        if (list.isNotEmpty) {
+          // Pilih anak yang aktif, kalau tidak ada yang aktif, ambil anak pertama
+          _selectedAnak = list.firstWhere(
+            (a) => a.isActive,
+            orElse: () => list.first,
+          );
+
+          // Setelah anak dipilih, ambil laporan anak tersebut
+          _loadLaporan(_selectedAnak!.id);
+        }
+      });
+    } catch (e) {
+      // Kalau terjadi error, matikan loading
+      setState(() => _isLoadingAnak = false);
+    }
+  }
+
+  Future<void> _loadLaporan(String idSiswa) async {
+    // Aktifkan loading laporan
+    setState(() => _isLoadingLaporan = true);
+
+    try {
+      // Ambil daftar laporan berdasarkan id siswa
+      final list = await _service.getLaporan(idSiswa);
+
+      setState(() {
+        // Simpan data laporan ke state
+        _laporanList = list;
+
+        // Loading laporan selesai
+        _isLoadingLaporan = false;
+      });
+    } catch (e) {
+      // Kalau terjadi error, matikan loading
+      setState(() => _isLoadingLaporan = false);
+    }
   }
 
   @override
@@ -104,12 +171,13 @@ class _OrangTuaDashboardPageState extends State<OrangTuaDashboardPage> {
               _buildMenuItem(
                 icon: Icons.person_outline_rounded,
                 label: 'Profile Saya',
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (_) => const ProfileOrtuPage()),
-                  );
-                },
+                onTap:
+                    () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const ProfileOrtuPage(),
+                      ),
+                    ),
               ),
             ],
           ),
@@ -154,7 +222,7 @@ class _OrangTuaDashboardPageState extends State<OrangTuaDashboardPage> {
 
           // Sapaan orang tua
           Text(
-            'Halo, $_namaOrangTua',
+            'Halo, $_namaOrangTua 👋',
             style: const TextStyle(
               fontSize: 15,
               fontWeight: FontWeight.w500,
@@ -174,64 +242,79 @@ class _OrangTuaDashboardPageState extends State<OrangTuaDashboardPage> {
           const SizedBox(height: 12),
 
           // Dropdown pilih anak
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12),
+          if (_isLoadingAnak)
+            // Jika data anak masih dalam proses diambil dari database, tampilkan loading di tengah layar
+            const Center(child: CircularProgressIndicator())
+          else if (_anakList.isEmpty)
+            // Jika loading selesai tetapi daftar anak kosong, tampilkan pesan informasi
+            const Text(
+              'Tidak ada data anak',
+              style: TextStyle(
+                fontSize: 12,
+                color: Colors.grey,
+                fontFamily: 'Poppins',
+              ),
+            )
+          else
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12),
 
-            decoration: BoxDecoration(
-              color: const Color(0xFFEAF1F5),
-              borderRadius: BorderRadius.circular(10),
-            ),
+              decoration: BoxDecoration(
+                color: const Color(0xFFEAF1F5),
+                borderRadius: BorderRadius.circular(10),
+              ),
 
-            child: DropdownButtonHideUnderline(
-              child: DropdownButton<Map<String, String>>(
-                // Anak yang sedang dipilih
-                value: _selectedAnak,
+              child: DropdownButtonHideUnderline(
+                child: DropdownButton<AnakOrtuModel>(
+                  // Anak yang sedang dipilih
+                  value: _selectedAnak,
 
-                isExpanded: true,
+                  isExpanded: true,
 
-                icon: const Icon(
-                  Icons.keyboard_arrow_down_rounded,
-                  color: Colors.grey,
-                ),
+                  icon: const Icon(
+                    Icons.keyboard_arrow_down_rounded,
+                    color: Colors.grey,
+                  ),
 
-                // Generate item dropdown dari list anak
-                items:
-                    _anakList.map((anak) {
-                      return DropdownMenuItem<Map<String, String>>(
-                        value: anak,
+                  // Generate item dropdown dari list anak
+                  items:
+                      _anakList.map((anak) {
+                        return DropdownMenuItem<AnakOrtuModel>(
+                          value: anak,
 
-                        child: Row(
-                          children: [
-                            const Icon(
-                              Icons.person_outline_rounded,
-                              size: 16,
-                              color: Color(0xFF185FA5),
-                            ),
-                            const SizedBox(width: 8),
-
-                            // Menampilkan nama anak dan status anak
-                            Text(
-                              '${anak['nama']} (${anak['status']})',
-                              style: const TextStyle(
-                                fontSize: 13,
-                                fontFamily: 'Poppins',
+                          child: Row(
+                            children: [
+                              const Icon(
+                                Icons.person_outline_rounded,
+                                size: 16,
+                                color: Color(0xFF185FA5),
                               ),
-                            ),
-                          ],
-                        ),
-                      );
-                    }).toList(),
+                              const SizedBox(width: 8),
 
-                // Saat dropdown dipilih
-                onChanged: (val) {
-                  if (val != null) {
-                    // Update anak yang dipilih
-                    setState(() => _selectedAnak = val);
-                  }
-                },
+                              // Menampilkan nama anak dan status anak
+                              Text(
+                                '${anak.nama} (${anak.isActive ? 'Aktif' : 'Tidak Aktif'})',
+                                style: const TextStyle(
+                                  fontSize: 13,
+                                  fontFamily: 'Poppins',
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      }).toList(),
+
+                  // Saat dropdown dipilih
+                  onChanged: (val) {
+                    if (val != null) {
+                      // Update anak yang dipilih
+                      setState(() => _selectedAnak = val);
+                      _loadLaporan(val.id);
+                    }
+                  },
+                ),
               ),
             ),
-          ),
         ],
       ),
     );
@@ -283,7 +366,13 @@ class _OrangTuaDashboardPageState extends State<OrangTuaDashboardPage> {
 
               // Tombol lihat semua
               GestureDetector(
-                onTap: () {},
+                onTap:
+                    () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const RiwayatPerkembanganPage(),
+                      ),
+                    ),
                 child: const Text(
                   'Lihat semua',
                   style: TextStyle(
@@ -297,85 +386,98 @@ class _OrangTuaDashboardPageState extends State<OrangTuaDashboardPage> {
           ),
           const SizedBox(height: 12),
 
-          // Generate list laporan dari _laporanList
-          ..._laporanList.map((l) {
-            // Ambil catatan laporan
-            final catatan = l['catatan']!;
-
-            // Potong teks jika terlalu panjang
-            final preview =
-                catatan.length > 45
-                    ? '${catatan.substring(0, 45)}...'
-                    : catatan;
-
-            return Padding(
-              padding: const EdgeInsets.only(bottom: 8),
-
-              child: Container(
-                padding: const EdgeInsets.all(12),
-
-                decoration: BoxDecoration(
-                  color: const Color(0xFFEAF1F5),
-                  borderRadius: BorderRadius.circular(10),
+          if (_isLoadingLaporan)
+            // Jika data laporan masih diambil dari database, tampilkan loading spinner di tengah
+            const Center(child: CircularProgressIndicator())
+          else if (_laporanList.isEmpty)
+            // Jika loading selesai tetapi tidak ada laporan, tampilkan pesan bahwa laporan belum tersedia
+            const Center(
+              child: Padding(
+                padding: EdgeInsets.symmetric(vertical: 12),
+                child: Text(
+                  'Belum ada laporan',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.grey,
+                    fontFamily: 'Poppins',
+                  ),
                 ),
+              ),
+            )
+          else
+            // Jika loading selesai dan laporan ada, tampilkan maksimal 2 laporan terbaru
+            ..._laporanList
+                .take(2) // mengambil hanya 2 data pertama dari list
+                .map(
+                  (l) => Padding(
+                    padding: const EdgeInsets.only(bottom: 8),
 
-                child: Row(
-                  children: [
-                    // Isi laporan
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                    child: Container(
+                      padding: const EdgeInsets.all(12),
+
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFEAF1F5),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+
+                      child: Row(
                         children: [
-                          // Tanggal laporan
-                          Text(
-                            l['tanggal']!,
-                            style: const TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w500,
-                              fontFamily: 'Poppins',
-                            ),
-                          ),
-                          const SizedBox(height: 3),
+                          // Isi laporan
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                // Tanggal laporan
+                                Text(
+                                  l.tanggal,
+                                  style: const TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w500,
+                                    fontFamily: 'Poppins',
+                                  ),
+                                ),
+                                const SizedBox(height: 3),
 
-                          // Preview catatan laporan
-                          Text(
-                            preview,
-                            style: const TextStyle(
-                              fontSize: 11,
-                              color: Colors.grey,
-                              fontFamily: 'Poppins',
+                                // Preview catatan laporan
+                                Text(
+                                  l.preview,
+                                  style: const TextStyle(
+                                    fontSize: 11,
+                                    color: Colors.grey,
+                                    fontFamily: 'Poppins',
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
+
+                          const SizedBox(width: 8),
+
+                          if (l.isNew)
+                            // Badge status laporan
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 3,
+                              ),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFEAF3DE),
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                              child: const Text(
+                                'Baru',
+                                style: TextStyle(
+                                  fontSize: 10,
+                                  fontFamily: 'Poppins',
+                                  color: Color(0xFF3B6D11),
+                                ),
+                              ),
+                            ),
                         ],
                       ),
                     ),
-
-                    const SizedBox(width: 8),
-
-                    // Badge status laporan
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 3,
-                      ),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFEAF3DE),
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: const Text(
-                        'Baru',
-                        style: TextStyle(
-                          fontSize: 10,
-                          fontFamily: 'Poppins',
-                          color: Color(0xFF3B6D11),
-                        ),
-                      ),
-                    ),
-                  ],
+                  ),
                 ),
-              ),
-            );
-          }),
         ],
       ),
     );
