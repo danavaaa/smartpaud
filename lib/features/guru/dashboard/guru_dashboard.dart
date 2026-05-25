@@ -3,6 +3,8 @@ import '../data_siswa/data_siswa_page.dart';
 import '../laporan_perkembangan/buat_laporan_page.dart';
 import '../riwayat_laporan/riwayat_laporan_page.dart';
 import '../profile/profile_page.dart';
+import '../profile/profile_service.dart';
+import '../profile/profile_model.dart';
 import '../../../services/user_session.dart';
 
 // Halaman dashboard untuk guru
@@ -14,8 +16,53 @@ class GuruDashboardPage extends StatefulWidget {
 }
 
 class _GuruDashboardPageState extends State<GuruDashboardPage> {
-  // Ambil nama guru dari session
+  // object service digunakan untuk mengambil data dari database
+  final _service = ProfileService();
+
+  // Getter untuk mengambil nama guru dari session
   String get _namaGuru => UserSession().nama ?? 'Guru';
+
+  // Menyimpan daftar kelas yang diampu guru, awalnya list kosong
+  List<KelasModel> _kelasList = [];
+
+  // Status loading saat mengambil data kelas
+  bool _isLoadingKelas = true;
+
+  @override
+  void initState() {
+    super.initState();
+
+    // Saat halaman pertama dibuka, otomatis ambil data kelas yang diampu guru
+    _loadKelas();
+  }
+
+  Future<void> _loadKelas() async {
+    try {
+      // Ambil id user guru dari session
+      final idUser = UserSession().idUser ?? '';
+
+      // Kalau idUser kosong, berarti user belum login / session tidak ada
+      if (idUser.isEmpty) {
+        // Matikan loading
+        setState(() => _isLoadingKelas = false);
+
+        // Hentikan function
+        return;
+      }
+
+      // Ambil data kelas yang diampu guru berdasarkan idUser
+      final kelas = await _service.getKelasDiampu(idUser);
+
+      // Simpan hasil data ke state
+      setState(() {
+        _kelasList = kelas; // isi daftar kelas
+        _isLoadingKelas = false; // loading selesai
+      });
+    } catch (e) {
+      // Kalau terjadi error, matikan loading
+      setState(() => _isLoadingKelas = false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -51,12 +98,11 @@ class _GuruDashboardPageState extends State<GuruDashboardPage> {
                 context,
                 icon: Icons.people_outline_rounded,
                 label: 'Data Siswa',
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (_) => const DataSiswaPage()),
-                  );
-                },
+                onTap:
+                    () => Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => const DataSiswaPage()),
+                    ),
               ),
 
               // menu laporan perkembangan
@@ -92,12 +138,11 @@ class _GuruDashboardPageState extends State<GuruDashboardPage> {
                 context,
                 icon: Icons.person_outline_rounded,
                 label: 'Profile Saya',
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (_) => const ProfilePage()),
-                  );
-                },
+                onTap:
+                    () => Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => const ProfilePage()),
+                    ),
               ),
             ],
           ),
@@ -140,8 +185,14 @@ class _GuruDashboardPageState extends State<GuruDashboardPage> {
           const SizedBox(height: 8),
 
           // sapaan guru
-          Text('Halo, $_namaGuru 👋'),
-
+          Text(
+            'Halo, $_namaGuru 👋',
+            style: const TextStyle(
+              fontSize: 15,
+              fontWeight: FontWeight.w500,
+              fontFamily: 'Poppins',
+            ),
+          ),
           // keterangan kelas yang diampu
           const Text(
             'Kelas yang diampu',
@@ -153,45 +204,78 @@ class _GuruDashboardPageState extends State<GuruDashboardPage> {
           ),
 
           const SizedBox(height: 10),
-          // sub-card untuk kelas yang diampu
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-            decoration: BoxDecoration(
-              color: const Color.fromARGB(255, 255, 255, 255),
-              borderRadius: BorderRadius.circular(10),
-            ),
 
-            // isi sub-card
-            child: const Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+          // Tampil loading atau data kelas yang diampu
+          if (_isLoadingKelas)
+            // jika data kelas masih loading, tampilkan indikator loading di tengah
+            const Center(child: CircularProgressIndicator())
+          else if (_kelasList.isEmpty)
+            // Kalau loading selesai tapi data kelas kosong, tampilkan pesan bahwa guru belum punya kelas
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+              decoration: BoxDecoration(
+                color: const Color(0xFFDDE8EF),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: const Text(
+                'Belum ada kelas yang diampu',
+                style: TextStyle(
+                  fontSize: 12,
+                  color: Colors.grey,
+                  fontFamily: 'Poppins',
+                ),
+              ),
+            )
+          else
+            // Kalau data kelas ada, tampilkan semua data dari _kelasList
+            ..._kelasList.map(
+              (k) => Container(
+                width: double.infinity,
 
-              children: [
-                // nama kelas
-                Text(
-                  'Kelas A1',
-                  style: TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
-                    fontFamily: 'Poppins',
-                  ),
+                margin: const EdgeInsets.only(bottom: 8), // jarak antar item
+
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 10,
                 ),
 
-                // jarak kecil
-                SizedBox(height: 2),
-
-                // informasi kelas dan periode
-                Text(
-                  'Guru Kelas  ·  Periode 2024/2025 – smstr 1',
-                  style: TextStyle(
-                    fontSize: 11,
-                    color: Colors.grey,
-                    fontFamily: 'Poppins',
-                  ),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFDDE8EF),
+                  borderRadius: BorderRadius.circular(10),
                 ),
-              ],
+
+                // isi sub-card
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+
+                  children: [
+                    // nama kelas
+                    Text(
+                      k.namaKelas,
+                      style: const TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        fontFamily: 'Poppins',
+                      ),
+                    ),
+
+                    // jarak kecil
+                    const SizedBox(height: 2),
+
+                    // informasi kelas dan periode
+                    Text(
+                      '${k.peranGuru} · ${k.periode}',
+                      style: const TextStyle(
+                        fontSize: 11,
+                        color: Colors.grey,
+                        fontFamily: 'Poppins',
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             ),
-          ),
         ],
       ),
     );
