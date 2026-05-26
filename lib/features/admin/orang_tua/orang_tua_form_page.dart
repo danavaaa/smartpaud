@@ -32,6 +32,7 @@ class _OrangTuaFormPageState extends State<OrangTuaFormPage> {
 
   // Controller untuk input nomor HP
   final _noHpController = TextEditingController();
+  final _passwordController = TextEditingController();
 
   final _service = OrangTuaService();
 
@@ -39,6 +40,7 @@ class _OrangTuaFormPageState extends State<OrangTuaFormPage> {
   bool isActive = true;
 
   bool isLoading = false;
+  bool _obscurePassword = true;
 
   // Mengecek apakah halaman sedang dalam mode edit
   bool get isEdit => widget.idUser != null && widget.idUser!.isNotEmpty;
@@ -64,6 +66,15 @@ class _OrangTuaFormPageState extends State<OrangTuaFormPage> {
       return;
     }
 
+    // Validasi password hanya saat tambah baru dan pstikan password minimal 6 karakter
+    if (!isEdit && _passwordController.text.trim().length < 6) {
+      // Jika kurang dari 6 karakter, tampilkan pesan eror ke user
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Password minimal 6 karakter')),
+      );
+      return;
+    }
+
     try {
       setState(() => isLoading = true);
 
@@ -83,6 +94,7 @@ class _OrangTuaFormPageState extends State<OrangTuaFormPage> {
           email: _emailController.text.trim(),
           noHp: _noHpController.text.trim(),
           isActive: isActive,
+          password: _passwordController.text.trim(),
         );
       }
 
@@ -97,9 +109,7 @@ class _OrangTuaFormPageState extends State<OrangTuaFormPage> {
       ).showSnackBar(SnackBar(content: Text('Gagal menyimpan data: $e')));
     } finally {
       // Setelah proses selesai, matikan loading
-      if (mounted) {
-        setState(() => isLoading = false);
-      }
+      if (mounted) setState(() => isLoading = false);
     }
   }
 
@@ -109,6 +119,7 @@ class _OrangTuaFormPageState extends State<OrangTuaFormPage> {
     _namaController.dispose();
     _emailController.dispose();
     _noHpController.dispose();
+    _passwordController.dispose();
     super.dispose();
   }
 
@@ -153,7 +164,7 @@ class _OrangTuaFormPageState extends State<OrangTuaFormPage> {
     );
   }
 
-  // Fungsi untuk membuat tombol aksi seperti Simpan dan Batal
+  // Fungsi untuk membuat tombol aksi simpan dan batal
   Widget buildActionButton({
     required String title,
     required VoidCallback onTap,
@@ -240,7 +251,41 @@ class _OrangTuaFormPageState extends State<OrangTuaFormPage> {
                   ),
                   const SizedBox(height: 12),
 
-                  // Pilihan status orang tua
+                  // Password (hanya tampil saat tambah baru)
+                  // jika bukan dalam mode edit maka tampilkan field password
+                  if (!isEdit) ...[
+                    // Label input password
+                    buildLabel('Password'),
+                    // Input field password
+                    TextField(
+                      controller: _passwordController,
+                      obscureText: _obscurePassword,
+                      decoration: customInputDecoration(
+                        'Min. 6 karakter',
+                      ).copyWith(
+                        // icon sebelah kanan
+                        suffixIcon: GestureDetector(
+                          // saat icon ditekan, ubah show/hide password
+                          onTap:
+                              () => setState(
+                                () => _obscurePassword = !_obscurePassword,
+                              ),
+                          child: Icon(
+                            // Jika password tersebumyi, tampilkan mata tertutup
+                            _obscurePassword
+                                ? Icons.visibility_off_outlined
+                                // Jika password terlihat, tampilkan mata terbuka
+                                : Icons.visibility_outlined,
+                            size: 18,
+                            color: Colors.grey,
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                  ],
+
+                  // Status
                   buildLabel('Status Orang Tua'),
                   Row(
                     children: [
@@ -250,9 +295,7 @@ class _OrangTuaFormPageState extends State<OrangTuaFormPage> {
                           value: true,
                           groupValue: isActive,
                           onChanged: (value) {
-                            if (value != null) {
-                              setState(() => isActive = value);
-                            }
+                            if (value != null) setState(() => isActive = value);
                           },
                           title: const Text(
                             'Aktif',
@@ -270,9 +313,7 @@ class _OrangTuaFormPageState extends State<OrangTuaFormPage> {
                           value: false,
                           groupValue: isActive,
                           onChanged: (value) {
-                            if (value != null) {
-                              setState(() => isActive = value);
-                            }
+                            if (value != null) setState(() => isActive = value);
                           },
                           title: const Text(
                             'Tidak Aktif',
@@ -288,7 +329,7 @@ class _OrangTuaFormPageState extends State<OrangTuaFormPage> {
                   ),
                   const SizedBox(height: 14),
 
-                  // Tombol aksi Simpan dan Batal
+                  // Tombol aksi simpan dan batal
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
@@ -299,10 +340,7 @@ class _OrangTuaFormPageState extends State<OrangTuaFormPage> {
                       const SizedBox(width: 18),
                       buildActionButton(
                         title: 'Batal',
-                        onTap: () {
-                          // Menutup halaman form tanpa menyimpan perubahan
-                          Navigator.pop(context);
-                        },
+                        onTap: () => Navigator.pop(context),
                       ),
                     ],
                   ),
