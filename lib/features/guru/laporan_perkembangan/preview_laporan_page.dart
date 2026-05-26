@@ -45,12 +45,20 @@ class _PreviewLaporanPageState extends State<PreviewLaporanPage> {
     try {
       final service = LaporanService();
 
+      // Upload foto jika ada
+      String? fotoUrl;
+      if (widget.imageFile != null) {
+        fotoUrl = await service.uploadFoto(widget.imageFile!, widget.idSiswa);
+      }
+
+      // Simpan laporan dengan fotoUrl
       await service.simpanLaporan(
         idSiswa: widget.idSiswa,
         tanggalLaporan: widget.tanggalLaporan,
         catatanLiterasi: widget.catatanLiterasi,
         ringkasanAi: widget.ringkasanAi,
         rekomendasiAi: widget.rekomendasiAi,
+        fotoUrl: fotoUrl,
       );
 
       if (!mounted) return;

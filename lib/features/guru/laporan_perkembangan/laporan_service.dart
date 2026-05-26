@@ -1,7 +1,24 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'dart:io';
 
 class LaporanService {
   final _db = Supabase.instance.client;
+
+  // Upload foto ke database, return URL-nya
+  Future<String?> uploadFoto(File imageFile, String idSiswa) async {
+    try {
+      final fileName = '$idSiswa-${DateTime.now().millisecondsSinceEpoch}.jpg';
+
+      await _db.storage.from('laporan-foto').upload(fileName, imageFile);
+
+      // Ambil public URL
+      final url = _db.storage.from('laporan-foto').getPublicUrl(fileName);
+
+      return url;
+    } catch (e) {
+      return null;
+    }
+  }
 
   // simpan laporan perkembangan ke database
   Future<void> simpanLaporan({
@@ -20,7 +37,7 @@ class LaporanService {
     // Rekomendasi hasil AI
     required String rekomendasiAi,
 
-    // URL foto opsional
+    // URL foto
     String? fotoUrl,
   }) async {
     // Insert data ke tabel "laporan_perkembangan"
