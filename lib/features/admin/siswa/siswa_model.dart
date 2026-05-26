@@ -15,6 +15,9 @@ class SiswaModel {
   // Status siswa, aktif atau tidak
   final bool isActive;
 
+  // ID orang tua
+  final String? idOrangTua;
+
   // Constructor untuk mengisi seluruh data siswa
   SiswaModel({
     required this.id,
@@ -22,6 +25,7 @@ class SiswaModel {
     required this.idKelas,
     required this.namaKelas,
     required this.isActive,
+    this.idOrangTua,
   });
 
   // Factory constructor untuk mengubah data JSON menjadi object SiswaModel
@@ -44,6 +48,9 @@ class SiswaModel {
 
       // Mengambil status aktif siswa
       isActive: json['is_active'] ?? true,
+
+      // Mengambil ID ortu dari tabel siswa
+      idOrangTua: json['id_orang_tua'],
     );
   }
 }

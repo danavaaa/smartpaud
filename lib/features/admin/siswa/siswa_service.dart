@@ -13,6 +13,7 @@ class SiswaService {
           id,
           nama_siswa,
           id_kelas,
+          id_orang_tua,
           is_active,
           kelas (
             id,
@@ -34,6 +35,16 @@ class SiswaService {
         .select('id, nama_kelas')
         .order('nama_kelas', ascending: true);
 
+    return List<Map<String, dynamic>>.from(response);
+  }
+
+  // ambil semua orang tua
+  Future<List<Map<String, dynamic>>> getAllOrangTua() async {
+    final response = await client
+        .from('users')
+        .select('id_user, id_orang_tua, nama')
+        .eq('role', 'orang_tua')
+        .order('nama', ascending: true);
     // Mengubah hasil response menjadi list map
     return List<Map<String, dynamic>>.from(response);
   }
@@ -43,12 +54,14 @@ class SiswaService {
     required String namaSiswa,
     required String idKelas,
     required bool isActive,
+    String? idOrangTua,
   }) async {
     // Menyimpan data baru ke tabel 'siswa'
     await client.from('siswa').insert({
       'nama_siswa': namaSiswa,
       'id_kelas': idKelas,
       'is_active': isActive,
+      'id_orang_tua': idOrangTua,
     });
   }
 
@@ -58,6 +71,7 @@ class SiswaService {
     required String namaSiswa,
     required String idKelas,
     required bool isActive,
+    String? idOrangTua,
   }) async {
     // Memperbarui data siswa berdasarkan id
     await client
@@ -66,6 +80,7 @@ class SiswaService {
           'nama_siswa': namaSiswa,
           'id_kelas': idKelas,
           'is_active': isActive,
+          'id_orang_tua': idOrangTua,
         })
         .eq('id', id);
   }

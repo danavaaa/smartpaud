@@ -67,6 +67,7 @@ class _SiswaPageState extends State<SiswaPage> {
               nama: item?.namaSiswa,
               idKelas: item?.idKelas,
               isActive: item?.isActive,
+              idOrangTua: item?.idOrangTua,
             ),
       ),
     );

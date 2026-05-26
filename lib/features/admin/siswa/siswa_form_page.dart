@@ -7,6 +7,7 @@ class SiswaFormPage extends StatefulWidget {
   final String? nama;
   final String? kelas;
   final String? idKelas;
+  final String? idOrangTua;
   final bool? isActive;
 
   const SiswaFormPage({
@@ -15,6 +16,7 @@ class SiswaFormPage extends StatefulWidget {
     this.nama,
     this.kelas,
     this.idKelas,
+    this.idOrangTua,
     this.isActive,
   });
 
@@ -29,15 +31,21 @@ class _SiswaFormPageState extends State<SiswaFormPage> {
   final _service = SiswaService();
 
   // Menyimpan kelas yang dipilih
-  String? selectedKelas;
-
-  List<Map<String, dynamic>> kelasList = [];
   String? selectedKelasId;
+  // Menyimpan ID orang tua yang dipilih dari dropdown
+  String? selectedOrangTuaId;
+  // List data kelas untuk dropdown
+  List<Map<String, dynamic>> kelasList = [];
+  // list data orang tua untuk dropdown
+  List<Map<String, dynamic>> orangTuaList = [];
 
   // Menyimpan status siswa
   bool isActive = true;
 
   bool isLoading = false;
+
+  // menyimpan status loading dropdown (digunakan saat data kelas dan ortu masih diambil dari database)
+  bool _isLoadingDropdown = true;
 
   // Mengecek apakah halaman sedang dalam mode edit
   bool get isEdit => widget.id != null;
@@ -48,31 +56,42 @@ class _SiswaFormPageState extends State<SiswaFormPage> {
 
     _namaController.text = widget.nama ?? '';
     selectedKelasId = widget.idKelas;
+    selectedOrangTuaId = widget.idOrangTua;
     isActive = widget.isActive ?? true;
 
-    fetchKelasList();
+    fetchDropdownData();
   }
 
-  // Fungsi untuk mengambil daftar kelas
-  Future<void> fetchKelasList() async {
+  // Fungsi untuk mengambil daftar kelas dan orang tua
+  Future<void> fetchDropdownData() async {
     try {
-      // Mengambil seluruh data kelas
-      final result = await _service.getAllKelas();
+      // Ambil semua data kelas dari service
+      final kelasResult = await _service.getAllKelas();
 
-      // agar aman sebelum memanggil setState
+      // Ambil semua data orang tua dari service
+      final orangTuaResult = await _service.getAllOrangTua();
+
       if (!mounted) return;
 
-      // Menyimpan hasil data kelas ke dalam state agar bisa digunakan untuk dropdown
+      // Update state setelah data berhasil didapat
       setState(() {
-        kelasList = result;
+        kelasList = kelasResult; // isi list dropdown kelas
+        orangTuaList = orangTuaResult; // isi list dropdown orang tua
+
+        // Matikan loading dropdown karena data sudah siap
+        _isLoadingDropdown = false;
       });
     } catch (e) {
-      // Jika terjadi error saat mengambil data kelas,
-      // tampilkan pesan gagal ke user
+      // Cek lagi apakah widget masih aktif
       if (!mounted) return;
+
+      // Jika error, matikan loading
+      setState(() => _isLoadingDropdown = false);
+
+      // Tampilkan pesan error ke user
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(SnackBar(content: Text('Gagal mengambil data kelas: $e')));
+      ).showSnackBar(SnackBar(content: Text('Gagal mengambil data: $e')));
     }
   }
 
@@ -97,6 +116,7 @@ class _SiswaFormPageState extends State<SiswaFormPage> {
           namaSiswa: _namaController.text.trim(),
           idKelas: selectedKelasId!,
           isActive: isActive,
+          idOrangTua: selectedOrangTuaId,
         );
       } else {
         // Jika bukan mode edit, tambahkan data siswa baru
@@ -104,6 +124,7 @@ class _SiswaFormPageState extends State<SiswaFormPage> {
           namaSiswa: _namaController.text.trim(),
           idKelas: selectedKelasId!,
           isActive: isActive,
+          idOrangTua: selectedOrangTuaId,
         );
       }
 
@@ -118,9 +139,7 @@ class _SiswaFormPageState extends State<SiswaFormPage> {
       ).showSnackBar(SnackBar(content: Text('Gagal menyimpan data: $e')));
     } finally {
       // Setelah proses selesai, matikan loading
-      if (mounted) {
-        setState(() => isLoading = false);
-      }
+      if (mounted) setState(() => isLoading = false);
     }
   }
 
@@ -243,20 +262,59 @@ class _SiswaFormPageState extends State<SiswaFormPage> {
 
                   // Dropdown untuk memilih kelas siswa
                   buildLabel('Kelas'),
-                  DropdownButtonFormField<String>(
-                    value: selectedKelasId,
-                    decoration: customInputDecoration('Pilih Kelas'),
-                    items:
-                        kelasList.map((kelas) {
-                          return DropdownMenuItem<String>(
-                            value: kelas['id'],
-                            child: Text(kelas['nama_kelas']),
-                          );
-                        }).toList(),
-                    onChanged: (value) {
-                      setState(() => selectedKelasId = value);
-                    },
-                  ),
+                  _isLoadingDropdown
+                      ? const SizedBox()
+                      : DropdownButtonFormField<String>(
+                        value: selectedKelasId,
+                        decoration: customInputDecoration('Pilih Kelas'),
+                        items:
+                            kelasList.map((kelas) {
+                              return DropdownMenuItem<String>(
+                                value: kelas['id'],
+                                child: Text(kelas['nama_kelas']),
+                              );
+                            }).toList(),
+                        onChanged:
+                            (value) => setState(() => selectedKelasId = value),
+                      ),
+                  const SizedBox(height: 12),
+
+                  // Dropdown untuk memilih orang tua
+                  buildLabel('Orang Tua'),
+
+                  _isLoadingDropdown
+                      // Jika data dropdown masih loading,tampilkan spinner loading di tengah
+                      ? const Center(child: CircularProgressIndicator())
+                      // Jika data sudah selesai diambil,tampilkan dropdown orang tua
+                      : DropdownButtonFormField<String>(
+                        value: selectedOrangTuaId,
+                        decoration: customInputDecoration('Pilih Orang Tua'),
+
+                        // tampilan input dropdown
+                        items: [
+                          // Opsi jika siswa tidak memiliki orang tua yang dipilih
+                          const DropdownMenuItem<String>(
+                            value: null,
+                            child: Text('-- Tidak Ada --'),
+                          ),
+
+                          // Tambahkan semua data orang tua dari list
+                          ...orangTuaList.map((ot) {
+                            return DropdownMenuItem<String>(
+                              value: ot['id_orang_tua'] as String?,
+
+                              // ID orang tua yang akan disimpan saat dipilih
+                              child: Text(ot['nama'] ?? '-'),
+                              // Nama orang tua yang ditampilkan di dropdown
+                            );
+                          }),
+                        ],
+
+                        // Saat user memilih item dropdown,simpan ID orang tua yang dipilih ke state
+                        onChanged:
+                            (value) =>
+                                setState(() => selectedOrangTuaId = value),
+                      ),
                   const SizedBox(height: 12),
 
                   // Pilihan status siswa
@@ -287,10 +345,7 @@ class _SiswaFormPageState extends State<SiswaFormPage> {
                           value: false,
                           groupValue: isActive,
                           onChanged: (value) {
-                            if (value != null) {
-                              // Mengubah status siswa menjadi tidak aktif
-                              setState(() => isActive = value);
-                            }
+                            if (value != null) setState(() => isActive = value);
                           },
                           title: const Text(
                             'Tidak Aktif',
@@ -317,10 +372,8 @@ class _SiswaFormPageState extends State<SiswaFormPage> {
                       const SizedBox(width: 18),
                       buildActionButton(
                         title: 'Batal',
-                        onTap: () {
-                          // aksi saat tombol batal ditekan
-                          Navigator.pop(context);
-                        },
+                        onTap: () => Navigator.pop(context),
+                        // aksi saat tombol batal ditekan
                       ),
                     ],
                   ),
