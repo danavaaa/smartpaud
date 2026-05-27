@@ -10,6 +10,9 @@ class LaporanModel {
   // Nama kelas siswa
   final String namaKelas;
 
+  // periode ajaran
+  final String periodeId;
+
   // Tanggal laporan
   final String tanggal;
 
@@ -30,6 +33,7 @@ class LaporanModel {
     required this.idSiswa,
     required this.namaSiswa,
     required this.namaKelas,
+    required this.periodeId,
     required this.tanggal,
     required this.catatanLiterasi,
     required this.ringkasanAi,
@@ -47,6 +51,7 @@ class LaporanModel {
       idSiswa: json['id_siswa'] ?? '',
       namaSiswa: siswa['nama_siswa'] ?? '-',
       namaKelas: kelas['nama_kelas'] ?? '-',
+      periodeId: kelas['id_periode'] ?? '',
       tanggal: json['tanggal_laporan'] ?? '',
       catatanLiterasi: json['catatan_literasi'] ?? '',
       ringkasanAi: json['ringkasan_ai'] ?? '',

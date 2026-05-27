@@ -1,5 +1,6 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'dart:io';
+import '../../../services/user_session.dart';
 
 class LaporanService {
   final _db = Supabase.instance.client;
@@ -44,6 +45,9 @@ class LaporanService {
     await _db.from('laporan_perkembangan').insert({
       // Kolom id_siswa
       'id_siswa': idSiswa,
+
+      // Kolom Id guru
+      'id_guru': UserSession().idUser,
 
       // Kolom tanggal laporan
       'tanggal_laporan': tanggalLaporan,

@@ -13,32 +13,32 @@ class RiwayatLaporanPage extends StatefulWidget {
 
 class _RiwayatLaporanPageState extends State<RiwayatLaporanPage> {
   final _searchController = TextEditingController();
+  // service untuk mengambil data laporan dari database
+  final _service = RiwayatLaporanService();
 
-  // Value pencarian
+  // Menyimpan teks pencarian dari search bar
   String _searchQuery = '';
 
   // Filter kelas default
   String _selectedKelas = 'Semua';
 
-  // Filter periode default
-  String _selectedPeriode = 'Semua';
+  // menyimpan daftar periode yang dipilih dari dropdown
+  String? _selectedPeriodeId;
 
-  // Service untuk mengambil data laporan
-  final _service = RiwayatLaporanService();
+  // menyimpan seluruh data laporan
   List<LaporanModel> _laporanList = [];
+  // menyimpan daftar periode ajaran
+  List<Map<String, dynamic>> _periodeListData = [];
+  // status loading halaman
   bool _isLoading = true;
 
   // list kelas unik dari data laporan untuk dropdown filter
   List<String> get _kelasItems {
+    // ambil semua nama kelas dari laporan
     final kelas = _laporanList.map((e) => e.namaKelas).toSet().toList();
 
     // Tambahkan pilihan "Semua"
     return ['Semua', ...kelas];
-  }
-
-  // list periode unik dari data laporan untuk dropdown filter
-  List<String> get _periodeItems {
-    return ['Semua', '2024/2025 – Semester 1', '2024/2025 – Semester 2'];
   }
 
   // filter data riwayat laporan berdasarkan search query, kelas, dan periode
@@ -52,10 +52,59 @@ class _RiwayatLaporanPageState extends State<RiwayatLaporanPage> {
       // Filter berdasarkan kelas
       final matchKelas =
           _selectedKelas == 'Semua' || l.namaKelas == _selectedKelas;
-
-      // Return jika semua cocok
-      return matchSearch && matchKelas;
+      // cek apakah data laporan sesuai dengan periode yang dipilih
+      final matchPeriode =
+          // jika periode belum dipilih (null) maka semua data dianggap sesuai
+          _selectedPeriodeId == null ||
+          // jika ada periode dipilih, ceka apakah periode laporan sama dengan filter
+          l.periodeId == _selectedPeriodeId;
+      // return hasil akhir, data yang ditampilkan jika sesuai pencarian, kelas dan periode
+      return matchSearch && matchKelas && matchPeriode;
+      // ubah hasil filter menjadi list
     }).toList();
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    // ambil data periode ajaran
+    _loadPeriode();
+    // ambil seluruh data laporan
+    _loadData();
+  }
+
+  // fungsi untuk mengambil daftar periode ajaran
+  Future<void> _loadPeriode() async {
+    try {
+      // request data periode dari service
+      final list = await _service.getPeriodeList();
+      setState(() => _periodeListData = list);
+    } catch (_) {}
+  }
+
+  // fungsi untuk mengambil data laporan perkembangan
+  Future<void> _loadData() async {
+    // aktifkan loading sebelum request data
+    setState(() => _isLoading = true);
+    try {
+      // ambil seluruh data laporan dari service
+      final data = await _service.getLaporan();
+      // simpan data laporan ke state
+      setState(() {
+        _laporanList = data;
+        // matikan loading saat data berhasil diambil
+        _isLoading = false;
+      });
+    } catch (e) {
+      // matikan loading saat terjadi eror
+      setState(() => _isLoading = false);
+      if (mounted) {
+        // tampilkan pesan eror ke user
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Gagal memuat data: $e')));
+      }
+    }
   }
 
   @override
@@ -108,34 +157,6 @@ class _RiwayatLaporanPageState extends State<RiwayatLaporanPage> {
         ),
       ),
     );
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    _loadData();
-  }
-
-  // method untuk mengambil data laporan dari service dan mengupdate state halaman
-  Future<void> _loadData() async {
-    setState(() => _isLoading = true);
-    try {
-      final data = await _service.getLaporan();
-      // Ambil data laporan dari service
-      setState(() {
-        _laporanList = data;
-        _isLoading = false;
-      });
-    } catch (e) {
-      setState(() => _isLoading = false);
-      // Hentikan loading jika terjadi error
-      if (mounted) {
-        // Tampilkan pesan error jika gagal mengambil data
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Gagal memuat data: $e')));
-      }
-    }
   }
 
   // header halaman dengan tombol kembali dan judul
@@ -261,12 +282,69 @@ class _RiwayatLaporanPageState extends State<RiwayatLaporanPage> {
 
         // dropdown periode
         Expanded(
-          child: _buildDropdown(
-            value: _selectedPeriode,
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10),
+            // Dekorasi container dropdown
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(10),
+              // Shadow agar terlihat seperti card
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.04),
+                  blurRadius: 6,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
 
-            items: _periodeItems,
+            child: DropdownButtonHideUnderline(
+              // Menghilangkan garis bawah default dropdown
+              child: DropdownButton<String?>(
+                value: _selectedPeriodeId,
+                isExpanded: true,
+                // Icon panah dropdown
+                icon: const Icon(
+                  Icons.keyboard_arrow_down_rounded,
+                  color: Colors.grey,
+                  size: 18,
+                ),
+                // List item dropdown
+                items: [
+                  // Opsi default untuk menampilkan semua data
+                  const DropdownMenuItem<String?>(
+                    value: null,
+                    child: Text(
+                      'Semua',
+                      style: TextStyle(fontSize: 12, fontFamily: 'Poppins'),
+                    ),
+                  ),
 
-            onChanged: (val) => setState(() => _selectedPeriode = val!),
+                  // Generate item dropdown dari data periode
+                  ..._periodeListData.map((p) {
+                    return DropdownMenuItem<String?>(
+                      // Value yang disimpan saat item dipilih
+                      value: p['id'] as String,
+
+                      // Text yang ditampilkan di dropdown
+                      child: Text(
+                        '${p['tahun_ajaran']} – ${p['semester']}',
+                        style: const TextStyle(
+                          fontSize: 12,
+                          fontFamily: 'Poppins',
+                        ),
+                      ),
+                    );
+                  }),
+                ],
+
+                // Saat user memilih periode
+                onChanged: (val) {
+                  // Simpan id periode yang dipilih
+                  setState(() => _selectedPeriodeId = val);
+                },
+              ),
+            ),
           ),
         ),
       ],

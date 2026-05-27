@@ -24,7 +24,8 @@ class RiwayatLaporanService {
             nama_siswa,
 
             kelas (
-              nama_kelas
+              nama_kelas,
+              id_periode
             )
           )
         ''')
@@ -34,5 +35,15 @@ class RiwayatLaporanService {
     // Mapping hasil query ke dalam model LaporanModel
     // agar lebih mudah digunakan di UI
     return response.map<LaporanModel>((e) => LaporanModel.fromJson(e)).toList();
+  }
+
+  // Ambil daftar periode dari database
+  Future<List<Map<String, dynamic>>> getPeriodeList() async {
+    final response = await _db
+        .from('periode_ajaran')
+        .select('id, tahun_ajaran, semester')
+        .order('tahun_ajaran', ascending: false);
+
+    return List<Map<String, dynamic>>.from(response);
   }
 }
