@@ -25,31 +25,35 @@ class _RiwayatPerkembanganPageState extends State<RiwayatPerkembanganPage> {
   // Menyimpan daftar laporan perkembangan siswa
   List<LaporanOrtuModel> _laporanList = [];
 
+  // Menyimpan daftar periode ajaran
+  List<Map<String, dynamic>> _periodeListData = [];
+  // Menyimpan id periode yang dipilih user
+  String? _selectedPeriodeId;
   // Status loading saat data anak sedang diambil
   bool _isLoadingAnak = true;
 
   // Status loading saat data laporan sedang diambil
   bool _isLoadingLaporan = false;
-  // Filter periode yang sedang dipilih
-  String _selectedPeriode = 'Semua Periode';
-
-  // List pilihan periode nanti diambil dari tabel periode ajaran
-  final List<String> _periodeList = [
-    'Semua Periode',
-    '2024/2025 – Semester 1',
-    '2024/2025 – Semester 2',
-  ];
-
-  // ambil email orang tua dari usersession
   String get _emailOrangTua => UserSession().email ?? '';
 
   @override
   void initState() {
     super.initState();
+    _loadPeriode();
     _loadAnak();
   }
 
-  // Fungsi untuk mengambil daftar anak berdasarkan akun orang tua
+  // Fungsi untuk mengambil daftar periode ajaran
+  Future<void> _loadPeriode() async {
+    try {
+      // Ambil data periode dari database
+      final list = await _service.getPeriodeList();
+      // simpan data periode ke state
+      setState(() => _periodeListData = list);
+    } catch (_) {}
+  }
+
+  // Fungsi untuk mengambil data anak
   Future<void> _loadAnak() async {
     // Set loading anak menjadi true
     setState(() => _isLoadingAnak = true);
@@ -108,11 +112,16 @@ class _RiwayatPerkembanganPageState extends State<RiwayatPerkembanganPage> {
 
     try {
       // Ambil data laporan dari database
-      final list = await _service.getLaporan(idSiswa);
-
-      // Update state setelah data berhasil didapat
+      // ambil daftar laporan berdasarkan siswa dan filter periode yang dipilih
+      final list = await _service.getLaporanByPeriode(
+        idSiswa,
+        idPeriode: _selectedPeriodeId,
+      );
+      // Update state setelah data berhasil diambil
       setState(() {
+        // simpan data laporan ke list
         _laporanList = list;
+        // matikan loading
         _isLoadingLaporan = false;
       });
     } catch (e) {
@@ -298,32 +307,54 @@ class _RiwayatPerkembanganPageState extends State<RiwayatPerkembanganPage> {
       ),
 
       child: DropdownButtonHideUnderline(
-        child: DropdownButton<String>(
+        // Menghilangkan garis bawah default dropdown
+        child: DropdownButton<String?>(
           // Periode yang sedang dipilih
-          value: _selectedPeriode,
+          value: _selectedPeriodeId,
 
           isExpanded: true,
 
+          // Icon panah dropdown
           icon: const Icon(
             Icons.keyboard_arrow_down_rounded,
             color: Colors.grey,
           ),
 
-          // Generate pilihan periode
-          items:
-              _periodeList.map((p) {
-                return DropdownMenuItem<String>(
-                  value: p,
-                  child: Text(
-                    p,
-                    style: const TextStyle(fontSize: 13, fontFamily: 'Poppins'),
-                  ),
-                );
-              }).toList(),
+          // Daftar item dropdown
+          items: [
+            // Opsi default untuk menampilkan semua periode
+            const DropdownMenuItem<String?>(
+              value: null,
+              child: Text(
+                'Semua Periode',
+                style: TextStyle(fontSize: 13, fontFamily: 'Poppins'),
+              ),
+            ),
 
-          // Saat periode dipilih
+            // Generate item dropdown dari data periode
+            ..._periodeListData.map((p) {
+              return DropdownMenuItem<String?>(
+                // ID periode sebagai value dropdown
+                value: p['id'] as String,
+
+                // Text yang ditampilkan di dropdown
+                child: Text(
+                  '${p['tahun_ajaran']} – ${p['semester']}',
+                  style: const TextStyle(fontSize: 13, fontFamily: 'Poppins'),
+                ),
+              );
+            }),
+          ],
+
+          // Saat user memilih periode
           onChanged: (val) {
-            if (val != null) setState(() => _selectedPeriode = val);
+            // Simpan periode yang dipilih
+            setState(() => _selectedPeriodeId = val);
+
+            // Jika anak sudah dipilih, reload laporan berdasarkan periode baru
+            if (_selectedAnak != null) {
+              _loadLaporan(_selectedAnak!.id);
+            }
           },
         ),
       ),
