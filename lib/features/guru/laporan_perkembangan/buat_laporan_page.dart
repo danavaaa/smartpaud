@@ -4,6 +4,8 @@ import 'dart:io';
 import 'package:image_picker/image_picker.dart';
 import 'preview_laporan_page.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 
 class BuatLaporanPage extends StatefulWidget {
   const BuatLaporanPage({super.key});
@@ -92,68 +94,106 @@ class _BuatLaporanPageState extends State<BuatLaporanPage> {
     }
   }
 
-  // Validasi lalu navigasi ke preview
+  // Fungsi untuk menghasilkan ringkasan dan rekomendasi AI berdasarkan catatan literasi
   Future<void> _generateAi() async {
+    // Validasi (pastikan siswa sudah dipilih)
     if (_selectedSiswa == null) {
       _snackbar('Pilih siswa terlebih dahulu');
       return;
     }
+    // validasi (pastikan tanggal sudah dipilih)
     if (_tanggalLaporan == null) {
       _snackbar('Pilih tanggal laporan');
       return;
     }
+    // validasi (pastikan catatan literasi tidak kosong)
     if (_catatanCtrl.text.trim().isEmpty) {
       _snackbar('Isi catatan literasi membaca terlebih dahulu');
       return;
     }
-
+    // tampilkan loading saat proses AI berjalan
     setState(() => _isLoading = true);
 
-    // Simulasi delay AI
-    await Future.delayed(const Duration(seconds: 2));
-
-    // Ambil data siswa yang diperlukan untuk laporan
+    // Ambil data siswa yang dipilih
     final namaSiswa = _selectedSiswa!['nama_siswa'] as String;
     final idSiswa = _selectedSiswa!['id'] as String;
+    // ambil data kelas siswa
     final kelas = _selectedSiswa!['kelas'] as Map<String, dynamic>? ?? {};
     final namaKelas = kelas['nama_kelas'] as String? ?? '-';
+    // ambil catatan literasi dari input user
+    final catatan = _catatanCtrl.text.trim();
 
-    // Simulasi hasil AI
-    final ringkasan =
-        'Berdasarkan catatan guru, $namaSiswa menunjukkan '
-        'perkembangan literasi membaca yang positif. '
-        '${_catatanCtrl.text.trim()}';
+    try {
+      const workerUrl = 'https://smartpaud-ai.danavaa-vaa.workers.dev';
 
-    const rekomendasi =
-        '1. Bacakan buku cerita bergambar setiap hari minimal 15 menit.\n'
-        '2. Ajak anak menunjuk dan menyebut huruf di lingkungan sekitar.\n'
-        '3. Gunakan kartu huruf untuk mengenalkan bunyi huruf.\n'
-        '4. Beri pujian ketika anak berhasil mengenali kata baru.\n'
-        '5. Libatkan anak dalam kegiatan menulis sederhana.';
+      // kirim request POST ke AI
+      final response = await http.post(
+        Uri.parse(workerUrl),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'catatan': catatan, 'nama_siswa': namaSiswa}),
+      );
+      // untuk melihat respon dari user
+      debugPrint('STATUS: ${response.statusCode}');
+      debugPrint('BODY: ${response.body}');
+      // jika request berhasil
+      if (response.statusCode == 200) {
+        // ubah response JSON menjadi obejct dart
+        final data = jsonDecode(response.body);
+        // ambil hasil teks AI
+        final text = data['result'] as String;
 
-    if (!mounted) return;
-    setState(() => _isLoading = false);
-    // Navigasi ke halaman preview dengan membawa data yang diperlukan
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder:
-            (_) => PreviewLaporanPage(
-              idSiswa: idSiswa,
-              namaSiswa: namaSiswa,
-              namaKelas: namaKelas,
-              tanggalLaporan: DateFormat('yyyy-MM-dd').format(_tanggalLaporan!),
-              tanggalDisplay: DateFormat(
-                'dd MMMM yyyy',
-                'id_ID',
-              ).format(_tanggalLaporan!),
-              catatanLiterasi: _catatanCtrl.text.trim(),
-              ringkasanAi: ringkasan,
-              rekomendasiAi: rekomendasi,
-              imageFile: _selectedImage,
-            ),
-      ),
-    );
+        String ringkasan = '';
+        String rekomendasi = '';
+        // pisahkan hasil AI menjadi bagian ringkasan dan rekomendasi
+        if (text.contains('RINGKASAN:') && text.contains('REKOMENDASI:')) {
+          final parts = text.split('REKOMENDASI:');
+          // ambil isi ringkasan
+          ringkasan = parts[0].replaceAll('RINGKASAN:', '').trim();
+          // ambil isi rekomendasi
+          rekomendasi = 'REKOMENDASI:\n${parts[1].trim()}';
+        } else {
+          // jika format AI tidak sesuai, simpan semua teks sebagai ringkasan
+          ringkasan = text;
+          rekomendasi = '';
+        }
+
+        if (!mounted) return;
+        setState(() => _isLoading = false);
+        // pindah ke halaman preview laporan
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder:
+                (_) => PreviewLaporanPage(
+                  idSiswa: idSiswa,
+                  namaSiswa: namaSiswa,
+                  namaKelas: namaKelas,
+                  tanggalLaporan: DateFormat(
+                    'yyyy-MM-dd',
+                  ).format(_tanggalLaporan!),
+                  tanggalDisplay: DateFormat(
+                    'dd MMMM yyyy',
+                    'id_ID',
+                  ).format(_tanggalLaporan!),
+                  catatanLiterasi: catatan,
+                  ringkasanAi: ringkasan,
+                  rekomendasiAi: rekomendasi,
+                  imageFile: _selectedImage,
+                ),
+          ),
+        );
+      } else {
+        final errorBody = jsonDecode(response.body);
+        throw Exception('Error ${response.statusCode}: ${errorBody['error']}');
+      }
+    } catch (e) {
+      // jika terjadi error saat request API
+      if (!mounted) return;
+      // matikan loading
+      setState(() => _isLoading = false);
+      // tampilkan pesan error
+      _snackbar('Gagal generate AI: $e');
+    }
   }
 
   // Menampilkan snackbar untuk pesan error atau informasi
