@@ -84,20 +84,18 @@ class RiwayatLaporanOrtuService {
         .toList();
   }
 
-  // Fungsi untuk mengambil id orang tua berdasarkan email user
-  Future<String?> getIdOrangTua(String email) async {
+  // Fungsi untuk mengambil id orang tua berdasarkan userId
+  Future<String?> getIdOrangTua(String userId) async {
     // Query ke tabel users
     final response =
         await _db
             .from('users')
-            .select('id_orang_tua, nama')
-            // Filter berdasarkan email
-            .eq('email', email)
-            // Ambil satu data saja
-            .single();
+            .select('id_orang_tua')
+            .eq('id_user', userId) // filter berdasarkan id_user yang login
+            .maybeSingle(); // ambil 1 data saja atau null jika tidak ditemukan
 
-    // Return id_orang_tua
-    return response['id_orang_tua'] as String?;
+    // jika data ditemukan, kembalikan id_orang_tua, jika tidak kembalikan null
+    return response?['id_orang_tua'] as String?;
   }
 
   // fungsi untuk mengambil daftar periode ajaran dari tabel periode_ajaran

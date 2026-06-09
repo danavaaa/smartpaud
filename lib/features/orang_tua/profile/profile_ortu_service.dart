@@ -4,37 +4,31 @@ import 'profile_ortu_model.dart';
 class ProfileOrtuService {
   final _db = Supabase.instance.client;
 
-  // Ambil profil orang tua berdasarkan email
-  Future<ProfileOrtuModel> getProfile(String email) async {
+  // Ambil profil orang tua berdasarkan id_user
+  Future<ProfileOrtuModel> getProfile(String userId) async {
     final response =
         await _db
             .from('users') // ambil data dari tabel users
-            .select(
-              'id_user, nama, email, no_hp, is_active',
-            ) // kolom yang diambil
-            .eq('email', email)
-            // filter berdasarkan email yang login
-            .single();
-    // ambil 1 data saja (karena email harus unik)
+            .select('id_user, nama, email, no_hp, is_active')
+            .eq('id_user', userId) // filter berdasarkan id_user yang login
+            .maybeSingle(); // ambil 1 data saja atau null jika tidak ditemukan
 
-    // Convert response JSON menjadi object ProfileOrtuModel
+    // Jika response null, berarti profil tidak ditemukan, lempar exception
+    if (response == null) throw Exception('Profil tidak ditemukan');
     return ProfileOrtuModel.fromJson(response);
   }
 
-  // Ambil id_orang_tua dari tabel users
-  Future<String?> getIdOrangTua(String email) async {
+  // Ambil id_orang_tua dari tabel users berdasarkan id_user
+  Future<String?> getIdOrangTua(String userId) async {
     final response =
         await _db
             .from('users') // ambil dari tabel users
             .select('id_orang_tua')
-            // hanya ambil kolom id_orang_tua
-            .eq('email', email)
-            // cari berdasarkan email
-            .single();
-    // ambil 1 row saja
+            .eq('id_user', userId) // filter berdasarkan id_user yang login
+            .maybeSingle(); // ambil 1 data saja atau null jika tidak ditemukan
 
-    // Return id_orang_tua sebagai String
-    return response['id_orang_tua'] as String?;
+    // Jika response null, berarti id_orang_tua tidak ditemukan, return null
+    return response?['id_orang_tua'] as String?;
   }
 
   // Ambil daftar anak berdasarkan id_orang_tua

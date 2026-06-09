@@ -33,11 +33,11 @@ class _ProfilePageState extends State<ProfilePage> {
   Future<void> _loadProfile() async {
     setState(() => _isLoading = true); // tampilkan loading
     try {
-      // ambil data profile berdasarkan email
-      final email = UserSession().email ?? '';
-      final profile = await _service.getProfile(email);
-      // ambil data kelas berdasarkan id_guru
-      final kelas = await _service.getKelasDiampu(profile.id);
+      // ambil data profile berdasarkan id user yang tersimpan di session
+      final userId = UserSession().idUser ?? '';
+      final profile = await _service.getProfile(userId);
+      // ambil data kelas berdasarkan id user yang tersimpan di session
+      final kelas = await _service.getKelasDiampu(userId);
 
       setState(() {
         _profile = profile; // simpan profile

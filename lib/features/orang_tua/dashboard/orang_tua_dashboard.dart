@@ -46,18 +46,14 @@ class _OrangTuaDashboardPageState extends State<OrangTuaDashboardPage> {
     setState(() => _isLoadingAnak = true);
 
     try {
-      // Ambil email orang tua dari session
-      final email = UserSession().email ?? '';
-
-      // Cari id_orang_tua berdasarkan email
-      final idOrangTua = await _service.getIdOrangTua(email);
-
-      // Kalau id_orang_tua tidak ditemukan
+      // Ambil id orang tua dari session untuk digunakan sebagai parameter query data anak
+      final idOrangTua = UserSession().idOrangTua;
+      // jika id orang tua tidak tersedia di session
       if (idOrangTua == null) {
         // Matikan loading
         setState(() => _isLoadingAnak = false);
 
-        // Hentikan function
+        // Hentikan function karena tidak bisa ambil data anak tanpa id orang tua
         return;
       }
 

@@ -26,9 +26,6 @@ class _ProfileOrtuPageState extends State<ProfileOrtuPage> {
   // Status loading, default true karena data belum dimuat
   bool _isLoading = true;
 
-  // Email orang tua yang digunakan untuk mengambil data profil
-  String get _email => UserSession().email ?? '';
-
   @override
   void initState() {
     super.initState();
@@ -37,18 +34,21 @@ class _ProfileOrtuPageState extends State<ProfileOrtuPage> {
     _loadProfile();
   }
 
+  // Load data profil orang tua dan daftar anak dari database
   Future<void> _loadProfile() async {
     // Tampilkan loading sebelum mulai ambil data
     setState(() => _isLoading = true);
 
     try {
-      // Ambil data profil orang tua berdasarkan email
-      final profile = await _service.getProfile(_email);
+      // Ambil idUser yang sedang login dari UserSession
+      final userId = UserSession().idUser ?? '';
+      // Ambil data profilorang tua berdasarkan idUser
+      final profile = await _service.getProfile(userId);
 
-      // Ambil id_orang_tua berdasarkan email
-      final idOrangTua = await _service.getIdOrangTua(_email);
+      // Ambil id_orang_tua dari UserSession
+      final idOrangTua = UserSession().idOrangTua;
 
-      // Siapkan list kosong untuk data anak
+      // Siapkan list data anak
       List<AnakProfileModel> anak = [];
 
       // Kalau id_orang_tua ada, ambil daftar anak

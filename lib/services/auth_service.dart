@@ -31,6 +31,11 @@ class AuthService {
             ) // mencari data yang memiliki id_auth yang sama dengan id user yang sedang login
             .maybeSingle(); // mengambil satu data saja, jika tidak ada data yang ditemukan, kembalikan null
 
+    // jika data ditemukan, set data tersebut ke UserSession untuk digunakan di seluruh aplikasi
+    if (data != null) {
+      UserSession().setFromProfile(data);
+    }
+
     return data;
   }
 

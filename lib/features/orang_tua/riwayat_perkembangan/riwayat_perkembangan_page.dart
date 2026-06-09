@@ -34,7 +34,6 @@ class _RiwayatPerkembanganPageState extends State<RiwayatPerkembanganPage> {
 
   // Status loading saat data laporan sedang diambil
   bool _isLoadingLaporan = false;
-  String get _emailOrangTua => UserSession().email ?? '';
 
   @override
   void initState() {
@@ -59,8 +58,8 @@ class _RiwayatPerkembanganPageState extends State<RiwayatPerkembanganPage> {
     setState(() => _isLoadingAnak = true);
 
     try {
-      // Ambil id_orang_tua berdasarkan email login
-      final idOrangTua = await _service.getIdOrangTua(_emailOrangTua);
+      // Ambil id_orang_tua berdasarkan session user yang sedang login
+      final idOrangTua = UserSession().idOrangTua;
 
       // Jika id_orang_tua tidak ditemukan
       if (idOrangTua == null) {

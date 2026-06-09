@@ -4,26 +4,19 @@ import 'profile_model.dart';
 class ProfileService {
   final _db = Supabase.instance.client;
 
-  // ambil profile guru berdasarkan email
-  Future<ProfileModel> getProfile(String email) async {
+  // ambil profile guru berdasarkan id user yang tersimpan di session
+  Future<ProfileModel> getProfile(String userId) async {
     final response =
         await _db
             // Nama tabel
             .from('users')
-            // Field yang diambil
-            .select('''
-              id_user,
-              nama,
-              email,
-              no_hp,
-              is_active
-              ''')
-            // Filter berdasarkan email
-            .eq('email', email)
-            // Ambil satu data saja
-            .single();
+            // Ambil field yang diperlukan
+            .select('id_user, nama, email, no_hp, is_active')
+            .eq('id_user', userId) // ambil berdasarkan id user
+            .maybeSingle(); // ambil satu data atau null jika tidak ditemukan
 
-    // Convert JSON menjadi object ProfileModel
+    // jika response null, berarti profil tidak ditemukan, lempar exception
+    if (response == null) throw Exception('Profil tidak ditemukan');
     return ProfileModel.fromJson(response);
   }
 
