@@ -148,7 +148,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
 
             blurRadius: 6,
 
@@ -234,7 +234,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
 
             blurRadius: 6,
 
@@ -368,7 +368,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
 
             blurRadius: 6,
 
@@ -423,7 +423,7 @@ class _ProfilePageState extends State<ProfilePage> {
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(10),
                     border: Border.all(
-                      color: Colors.grey.withOpacity(0.5),
+                      color: Colors.grey.withValues(alpha: 0.5),
 
                       width: 0.5,
                     ),
@@ -522,8 +522,7 @@ class _ProfilePageState extends State<ProfilePage> {
                   TextButton(
                     onPressed: () async {
                       Navigator.pop(ctx);
-                      await AuthService()
-                          .logout(); // hapus session dan  keluar Supabase
+                      await AuthService().logout();
                       if (!mounted) return;
                       Navigator.pushAndRemoveUntil(
                         context,

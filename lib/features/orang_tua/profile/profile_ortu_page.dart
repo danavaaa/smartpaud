@@ -154,7 +154,7 @@ class _ProfileOrtuPageState extends State<ProfileOrtuPage> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 6,
             offset: const Offset(0, 2),
           ),
@@ -220,7 +220,7 @@ class _ProfileOrtuPageState extends State<ProfileOrtuPage> {
         borderRadius: BorderRadius.circular(14),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 6,
             offset: const Offset(0, 2),
           ),
@@ -315,7 +315,7 @@ class _ProfileOrtuPageState extends State<ProfileOrtuPage> {
         borderRadius: BorderRadius.circular(14),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 6,
             offset: const Offset(0, 2),
           ),
@@ -357,7 +357,7 @@ class _ProfileOrtuPageState extends State<ProfileOrtuPage> {
                   decoration: BoxDecoration(
                     color: Colors.white,
                     border: Border.all(
-                      color: Colors.grey.withOpacity(0.2),
+                      color: Colors.grey.withValues(alpha: 0.2),
                       width: 0.5,
                     ),
                   ),

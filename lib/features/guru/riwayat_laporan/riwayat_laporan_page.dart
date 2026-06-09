@@ -200,7 +200,7 @@ class _RiwayatLaporanPageState extends State<RiwayatLaporanPage> {
 
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
 
             blurRadius: 6,
 
@@ -291,7 +291,7 @@ class _RiwayatLaporanPageState extends State<RiwayatLaporanPage> {
               // Shadow agar terlihat seperti card
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.04),
+                  color: Colors.black.withValues(alpha: 0.04),
                   blurRadius: 6,
                   offset: const Offset(0, 2),
                 ),
@@ -367,7 +367,7 @@ class _RiwayatLaporanPageState extends State<RiwayatLaporanPage> {
 
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
 
             blurRadius: 6,
 
@@ -437,7 +437,7 @@ class _RiwayatLaporanPageState extends State<RiwayatLaporanPage> {
 
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.04),
+              color: Colors.black.withValues(alpha: 0.04),
 
               blurRadius: 6,
 
