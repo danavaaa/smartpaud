@@ -165,7 +165,7 @@ class AdminDashboardPage extends StatelessWidget {
     return Scaffold(
       backgroundColor: const Color(0xFFDCE5E8),
       body: SafeArea(
-        child: Padding(
+        child: SingleChildScrollView(
           padding: const EdgeInsets.fromLTRB(26, 30, 26, 30),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -254,8 +254,7 @@ class AdminDashboardPage extends StatelessWidget {
                     ),
               ),
 
-              // spacer untuk mendorong tombol logout ke bawah
-              const Spacer(),
+              const SizedBox(height: 24),
 
               // tombol logout
               _buildLogoutButton(context),
