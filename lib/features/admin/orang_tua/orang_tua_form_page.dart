@@ -211,7 +211,7 @@ class _OrangTuaFormPageState extends State<OrangTuaFormPage> {
       ),
 
       // Isi halaman
-      body: Padding(
+      body: SingleChildScrollView(
         // Memberi jarak isi dari tepi layar
         padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
         child: Column(
