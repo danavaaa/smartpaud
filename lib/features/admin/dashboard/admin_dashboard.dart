@@ -70,20 +70,79 @@ class AdminDashboardPage extends StatelessWidget {
       width: double.infinity,
       height: 50,
       child: ElevatedButton(
-        onPressed: () async {
-          // Memanggil service logout untuk menghapus sesi/token pengguna
-          await _authService.logout();
+        // aksi saat tombol logout ditekan
+        onPressed: () {
+          // Tampilkan dialog konfirmasi sebelum logout
+          showDialog(
+            context: context,
+            builder:
+                (ctx) => AlertDialog(
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  // Judul dialog
+                  title: const Text(
+                    'Konfirmasi Logout',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      fontFamily: 'Poppins',
+                    ),
+                  ),
+                  // Isi dialog
+                  content: const Text(
+                    'Apakah kamu yakin ingin keluar?',
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontFamily: 'Poppins',
+                      color: Colors.grey,
+                    ),
+                  ),
+                  // Tombol aksi dialog
+                  actions: [
+                    // Tombol batal
+                    TextButton(
+                      // Tutup dialog tanpa melakukan logout
+                      onPressed: () => Navigator.pop(ctx),
+                      child: const Text(
+                        'Batal',
+                        style: TextStyle(
+                          fontFamily: 'Poppins',
+                          color: Colors.grey,
+                        ),
+                      ),
+                    ),
+                    // Tombol logout
+                    TextButton(
+                      onPressed: () async {
+                        // Tutup dialog konfirmasi
+                        Navigator.pop(ctx);
+                        // Proses logout, menghapus session pengguna dan keluar dari akun
+                        await _authService.logout();
 
-          if (!context.mounted) return;
-
-          // Navigasi ke LoginPage dan hapus seluruh stack navigasi,
-          // sehingga pengguna tidak bisa kembali ke halaman sebelumnya
-          Navigator.pushAndRemoveUntil(
-            context,
-            MaterialPageRoute(builder: (_) => const LoginPage()),
-            (route) => false, // Hapus semua route yang ada
+                        if (!context.mounted) return;
+                        // Setelah logout berhasil, navigasi ke halaman login
+                        Navigator.pushAndRemoveUntil(
+                          context,
+                          MaterialPageRoute(builder: (_) => const LoginPage()),
+                          // Hapus semua route sebelumnya
+                          (route) => false,
+                        );
+                      },
+                      child: const Text(
+                        'Logout',
+                        style: TextStyle(
+                          fontFamily: 'Poppins',
+                          color: Color(0xFFA32D2D),
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
           );
         },
+        // gaya tombol logout
         style: ElevatedButton.styleFrom(
           backgroundColor: const Color(0xFFD9D4D4),
           foregroundColor: Colors.black,
@@ -92,6 +151,7 @@ class AdminDashboardPage extends StatelessWidget {
             borderRadius: BorderRadius.circular(20), // Sudut tombol membulat
           ),
         ),
+        // teks tombol logout
         child: const Text(
           'LogOut',
           style: TextStyle(fontSize: 15, fontFamily: 'Poppins'),
