@@ -191,7 +191,7 @@ class _PeriodeAjaranFormPageState extends State<PeriodeAjaranFormPage> {
     return Scaffold(
       backgroundColor: const Color(0xFFDCE5E8),
       body: SafeArea(
-        child: Padding(
+        child: SingleChildScrollView(
           padding: const EdgeInsets.fromLTRB(20, 24, 20, 20),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
