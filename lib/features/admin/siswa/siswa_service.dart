@@ -12,6 +12,9 @@ class SiswaService {
         .select('''
           id,
           nama_siswa,
+          tempat_lahir,
+          tanggal_lahir,
+          jenis_kelamin,
           id_kelas,
           id_orang_tua,
           is_active,
@@ -55,6 +58,9 @@ class SiswaService {
     required String idKelas,
     required bool isActive,
     String? idOrangTua,
+    String? tempatLahir,
+    String? tanggalLahir,
+    String? jenisKelamin,
   }) async {
     // Menyimpan data baru ke tabel 'siswa'
     await client.from('siswa').insert({
@@ -62,6 +68,9 @@ class SiswaService {
       'id_kelas': idKelas,
       'is_active': isActive,
       'id_orang_tua': idOrangTua,
+      'tempat_lahir': tempatLahir,
+      'tanggal_lahir': tanggalLahir,
+      'jenis_kelamin': jenisKelamin,
     });
   }
 
@@ -72,6 +81,9 @@ class SiswaService {
     required String idKelas,
     required bool isActive,
     String? idOrangTua,
+    String? tempatLahir,
+    String? tanggalLahir,
+    String? jenisKelamin,
   }) async {
     // Memperbarui data siswa berdasarkan id
     await client
@@ -81,6 +93,9 @@ class SiswaService {
           'id_kelas': idKelas,
           'is_active': isActive,
           'id_orang_tua': idOrangTua,
+          'tempat_lahir': tempatLahir,
+          'tanggal_lahir': tanggalLahir,
+          'jenis_kelamin': jenisKelamin,
         })
         .eq('id', id);
   }

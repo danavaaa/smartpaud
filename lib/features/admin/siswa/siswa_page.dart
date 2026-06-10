@@ -68,13 +68,14 @@ class _SiswaPageState extends State<SiswaPage> {
               idKelas: item?.idKelas,
               isActive: item?.isActive,
               idOrangTua: item?.idOrangTua,
+              tempatLahir: item?.tempatLahir,
+              tanggalLahir: item?.tanggalLahir,
+              jenisKelamin: item?.jenisKelamin,
             ),
       ),
     );
 
-    if (result == true) {
-      fetchData();
-    }
+    if (result == true) fetchData();
   }
 
   // Fungsi untuk membuat kartu data siswa

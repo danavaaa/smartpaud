@@ -18,6 +18,15 @@ class SiswaModel {
   // ID orang tua
   final String? idOrangTua;
 
+  // Tempat lahir siswa
+  final String? tempatLahir;
+
+  // Tanggal lahir siswa
+  final String? tanggalLahir;
+
+  // Jenis kelamin siswa
+  final String? jenisKelamin;
+
   // Constructor untuk mengisi seluruh data siswa
   SiswaModel({
     required this.id,
@@ -26,6 +35,9 @@ class SiswaModel {
     required this.namaKelas,
     required this.isActive,
     this.idOrangTua,
+    this.tempatLahir,
+    this.tanggalLahir,
+    this.jenisKelamin,
   });
 
   // Factory constructor untuk mengubah data JSON menjadi object SiswaModel
@@ -51,6 +63,15 @@ class SiswaModel {
 
       // Mengambil ID ortu dari tabel siswa
       idOrangTua: json['id_orang_tua'],
+
+      // Mengambil data tempat lahir
+      tempatLahir: json['tempat_lahir'],
+
+      // Mengambil data tanggal lahir
+      tanggalLahir: json['tanggal_lahir'],
+
+      // Mengambil data jenis kelamin
+      jenisKelamin: json['jenis_kelamin'],
     );
   }
 }

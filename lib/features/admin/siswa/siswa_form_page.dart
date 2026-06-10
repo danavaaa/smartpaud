@@ -1,22 +1,27 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'siswa_service.dart';
 
 // Halaman form untuk menambah atau mengedit data siswa
 class SiswaFormPage extends StatefulWidget {
   final String? id;
   final String? nama;
-  final String? kelas;
   final String? idKelas;
   final String? idOrangTua;
+  final String? tempatLahir;
+  final String? tanggalLahir;
+  final String? jenisKelamin;
   final bool? isActive;
 
   const SiswaFormPage({
     super.key,
     this.id,
     this.nama,
-    this.kelas,
     this.idKelas,
     this.idOrangTua,
+    this.tempatLahir,
+    this.tanggalLahir,
+    this.jenisKelamin,
     this.isActive,
   });
 
@@ -28,13 +33,18 @@ class SiswaFormPage extends StatefulWidget {
 class _SiswaFormPageState extends State<SiswaFormPage> {
   // Controller untuk input nama siswa
   final _namaController = TextEditingController();
+  // Controller untuk input tempat lahir siswa
+  final _tempatLahirController = TextEditingController();
+  // Controller untuk input tanggal lahir siswa
+  final _tanggalLahirController = TextEditingController();
   final _service = SiswaService();
 
   // Menyimpan kelas yang dipilih
   String? selectedKelasId;
   // Menyimpan ID orang tua yang dipilih dari dropdown
   String? selectedOrangTuaId;
-  // List data kelas untuk dropdown
+  // Menyimpan jenis kelamin yang dipilih
+  String? selectedJenisKelamin;
   List<Map<String, dynamic>> kelasList = [];
   // list data orang tua untuk dropdown
   List<Map<String, dynamic>> orangTuaList = [];
@@ -55,8 +65,11 @@ class _SiswaFormPageState extends State<SiswaFormPage> {
     super.initState();
 
     _namaController.text = widget.nama ?? '';
+    _tempatLahirController.text = widget.tempatLahir ?? '';
+    _tanggalLahirController.text = widget.tanggalLahir ?? '';
     selectedKelasId = widget.idKelas;
     selectedOrangTuaId = widget.idOrangTua;
+    selectedJenisKelamin = widget.jenisKelamin;
     isActive = widget.isActive ?? true;
 
     fetchDropdownData();
@@ -95,7 +108,27 @@ class _SiswaFormPageState extends State<SiswaFormPage> {
     }
   }
 
-  // Fungsi untuk menyimpan data siswa (baik tambah maupun edit)
+  // Fungsi untuk memilih tanggal lahir menggunakan date picker
+  Future<void> _pilihTanggalLahir() async {
+    // tampilkan dialog kalender untuk memilih tanggal lahir
+    final picked = await showDatePicker(
+      context: context,
+      // Tanggal awal yang ditampilkan saat dialog muncul
+      initialDate: DateTime(2018),
+      // Batas tanggal yang bisa dipilih
+      firstDate: DateTime(2010),
+      // Batas tanggal terakhir yang bisa dipilih
+      lastDate: DateTime.now(),
+      locale: const Locale('id', 'ID'),
+    );
+    // Jika user memilih tanggal (tidak membatalkan dialog), simpan tanggal yang dipilih ke controller dengan format yyyy-MM-dd
+    if (picked != null) {
+      setState(() {
+        _tanggalLahirController.text = DateFormat('yyyy-MM-dd').format(picked);
+      });
+    }
+  }
+
   Future<void> saveData() async {
     // Validasi: nama siswa dan kelas wajib diisi
     if (_namaController.text.trim().isEmpty || selectedKelasId == null) {
@@ -117,6 +150,15 @@ class _SiswaFormPageState extends State<SiswaFormPage> {
           idKelas: selectedKelasId!,
           isActive: isActive,
           idOrangTua: selectedOrangTuaId,
+          tempatLahir:
+              _tempatLahirController.text.trim().isEmpty
+                  ? null
+                  : _tempatLahirController.text.trim(),
+          tanggalLahir:
+              _tanggalLahirController.text.trim().isEmpty
+                  ? null
+                  : _tanggalLahirController.text.trim(),
+          jenisKelamin: selectedJenisKelamin,
         );
       } else {
         // Jika bukan mode edit, tambahkan data siswa baru
@@ -125,6 +167,15 @@ class _SiswaFormPageState extends State<SiswaFormPage> {
           idKelas: selectedKelasId!,
           isActive: isActive,
           idOrangTua: selectedOrangTuaId,
+          tempatLahir:
+              _tempatLahirController.text.trim().isEmpty
+                  ? null
+                  : _tempatLahirController.text.trim(),
+          tanggalLahir:
+              _tanggalLahirController.text.trim().isEmpty
+                  ? null
+                  : _tanggalLahirController.text.trim(),
+          jenisKelamin: selectedJenisKelamin,
         );
       }
 
@@ -146,6 +197,8 @@ class _SiswaFormPageState extends State<SiswaFormPage> {
   @override
   void dispose() {
     _namaController.dispose();
+    _tempatLahirController.dispose();
+    _tanggalLahirController.dispose();
     super.dispose();
   }
 
@@ -260,10 +313,55 @@ class _SiswaFormPageState extends State<SiswaFormPage> {
                   ),
                   const SizedBox(height: 12),
 
-                  // Dropdown untuk memilih kelas siswa
+                  // Input tempat lahir
+                  buildLabel('Tempat Lahir'),
+                  TextField(
+                    controller: _tempatLahirController,
+                    decoration: customInputDecoration('Contoh: Surabaya'),
+                  ),
+                  const SizedBox(height: 12),
+
+                  // Tanggal Lahir
+                  buildLabel('Tanggal Lahir'),
+                  GestureDetector(
+                    onTap: _pilihTanggalLahir,
+                    child: AbsorbPointer(
+                      child: TextField(
+                        controller: _tanggalLahirController,
+                        decoration: customInputDecoration(
+                          'Pilih tanggal lahir',
+                        ).copyWith(
+                          suffixIcon: const Icon(Icons.keyboard_arrow_down),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+
+                  // Jenis Kelamin
+                  buildLabel('Jenis Kelamin'),
+                  DropdownButtonFormField<String>(
+                    value: selectedJenisKelamin,
+                    decoration: customInputDecoration('Pilih Jenis Kelamin'),
+                    items: const [
+                      DropdownMenuItem(
+                        value: 'Laki-laki',
+                        child: Text('Laki-laki'),
+                      ),
+                      DropdownMenuItem(
+                        value: 'Perempuan',
+                        child: Text('Perempuan'),
+                      ),
+                    ],
+                    onChanged:
+                        (value) => setState(() => selectedJenisKelamin = value),
+                  ),
+                  const SizedBox(height: 12),
+
+                  // Kelas
                   buildLabel('Kelas'),
                   _isLoadingDropdown
-                      ? const SizedBox()
+                      ? const Center(child: CircularProgressIndicator())
                       : DropdownButtonFormField<String>(
                         value: selectedKelasId,
                         decoration: customInputDecoration('Pilih Kelas'),
@@ -281,11 +379,9 @@ class _SiswaFormPageState extends State<SiswaFormPage> {
 
                   // Dropdown untuk memilih orang tua
                   buildLabel('Orang Tua'),
-
+                  // Jika data kelas dan orang tua masih dimuat, tampilkan indikator loading
                   _isLoadingDropdown
-                      // Jika data dropdown masih loading,tampilkan spinner loading di tengah
-                      ? const Center(child: CircularProgressIndicator())
-                      // Jika data sudah selesai diambil,tampilkan dropdown orang tua
+                      ? const SizedBox()
                       : DropdownButtonFormField<String>(
                         value: selectedOrangTuaId,
                         decoration: customInputDecoration('Pilih Orang Tua'),
