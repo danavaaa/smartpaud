@@ -48,7 +48,9 @@ class _KelasFormPageState extends State<KelasFormPage> {
   // Fungsi untuk mengambil daftar periode ajaran dari server
   Future<void> fetchPeriodeList() async {
     try {
-      final result = await _service.getAllPeriodeAjaran();
+      final result = await _service.getPeriodeAktifDropdown(
+        selectedPeriodeId: widget.idPeriode,
+      );
       if (!mounted) return;
       setState(() {
         periodeList = result;

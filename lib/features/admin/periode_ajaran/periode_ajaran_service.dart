@@ -43,6 +43,7 @@ class PeriodeAjaranService {
     required String tanggalSelesai,
     required bool isActive,
   }) async {
+    // 1. Update data periode ajaran
     await client
         .from('periode_ajaran')
         .update({
@@ -53,5 +54,13 @@ class PeriodeAjaranService {
           'is_active': isActive,
         })
         .eq('id', id);
+
+    // 2. Jika periode dinonaktifkan, maka semua kelas pada periode tersebut ikut dinonaktifkan
+    if (!isActive) {
+      await client
+          .from('kelas')
+          .update({'is_active': false})
+          .eq('id_periode', id);
+    }
   }
 }
