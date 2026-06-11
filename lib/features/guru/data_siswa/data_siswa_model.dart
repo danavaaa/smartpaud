@@ -11,6 +11,7 @@ class Siswa {
   final String namaAyah;
   final String namaIbu;
   final String noHpWali;
+  final String pekerjaanWali;
 
   Siswa({
     required this.id,
@@ -25,6 +26,7 @@ class Siswa {
     required this.namaAyah,
     required this.namaIbu,
     required this.noHpWali,
+    required this.pekerjaanWali,
   });
 
   // Factory digunakan untuk mengubah data JSON/API menjadi object Siswa
@@ -50,6 +52,21 @@ class Siswa {
     final periodeStr =
         (tahun.isNotEmpty && semester.isNotEmpty) ? '$tahun – $semester' : '-';
 
+    String pekerjaanWali = '-';
+
+    final usersData = orangTua['users'];
+
+    if (usersData is List && usersData.isNotEmpty) {
+      final userOrangTua = usersData.firstWhere(
+        (u) => u['role'] == 'orang_tua',
+        orElse: () => usersData.first,
+      );
+
+      pekerjaanWali = userOrangTua['pekerjaan'] ?? '-';
+    } else if (usersData is Map<String, dynamic>) {
+      pekerjaanWali = usersData['pekerjaan'] ?? '-';
+    }
+
     return Siswa(
       id: json['id'] ?? '',
       namaSiswa: json['nama_siswa'] ?? '',
@@ -63,6 +80,7 @@ class Siswa {
       namaAyah: orangTua['nama_ayah'] ?? '-',
       namaIbu: orangTua['nama_ibu'] ?? '-',
       noHpWali: orangTua['no_hp_wali'] ?? '-',
+      pekerjaanWali: pekerjaanWali,
     );
   }
 

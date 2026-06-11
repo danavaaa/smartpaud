@@ -68,6 +68,10 @@ class DetailSiswaPage extends StatelessWidget {
                         // Nama ibu
                         _InfoRow(label: 'Nama Ibu', value: siswa.namaIbu),
 
+                        _InfoRow(
+                          label: 'Pekerjaan',
+                          value: siswa.pekerjaanWali,
+                        ),
                         // Nomor HP wali
                         _InfoRow(
                           label: 'No. HP Wali',

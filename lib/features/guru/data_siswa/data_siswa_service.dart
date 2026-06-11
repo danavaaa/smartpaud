@@ -11,30 +11,35 @@ class SiswaService {
         .from('siswa')
         // Select data + relasi tabel
         .select('''
+        id,
+        nama_siswa,
+        tempat_lahir,
+        tanggal_lahir,
+        jenis_kelamin,
+        is_active,
+
+        kelas (
           id,
-          nama_siswa,
-          tempat_lahir,
-          tanggal_lahir,
-          jenis_kelamin,
-          is_active,
+          nama_kelas,
 
-          kelas (
-            id,
-            nama_kelas,
-
-            periode_ajaran (
-              tahun_ajaran,
-              semester
-            )
-          ),
-
-          orang_tua (
-            id,
-            nama_ayah,
-            nama_ibu,
-            no_hp_wali
+          periode_ajaran (
+            tahun_ajaran,
+            semester
           )
-        ''')
+        ),
+
+        orang_tua (
+          id,
+          nama_ayah,
+          nama_ibu,
+          no_hp_wali,
+
+          users (
+            role,
+            pekerjaan
+          )
+        )
+      ''')
         // Hanya mengambil siswa aktif
         .eq('is_active', true)
         // Mengurutkan berdasarkan nama siswa
