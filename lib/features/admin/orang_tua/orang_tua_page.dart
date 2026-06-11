@@ -64,9 +64,12 @@ class _OrangTuaPageState extends State<OrangTuaPage> {
         builder:
             (_) => OrangTuaFormPage(
               idUser: item?.idUser,
-              nama: item?.nama,
+              idOrangTua: item?.idOrangTua,
+              namaAyah: item?.namaAyah,
+              namaIbu: item?.namaIbu,
               email: item?.email,
-              noHp: item?.noHp,
+              noHpWali: item?.noHpWali ?? item?.noHp,
+              pekerjaan: item?.pekerjaan,
               isActive: item?.isActive,
             ),
       ),
@@ -104,7 +107,7 @@ class _OrangTuaPageState extends State<OrangTuaPage> {
         children: [
           // Menampilkan nama orang tua sebagai judul utama kartu
           Text(
-            item.nama,
+            item.namaAyah ?? item.namaIbu ?? '',
             style: const TextStyle(
               fontSize: 15,
               fontWeight: FontWeight.w600,
@@ -122,7 +125,7 @@ class _OrangTuaPageState extends State<OrangTuaPage> {
 
           // Menampilkan nomor HP orang tua
           Text(
-            'No HP: ${item.noHp}',
+            'No HP: ${item.noHpWali}',
             style: const TextStyle(fontFamily: 'Poppins'),
           ),
 

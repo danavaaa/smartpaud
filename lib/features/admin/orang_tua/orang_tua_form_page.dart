@@ -4,17 +4,23 @@ import 'orang_tua_service.dart';
 // Halaman form untuk menambah atau mengedit data orang tua
 class OrangTuaFormPage extends StatefulWidget {
   final String? idUser;
-  final String? nama;
+  final String? idOrangTua;
+  final String? namaAyah;
+  final String? namaIbu;
   final String? email;
-  final String? noHp;
+  final String? noHpWali;
+  final String? pekerjaan;
   final bool? isActive;
 
   const OrangTuaFormPage({
     super.key,
     this.idUser,
-    this.nama,
+    this.idOrangTua,
+    this.namaAyah,
+    this.namaIbu,
     this.email,
-    this.noHp,
+    this.noHpWali,
+    this.pekerjaan,
     this.isActive,
   });
 
@@ -26,6 +32,10 @@ class OrangTuaFormPage extends StatefulWidget {
 class _OrangTuaFormPageState extends State<OrangTuaFormPage> {
   // Controller untuk input nama orang tua
   final _namaController = TextEditingController();
+  final _namaAyahController = TextEditingController();
+  final _namaIbuController = TextEditingController();
+  final _noHpWaliController = TextEditingController();
+  final _pekerjaanController = TextEditingController();
 
   // Controller untuk input email
   final _emailController = TextEditingController();
@@ -49,23 +59,33 @@ class _OrangTuaFormPageState extends State<OrangTuaFormPage> {
   void initState() {
     super.initState();
 
-    _namaController.text = widget.nama ?? '';
+    _namaController.text = widget.namaAyah ?? widget.namaIbu ?? '';
     _emailController.text = widget.email ?? '';
-    _noHpController.text = widget.noHp ?? '';
+    _noHpController.text = widget.noHpWali ?? '';
+    _namaAyahController.text = widget.namaAyah ?? '';
+    _namaIbuController.text = widget.namaIbu ?? '';
+    _noHpWaliController.text = widget.noHpWali ?? '';
+    _pekerjaanController.text = widget.pekerjaan ?? '';
     isActive = widget.isActive ?? true;
   }
 
   // Fungsi untuk menyimpan data orang tua (baik tambah maupun edit)
   Future<void> saveData() async {
-    // Validasi: nama dan email tidak boleh kosong
-    if (_namaController.text.trim().isEmpty ||
-        _emailController.text.trim().isEmpty) {
+    // Validasi nama ayah dan ibu tidak boleh kosong
+    if (_namaAyahController.text.trim().isEmpty &&
+        _namaIbuController.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Nama dan email wajib diisi')),
+        const SnackBar(content: Text('Nama ayah atau nama ibu wajib diisi')),
       );
       return;
     }
-
+    // Validasi email tidak bole kosong
+    if (_emailController.text.trim().isEmpty) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Email wajib diisi')));
+      return;
+    }
     // Validasi password hanya saat tambah baru dan pstikan password minimal 6 karakter
     if (!isEdit && _passwordController.text.trim().length < 6) {
       // Jika kurang dari 6 karakter, tampilkan pesan eror ke user
@@ -82,17 +102,22 @@ class _OrangTuaFormPageState extends State<OrangTuaFormPage> {
       if (isEdit) {
         await _service.updateOrangTua(
           idUser: widget.idUser!,
-          nama: _namaController.text.trim(),
+          idOrangTua: widget.idOrangTua,
+          namaAyah: _namaAyahController.text.trim(),
+          namaIbu: _namaIbuController.text.trim(),
           email: _emailController.text.trim(),
-          noHp: _noHpController.text.trim(),
+          noHpWali: _noHpWaliController.text.trim(),
+          pekerjaan: _pekerjaanController.text.trim(),
           isActive: isActive,
         );
       } else {
         // Jika bukan mode edit, tambahkan data orang tua baru
         await _service.addOrangTua(
-          nama: _namaController.text.trim(),
+          namaAyah: _namaAyahController.text.trim(),
+          namaIbu: _namaIbuController.text.trim(),
           email: _emailController.text.trim(),
-          noHp: _noHpController.text.trim(),
+          noHpWali: _noHpWaliController.text.trim(),
+          pekerjaan: _pekerjaanController.text.trim(),
           isActive: isActive,
           password: _passwordController.text.trim(),
         );
@@ -115,10 +140,11 @@ class _OrangTuaFormPageState extends State<OrangTuaFormPage> {
 
   @override
   void dispose() {
-    // Membersihkan semua controller saat halaman ditutup
-    _namaController.dispose();
+    _namaAyahController.dispose();
+    _namaIbuController.dispose();
     _emailController.dispose();
-    _noHpController.dispose();
+    _noHpWaliController.dispose();
+    _pekerjaanController.dispose();
     _passwordController.dispose();
     super.dispose();
   }
@@ -226,10 +252,17 @@ class _OrangTuaFormPageState extends State<OrangTuaFormPage> {
               ),
               child: Column(
                 children: [
-                  // Input nama orang tua
-                  buildLabel('Nama Orang Tua'),
+                  // input nama ayah
+                  buildLabel('Nama Ayah'),
                   TextField(
-                    controller: _namaController,
+                    controller: _namaAyahController,
+                    decoration: customInputDecoration('Contoh: Budi'),
+                  ),
+                  const SizedBox(height: 12),
+                  // Input nama ibu
+                  buildLabel('Nama Ibu'),
+                  TextField(
+                    controller: _namaIbuController,
                     decoration: customInputDecoration('Contoh: Shofiyah'),
                   ),
                   const SizedBox(height: 12),
@@ -243,11 +276,19 @@ class _OrangTuaFormPageState extends State<OrangTuaFormPage> {
                   ),
                   const SizedBox(height: 12),
 
-                  // Input nomor HP orang tua
-                  buildLabel('No Hp'),
+                  // Input nomor hp
+                  buildLabel('No HP Wali'),
                   TextField(
-                    controller: _noHpController,
+                    controller: _noHpWaliController,
+                    keyboardType: TextInputType.phone,
                     decoration: customInputDecoration('08xxxxxxxxxx'),
+                  ),
+                  const SizedBox(height: 12),
+                  // Input pekerjaan orang tua
+                  buildLabel('Pekerjaan'),
+                  TextField(
+                    controller: _pekerjaanController,
+                    decoration: customInputDecoration('Contoh: Wiraswasta'),
                   ),
                   const SizedBox(height: 12),
 

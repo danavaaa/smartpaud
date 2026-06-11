@@ -5,32 +5,52 @@ import 'orang_tua_model.dart';
 class OrangTuaService {
   final SupabaseClient client = Supabase.instance.client;
 
-  // fungsi untuk mengambil semua data orang tua dari tabel 'users' dengan role 'orang_tua'
+  // ambil semua data orang tua
+  // Mengambil seluruh data pengguna dengan role orang_tua, beserta data relasi dari tabel orang_tua
   Future<List<OrangTuaModel>> getAllOrangTua() async {
     final response = await client
         .from('users')
-        .select('id_user, id_auth, nama, email, no_hp, is_active')
+        .select('''
+        id_user,
+        id_auth,
+        id_orang_tua,
+        nama,
+        email,
+        no_hp,
+        pekerjaan,
+        is_active,
+        orang_tua (
+          id,
+          nama_ayah,
+          nama_ibu,
+          no_hp_wali
+        )
+      ''')
+        // Filter hanya akun dengan role orang tua
         .eq('role', 'orang_tua')
+        // Urutkan berdasarkan nama
         .order('nama', ascending: true);
 
-    // mengubah hasil response menjadi list objek OrangTuaModel
+    // Konversi response JSON menjadi List<OrangTuaModel>
     return (response as List)
         .map((item) => OrangTuaModel.fromJson(item))
         .toList();
   }
 
-  // fungsi untuk menambahkan data orang tua baru
+  // Tambah data orang tua
   Future<void> addOrangTua({
-    required String nama,
+    required String namaAyah,
+    required String namaIbu,
     required String email,
-    required String noHp,
+    required String noHpWali,
+    required String pekerjaan,
     required bool isActive,
     required String password,
   }) async {
-    // Simpan session admin sebelum signUp
-    final adminSession = client.auth.currentSession;
+    // Simpan refresh token admin yang sedang login
+    final adminRefreshToken = client.auth.currentSession?.refreshToken;
 
-    // 1. Buat akun Auth Supabase
+    // Buat akun Auth Supabase
     final authResponse = await client.auth.signUp(
       email: email,
       password: password,
@@ -38,36 +58,103 @@ class OrangTuaService {
     // ambil ID user dari auth.users
     final idAuth = authResponse.user?.id;
     // jika gagal membuat akun auth, hentikan proses
-    if (idAuth == null) throw Exception('Gagal membuat akun auth');
+    if (idAuth == null) {
+      throw Exception('Gagal membuat akun auth');
+    }
 
-    // 2. Insert ke tabel users dengan id_auth
+    // kembalikan session admin
+    if (adminRefreshToken != null) {
+      await client.auth.setSession(adminRefreshToken);
+    }
+
+    // simpan data orang tua
+    final orangTuaData =
+        await client
+            .from('orang_tua')
+            .insert({
+              'nama_ayah': namaAyah.isEmpty ? null : namaAyah,
+
+              'nama_ibu': namaIbu.isEmpty ? null : namaIbu,
+
+              'no_hp_wali': noHpWali.isEmpty ? null : noHpWali,
+            })
+            // Ambil id hasil insert
+            .select('id')
+            .single();
+
+    // Simpan ID orang tua yang baru dibuat
+    final idOrangTua = orangTuaData['id'];
+
+    // Tentukan nama akun
+    final namaAkun = namaIbu.isNotEmpty ? namaIbu : namaAyah;
+
+    // simpan data user
     await client.from('users').insert({
+      // Relasi ke auth.users
       'id_auth': idAuth,
-      'nama': nama,
+
+      // Relasi ke tabel orang_tua
+      'id_orang_tua': idOrangTua,
+
+      // Data akun
+      'nama': namaAkun,
       'email': email,
-      'no_hp': noHp,
+      'no_hp': noHpWali.isEmpty ? null : noHpWali,
+      'pekerjaan': pekerjaan.isEmpty ? null : pekerjaan,
+
       'role': 'orang_tua',
       'is_active': isActive,
     });
-
-    // 3. Kembalikan session admin
-    if (adminSession?.refreshToken != null) {
-      await client.auth.setSession(adminSession!.refreshToken!);
-    }
   }
 
-  // fungsi untuk mengupdate data orang tua yang sudah ada
+  // update data orang tua
   Future<void> updateOrangTua({
     required String idUser,
-    required String nama,
+    required String? idOrangTua,
+    required String namaAyah,
+    required String namaIbu,
     required String email,
-    required String noHp,
+    required String noHpWali,
+    required String pekerjaan,
     required bool isActive,
   }) async {
-    // Memperbarui data orang tua berdasarkan id_user
+    // Simpan id orang tua sementara
+    String? idWali = idOrangTua;
+
+    // update tabel orang tua
+    if (idWali != null && idWali.isNotEmpty) {
+      await client
+          .from('orang_tua')
+          .update({
+            'nama_ayah': namaAyah.isEmpty ? null : namaAyah,
+
+            'nama_ibu': namaIbu.isEmpty ? null : namaIbu,
+
+            'no_hp_wali': noHpWali.isEmpty ? null : noHpWali,
+          })
+          // Cari berdasarkan ID orang tua
+          .eq('id', idWali);
+    }
+
+    // Tentukan nama akun yang akan ditampilkan
+    final namaAkun = namaIbu.isNotEmpty ? namaIbu : namaAyah;
+
+    //update tabel users
     await client
         .from('users')
-        .update({'nama': nama, 'no_hp': noHp, 'is_active': isActive})
-        .eq('id_user', idUser);
+        .update({
+          // Update data akun
+          'nama': namaAkun,
+
+          'no_hp': noHpWali.isEmpty ? null : noHpWali,
+
+          'pekerjaan': pekerjaan.isEmpty ? null : pekerjaan,
+
+          'is_active': isActive,
+        })
+        // Cari berdasarkan id user
+        .eq('id_user', idUser)
+        // Pastikan hanya role orang_tua
+        .eq('role', 'orang_tua');
   }
 }
