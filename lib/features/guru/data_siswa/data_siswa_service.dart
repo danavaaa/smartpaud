@@ -16,15 +16,18 @@ class SiswaService {
         tempat_lahir,
         tanggal_lahir,
         jenis_kelamin,
+        id_kelas,
         is_active,
 
         kelas (
           id,
           nama_kelas,
+          is_active,
 
           periode_ajaran (
             tahun_ajaran,
-            semester
+            semester,
+            is_active
           )
         ),
 
@@ -45,41 +48,72 @@ class SiswaService {
         // Mengurutkan berdasarkan nama siswa
         .order('nama_siswa');
 
-    return response.map<Siswa>((e) => Siswa.fromJson(e)).toList();
+    final data = List<Map<String, dynamic>>.from(response);
+
+    final filtered =
+        // filter data siswa sehingga hanya siswa aktif yang berada pada kelas aktif dan periode ajaran aktif yang ditampilkan
+        data.where((item) {
+          // ambil data relasi kelas dari siswa
+          final kelas = item['kelas'] as Map<String, dynamic>?;
+          // ambil data relasi periode ajaran dari kelas
+          final periode = kelas?['periode_ajaran'] as Map<String, dynamic>?;
+          // cek apakah kelas siswa masih aktif
+          final kelasAktif = kelas?['is_active'] == true;
+          // cek apakah periode ajaran masih aktif
+          final periodeAktif = periode?['is_active'] == true;
+          // data siswa hanya ditampilkan apabila kelas dan periode ajaran sama sama aktif
+          return kelasAktif && periodeAktif;
+        }).toList();
+
+    return filtered.map<Siswa>((e) => Siswa.fromJson(e)).toList();
   }
 
-  // Fungsi untuk mengambil daftar kelas dari tabel kelas
+  // fungsi mengambil daftar kelas aktif yang berada pada periode ajaran aktif untuk dropdown
   Future<List<Map<String, dynamic>>> getKelasList() async {
-    // Query ke tabel kelas
+    // ambil data kelas beserta relasi periode ajaran
     final response = await _db
-        // Mengambil tabel kelas
         .from('kelas')
-        // Mengambil field tertentu
-        .select('id, nama_kelas')
-        // Hanya kelas aktif
+        .select('''
+        id,
+        nama_kelas,
+        is_active,
+
+        periode_ajaran (
+          is_active
+        )
+      ''')
+        // hanya mengambil kelas yang aktif
         .eq('is_active', true)
         // Urut berdasarkan nama kelas
         .order('nama_kelas');
 
-    // Set untuk menyimpan nama kelas yang sudah pernah muncul
+    final data = List<Map<String, dynamic>>.from(response);
+    // filter kelas berdasarkan periode ajaran aktif
+    final filtered =
+        data.where((item) {
+          // ambil data periode ajaran yang berelasi
+          final periode = item['periode_ajaran'] as Map<String, dynamic>?;
+          // hanya menampilkan kelas yang berada ppada periode ajaran aktif
+          return periode?['is_active'] == true;
+        }).toList();
+
     final seen = <String>{};
 
-    // List hasil akhir tanpa duplikat
+    // menyimpan hasil akhir tanpa duplikat
     final unique = <Map<String, dynamic>>[];
 
-    // Loop semua data kelas
-    for (final k in response) {
+    // menghapus data kelas duplikat
+    for (final k in filtered) {
       // Ambil nama kelas
       final nama = k['nama_kelas'] as String;
 
       // Jika nama kelas belum pernah ada
       if (seen.add(nama)) {
-        // Tambahkan ke list unique
-        unique.add(k);
+        // tambahkan ke list hasil akhir
+        unique.add({'id': k['id'], 'nama_kelas': k['nama_kelas']});
       }
     }
-
-    // Mengembalikan list kelas tanpa duplikat
+    // Mengembalikan daftar kelas yang siap digunakan pada dropdown
     return unique;
   }
 }
