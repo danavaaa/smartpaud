@@ -121,19 +121,23 @@ class _KelasFormPageState extends State<KelasFormPage> {
       hintText: hint,
       hintStyle: const TextStyle(
         fontSize: 12,
-        color: Color(0xFFB8B1B1),
+        color: AppColors.textSecondary,
         fontFamily: 'Poppins',
       ),
       filled: true,
-      fillColor: const Color(0xFFF7F4F4),
+      fillColor: AppColors.softCard,
       contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
       border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(3),
+        borderRadius: BorderRadius.circular(12),
         borderSide: BorderSide.none,
       ),
       enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(3),
+        borderRadius: BorderRadius.circular(12),
         borderSide: BorderSide.none,
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: const BorderSide(color: AppColors.primary),
       ),
     );
   }
@@ -141,14 +145,15 @@ class _KelasFormPageState extends State<KelasFormPage> {
   // Fungsi untuk membuat label di atas input
   Widget buildLabel(String text) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 6),
+      padding: const EdgeInsets.only(bottom: 7),
       child: Align(
         alignment: Alignment.centerLeft,
         child: Text(
           text,
           style: const TextStyle(
             fontSize: 13,
-            fontWeight: FontWeight.w500,
+            fontWeight: FontWeight.w600,
+            color: AppColors.textPrimary,
             fontFamily: 'Poppins',
           ),
         ),
@@ -160,26 +165,30 @@ class _KelasFormPageState extends State<KelasFormPage> {
   Widget buildActionButton({
     required String title,
     required VoidCallback onTap,
+    bool isPrimary = false,
   }) {
-    return SizedBox(
-      width: 95,
-      height: 32,
-      child: ElevatedButton(
-        onPressed: onTap,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: AppColors.softPrimary,
-          foregroundColor: AppColors.primaryDark,
-          elevation: 3,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
+    return Expanded(
+      child: SizedBox(
+        height: 44,
+        child: ElevatedButton(
+          onPressed: onTap,
+          style: ElevatedButton.styleFrom(
+            backgroundColor:
+                isPrimary ? AppColors.primary : AppColors.softPrimary,
+            foregroundColor:
+                isPrimary ? AppColors.buttonText : AppColors.primaryDark,
+            elevation: isPrimary ? 3 : 1,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(14),
+            ),
+            textStyle: const TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+              fontFamily: 'Poppins',
+            ),
           ),
-          textStyle: const TextStyle(
-            fontSize: 12,
-            fontWeight: FontWeight.w500,
-            fontFamily: 'Poppins',
-          ),
+          child: Text(title),
         ),
-        child: Text(title),
       ),
     );
   }
@@ -192,134 +201,196 @@ class _KelasFormPageState extends State<KelasFormPage> {
     return Scaffold(
       // Warna latar belakang halaman
       backgroundColor: AppColors.background,
-
-      // AppBar di bagian atas halaman
-      appBar: AppBar(
-        backgroundColor: AppColors.background,
-        elevation: 0,
-        scrolledUnderElevation: 0,
-        iconTheme: const IconThemeData(color: Colors.black),
-
-        // Menampilkan judul halaman sesuai mode
-        title: Text(title, style: const TextStyle(color: Colors.black)),
-      ),
-
-      // Isi halaman
-      body: Padding(
-        // Memberi jarak isi dari tepi layar
-        padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
-        child: Column(
-          children: [
-            // Container utama form input
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.fromLTRB(14, 16, 14, 18),
-              decoration: BoxDecoration(
-                color: AppColors.card,
-                borderRadius: BorderRadius.circular(6),
-              ),
-              child: Column(
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.fromLTRB(20, 24, 20, 20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
                 children: [
-                  // Input nama kelas
-                  buildLabel('Nama Kelas'),
-                  TextField(
-                    controller: _namaKelasController,
-                    decoration: customInputDecoration('Contoh: Kelas A1'),
+                  InkWell(
+                    onTap: () => Navigator.pop(context),
+                    borderRadius: BorderRadius.circular(20),
+                    child: const Icon(
+                      Icons.chevron_left_rounded,
+                      color: AppColors.textPrimary,
+                      size: 30,
+                    ),
                   ),
-                  const SizedBox(height: 12),
 
-                  // Input pilihan periode ajaran
-                  buildLabel('Periode Ajaran'),
-                  DropdownButtonFormField<String>(
-                    // Menampilkan nilai periode ajaran yang dipilih
-                    value: selectedPeriodeId,
-                    // Membuat daftar pilihan periode ajaran dari data yang diambil dari server
-                    decoration: customInputDecoration('Pilih Periode Ajaran'),
-                    // Membuat daftar pilihan periode ajaran dari data yang diambil dari server
-                    items:
-                        periodeList.map((periode) {
-                          // Membuat label untuk setiap pilihan periode ajaran dengan format "tahun ajaran - semester"
-                          final label =
-                              '${periode['tahun_ajaran']} - ${periode['semester']}';
-                          return DropdownMenuItem<String>(
-                            // Membuat item dropdown untuk setiap periode ajaran dengan nilai id periode ajaran
-                            value: periode['id'],
-                            child: Text(label),
-                          );
-                        }).toList(),
-                    onChanged: (value) {
-                      // Mengubah nilai periode ajaran yang dipilih
-                      setState(() => selectedPeriodeId = value);
-                    },
-                  ),
-                  const SizedBox(height: 12),
+                  const SizedBox(width: 8),
 
-                  // Pilihan status kelas
-                  buildLabel('Status Kelas'),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: RadioListTile<bool>(
-                          contentPadding: EdgeInsets.zero,
-                          value: true,
-                          groupValue: isActive,
-                          onChanged: (value) {
-                            if (value != null) setState(() => isActive = value);
-                          },
-                          title: const Text(
-                            'Aktif',
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontFamily: 'Poppins',
-                            ),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          title,
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w700,
+                            fontFamily: 'Poppins',
+                            color: AppColors.textPrimary,
                           ),
-                          dense: true,
                         ),
-                      ),
-                      Expanded(
-                        child: RadioListTile<bool>(
-                          contentPadding: EdgeInsets.zero,
-                          value: false,
-                          groupValue: isActive,
-                          onChanged: (value) {
-                            if (value != null) setState(() => isActive = value);
-                          },
-                          title: const Text(
-                            'Tidak Aktif',
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontFamily: 'Poppins',
-                            ),
+                        const SizedBox(height: 2),
+                        Text(
+                          isEdit
+                              ? 'Perbarui nama kelas dan periode ajaran'
+                              : 'Tambahkan kelas baru pada periode ajaran aktif',
+                          style: const TextStyle(
+                            fontSize: 11,
+                            fontFamily: 'Poppins',
+                            color: AppColors.textSecondary,
                           ),
-                          dense: true,
                         ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 14),
-
-                  // Tombol aksi Simpan dan Batal
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      buildActionButton(
-                        title: isLoading ? 'Loading' : 'Simpan',
-                        onTap: isLoading ? () {} : saveData,
-                      ),
-                      const SizedBox(width: 18),
-                      buildActionButton(
-                        title: 'Batal',
-                        onTap: () {
-                          // Menutup halaman form tanpa menyimpan perubahan
-                          Navigator.pop(context);
-                        },
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ],
               ),
-            ),
-          ],
+
+              const SizedBox(height: 24),
+
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.fromLTRB(18, 20, 18, 20),
+                decoration: BoxDecoration(
+                  color: AppColors.card,
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.08),
+                      blurRadius: 8,
+                      offset: const Offset(0, 3),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  children: [
+                    // Input nama kelas
+                    buildLabel('Nama Kelas'),
+                    TextField(
+                      controller: _namaKelasController,
+                      decoration: customInputDecoration('Contoh: Kelas A1'),
+                    ),
+                    const SizedBox(height: 14),
+
+                    // Input pilihan periode ajaran
+                    buildLabel('Periode Ajaran'),
+                    DropdownButtonFormField<String>(
+                      // Menampilkan nilai periode ajaran yang dipilih
+                      value: selectedPeriodeId,
+                      // Membuat daftar pilihan periode ajaran dari data yang diambil dari server
+                      decoration: customInputDecoration('Pilih Periode Ajaran'),
+                      // Membuat daftar pilihan periode ajaran dari data yang diambil dari server
+                      items:
+                          periodeList.map((periode) {
+                            // Membuat label untuk setiap pilihan periode ajaran dengan format "tahun ajaran - semester"
+                            final label =
+                                '${periode['tahun_ajaran']} - ${periode['semester']}';
+                            return DropdownMenuItem<String>(
+                              // Membuat item dropdown untuk setiap periode ajaran dengan nilai id periode ajaran
+                              value: periode['id'],
+                              child: Text(
+                                label,
+                                style: const TextStyle(
+                                  fontSize: 13,
+                                  fontFamily: 'Poppins',
+                                ),
+                              ),
+                            );
+                          }).toList(),
+                      onChanged: (value) {
+                        // Mengubah nilai periode ajaran yang dipilih
+                        setState(() => selectedPeriodeId = value);
+                      },
+                    ),
+                    const SizedBox(height: 14),
+
+                    // Pilihan status kelas
+                    buildLabel('Status Kelas'),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 6,
+                      ),
+                      decoration: BoxDecoration(
+                        color: AppColors.softCard,
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: RadioListTile<bool>(
+                              activeColor: AppColors.primary,
+                              contentPadding: EdgeInsets.zero,
+                              value: true,
+                              groupValue: isActive,
+                              onChanged: (value) {
+                                if (value != null) {
+                                  setState(() => isActive = value);
+                                }
+                              },
+                              title: const Text(
+                                'Aktif',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  fontFamily: 'Poppins',
+                                ),
+                              ),
+                              dense: true,
+                            ),
+                          ),
+                          Expanded(
+                            child: RadioListTile<bool>(
+                              activeColor: AppColors.primary,
+                              contentPadding: EdgeInsets.zero,
+                              value: false,
+                              groupValue: isActive,
+                              onChanged: (value) {
+                                if (value != null) {
+                                  setState(() => isActive = value);
+                                }
+                              },
+                              title: const Text(
+                                'Tidak Aktif',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  fontFamily: 'Poppins',
+                                ),
+                              ),
+                              dense: true,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    const SizedBox(height: 18),
+
+                    // Tombol aksi Simpan dan Batal
+                    Row(
+                      children: [
+                        buildActionButton(
+                          title: isLoading ? 'Loading...' : 'Simpan',
+                          isPrimary: true,
+                          onTap: isLoading ? () {} : saveData,
+                        ),
+                        const SizedBox(width: 12),
+                        buildActionButton(
+                          title: 'Batal',
+                          // Menutup halaman form tanpa menyimpan perubahan
+                          onTap: () => Navigator.pop(context),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
