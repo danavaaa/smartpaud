@@ -78,11 +78,14 @@ class _SiswaFormPageState extends State<SiswaFormPage> {
   // Fungsi untuk mengambil daftar kelas dan orang tua
   Future<void> fetchDropdownData() async {
     try {
-      // Ambil semua data kelas dari service
-      final kelasResult = await _service.getAllKelas();
-
-      // Ambil semua data orang tua dari service
-      final orangTuaResult = await _service.getAllOrangTua();
+      // Mengambil data kelas aktif untuk dropdown
+      final kelasResult = await _service.getKelasAktifDropdown(
+        selectedKelasId: widget.idKelas,
+      );
+      // Mengambil data ortu aktif untuk dropdown
+      final orangTuaResult = await _service.getOrangTuaAktifDropdown(
+        selectedOrangTuaId: widget.idOrangTua,
+      );
 
       if (!mounted) return;
 

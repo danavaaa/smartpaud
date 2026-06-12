@@ -30,26 +30,81 @@ class SiswaService {
     return (response as List).map((item) => SiswaModel.fromJson(item)).toList();
   }
 
-  // Fungsi untuk mengambil seluruh data kelas
-  Future<List<Map<String, dynamic>>> getAllKelas() async {
-    // Mengambil data dari tabel 'kelas'
+  // Fungsi untuk mengambil seluruh data kelas aktif untuk dropdown
+  Future<List<Map<String, dynamic>>> getKelasAktifDropdown({
+    String? selectedKelasId,
+  }) async {
+    // ambil data kelas yang aktif dari tabel kelas
     final response = await client
         .from('kelas')
-        .select('id, nama_kelas')
+        .select('id, nama_kelas, is_active')
+        .eq('is_active', true)
         .order('nama_kelas', ascending: true);
 
-    return List<Map<String, dynamic>>.from(response);
+    final list = List<Map<String, dynamic>>.from(response);
+
+    if (selectedKelasId != null && selectedKelasId.isNotEmpty) {
+      // periksa apakah kelas yang dipilih sudah ada dalam daftar kelas aktif
+      final sudahAda = list.any((item) => item['id'] == selectedKelasId);
+      // jika belum ada
+      if (!sudahAda) {
+        // ambil data kelas berdasarkan ID
+        final selectedData =
+            await client
+                .from('kelas')
+                .select('id, nama_kelas, is_active')
+                .eq('id', selectedKelasId)
+                .maybeSingle();
+        // jika data ditemukan, maka tambahkan ke daftar agar tetap muncul pada dropdown saat edit data
+        if (selectedData != null) {
+          list.add(selectedData);
+        }
+      }
+    }
+
+    return list;
   }
 
-  // ambil semua orang tua
-  Future<List<Map<String, dynamic>>> getAllOrangTua() async {
+  // fungsi untuk mengambil semua data orang tua untuk dropdown
+  Future<List<Map<String, dynamic>>> getOrangTuaAktifDropdown({
+    String? selectedOrangTuaId,
+  }) async {
+    // ambil data pengguna dengan role orang_tua yang masih aktif
     final response = await client
         .from('users')
-        .select('id_user, id_orang_tua, nama')
+        .select('id_user, id_orang_tua, nama, is_active')
         .eq('role', 'orang_tua')
+        .eq('is_active', true)
+        // pastikan hanya data yang memiliki relasi ke tabel orang_tua yang diambil
+        .not('id_orang_tua', 'is', null)
+        // mengurutkan nama berdasarkan nama
         .order('nama', ascending: true);
-    // Mengubah hasil response menjadi list map
-    return List<Map<String, dynamic>>.from(response);
+
+    final list = List<Map<String, dynamic>>.from(response);
+
+    if (selectedOrangTuaId != null && selectedOrangTuaId.isNotEmpty) {
+      // perikda apakah data orang tua yang dipilih sudah ada pada daftar orang tua aktif
+      final sudahAda = list.any(
+        (item) => item['id_orang_tua'] == selectedOrangTuaId,
+      );
+      // jika belum ada pada daftar
+      if (!sudahAda) {
+        // ambil data orang tua berdasarkan id_orang_tua meskipun statusnya sudah tidak aktif
+        final selectedData =
+            await client
+                .from('users')
+                .select('id_user, id_orang_tua, nama, is_active')
+                .eq('role', 'orang_tua')
+                .eq('id_orang_tua', selectedOrangTuaId)
+                .maybeSingle();
+        // jika data ditemukan, maka tambahkan ke daftar dropdown
+        if (selectedData != null) {
+          list.add(selectedData);
+        }
+      }
+    }
+    // mengembalikan daftar orang tua yang siap digunakan pada dropdown
+    return list;
   }
 
   // Fungsi untuk menambahkan data siswa baru
