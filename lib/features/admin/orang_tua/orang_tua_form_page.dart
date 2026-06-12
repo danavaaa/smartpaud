@@ -156,19 +156,23 @@ class _OrangTuaFormPageState extends State<OrangTuaFormPage> {
       hintText: hint,
       hintStyle: const TextStyle(
         fontSize: 12,
-        color: Color(0xFFB8B1B1),
+        color: AppColors.textSecondary,
         fontFamily: 'Poppins',
       ),
       filled: true,
-      fillColor: const Color(0xFFF7F4F4),
+      fillColor: AppColors.softCard,
       contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
       border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(3),
+        borderRadius: BorderRadius.circular(12),
         borderSide: BorderSide.none,
       ),
       enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(3),
+        borderRadius: BorderRadius.circular(12),
         borderSide: BorderSide.none,
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: const BorderSide(color: AppColors.primary),
       ),
     );
   }
@@ -176,14 +180,15 @@ class _OrangTuaFormPageState extends State<OrangTuaFormPage> {
   // Fungsi untuk membuat label di atas input
   Widget buildLabel(String text) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 6),
+      padding: const EdgeInsets.only(bottom: 7),
       child: Align(
         alignment: Alignment.centerLeft,
         child: Text(
           text,
           style: const TextStyle(
             fontSize: 13,
-            fontWeight: FontWeight.w500,
+            fontWeight: FontWeight.w600,
+            color: AppColors.textPrimary,
             fontFamily: 'Poppins',
           ),
         ),
@@ -195,23 +200,29 @@ class _OrangTuaFormPageState extends State<OrangTuaFormPage> {
   Widget buildActionButton({
     required String title,
     required VoidCallback onTap,
+    bool isPrimary = false,
   }) {
-    return SizedBox(
-      width: 95,
-      height: 32,
-      child: ElevatedButton(
-        onPressed: onTap,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: AppColors.softPrimary,
-          foregroundColor: AppColors.primaryDark,
-          elevation: 3,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
+    return Expanded(
+      child: SizedBox(
+        height: 44,
+        child: ElevatedButton(
+          onPressed: onTap,
+          style: ElevatedButton.styleFrom(
+            backgroundColor:
+                isPrimary ? AppColors.primary : AppColors.softPrimary,
+            foregroundColor:
+                isPrimary ? AppColors.buttonText : AppColors.primaryDark,
+            elevation: isPrimary ? 3 : 1,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(14),
+            ),
+            textStyle: const TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+              fontFamily: 'Poppins',
+            ),
           ),
-        ),
-        child: Text(
-          title,
-          style: const TextStyle(fontSize: 12, fontFamily: 'Poppins'),
+          child: Text(title),
         ),
       ),
     );
@@ -225,171 +236,231 @@ class _OrangTuaFormPageState extends State<OrangTuaFormPage> {
     return Scaffold(
       // Warna latar belakang halaman
       backgroundColor: AppColors.background,
-
-      // AppBar di bagian atas halaman
-      appBar: AppBar(
-        backgroundColor: AppColors.background,
-        elevation: 0,
-        scrolledUnderElevation: 0,
-        iconTheme: const IconThemeData(color: Colors.black),
-
-        // Menampilkan judul halaman sesuai mode
-        title: Text(title, style: const TextStyle(color: Colors.black)),
-      ),
-
-      // Isi halaman
-      body: SingleChildScrollView(
-        // Memberi jarak isi dari tepi layar
-        padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
-        child: Column(
-          children: [
-            // Container utama form input
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.fromLTRB(14, 16, 14, 18),
-              decoration: BoxDecoration(
-                color: AppColors.card,
-                borderRadius: BorderRadius.circular(6),
-              ),
-              child: Column(
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.fromLTRB(20, 24, 20, 20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
                 children: [
-                  // input nama ayah
-                  buildLabel('Nama Ayah'),
-                  TextField(
-                    controller: _namaAyahController,
-                    decoration: customInputDecoration('Contoh: Budi'),
-                  ),
-                  const SizedBox(height: 12),
-                  // Input nama ibu
-                  buildLabel('Nama Ibu'),
-                  TextField(
-                    controller: _namaIbuController,
-                    decoration: customInputDecoration('Contoh: Shofiyah'),
-                  ),
-                  const SizedBox(height: 12),
-
-                  // Input email orang tua
-                  buildLabel('Email'),
-                  TextField(
-                    controller: _emailController,
-                    enabled: !isEdit, // Email tidak bisa diedit saat mode edit
-                    decoration: customInputDecoration('contoh@email.com'),
-                  ),
-                  const SizedBox(height: 12),
-
-                  // Input nomor hp
-                  buildLabel('No HP Wali'),
-                  TextField(
-                    controller: _noHpWaliController,
-                    keyboardType: TextInputType.phone,
-                    decoration: customInputDecoration('08xxxxxxxxxx'),
-                  ),
-                  const SizedBox(height: 12),
-                  // Input pekerjaan orang tua
-                  buildLabel('Pekerjaan'),
-                  TextField(
-                    controller: _pekerjaanController,
-                    decoration: customInputDecoration('Contoh: Wiraswasta'),
-                  ),
-                  const SizedBox(height: 12),
-
-                  // Password (hanya tampil saat tambah baru)
-                  // jika bukan dalam mode edit maka tampilkan field password
-                  if (!isEdit) ...[
-                    // Label input password
-                    buildLabel('Password'),
-                    // Input field password
-                    TextField(
-                      controller: _passwordController,
-                      obscureText: _obscurePassword,
-                      decoration: customInputDecoration(
-                        'Min. 6 karakter',
-                      ).copyWith(
-                        // icon sebelah kanan
-                        suffixIcon: GestureDetector(
-                          // saat icon ditekan, ubah show/hide password
-                          onTap:
-                              () => setState(
-                                () => _obscurePassword = !_obscurePassword,
-                              ),
-                          child: Icon(
-                            // Jika password tersebumyi, tampilkan mata tertutup
-                            _obscurePassword
-                                ? Icons.visibility_off_outlined
-                                // Jika password terlihat, tampilkan mata terbuka
-                                : Icons.visibility_outlined,
-                            size: 18,
-                            color: Colors.grey,
-                          ),
-                        ),
-                      ),
+                  InkWell(
+                    onTap: () => Navigator.pop(context),
+                    borderRadius: BorderRadius.circular(20),
+                    child: const Icon(
+                      Icons.chevron_left_rounded,
+                      color: AppColors.textPrimary,
+                      size: 30,
                     ),
-                    const SizedBox(height: 12),
-                  ],
-
-                  // Status
-                  buildLabel('Status Orang Tua'),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: RadioListTile<bool>(
-                          contentPadding: EdgeInsets.zero,
-                          value: true,
-                          groupValue: isActive,
-                          onChanged: (value) {
-                            if (value != null) setState(() => isActive = value);
-                          },
-                          title: const Text(
-                            'Aktif',
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontFamily: 'Poppins',
-                            ),
-                          ),
-                          dense: true,
-                        ),
-                      ),
-                      Expanded(
-                        child: RadioListTile<bool>(
-                          contentPadding: EdgeInsets.zero,
-                          value: false,
-                          groupValue: isActive,
-                          onChanged: (value) {
-                            if (value != null) setState(() => isActive = value);
-                          },
-                          title: const Text(
-                            'Tidak Aktif',
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontFamily: 'Poppins',
-                            ),
-                          ),
-                          dense: true,
-                        ),
-                      ),
-                    ],
                   ),
-                  const SizedBox(height: 14),
 
-                  // Tombol aksi simpan dan batal
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      buildActionButton(
-                        title: isLoading ? 'Loading' : 'Simpan',
-                        onTap: isLoading ? () {} : saveData,
-                      ),
-                      const SizedBox(width: 18),
-                      buildActionButton(
-                        title: 'Batal',
-                        onTap: () => Navigator.pop(context),
-                      ),
-                    ],
+                  const SizedBox(width: 8),
+
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          title,
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w700,
+                            fontFamily: 'Poppins',
+                            color: AppColors.textPrimary,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          isEdit
+                              ? 'Perbarui data orang tua dan status keaktifannya'
+                              : 'Tambahkan akun orang tua baru ke sistem',
+                          style: const TextStyle(
+                            fontSize: 11,
+                            fontFamily: 'Poppins',
+                            color: AppColors.textSecondary,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ],
               ),
-            ),
-          ],
+
+              const SizedBox(height: 24),
+
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.fromLTRB(18, 20, 18, 20),
+                decoration: BoxDecoration(
+                  color: AppColors.card,
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.08),
+                      blurRadius: 8,
+                      offset: const Offset(0, 3),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  children: [
+                    // input nama ayah
+                    buildLabel('Nama Ayah'),
+                    TextField(
+                      controller: _namaAyahController,
+                      decoration: customInputDecoration('Contoh: Abdullah'),
+                    ),
+                    const SizedBox(height: 14),
+                    // Input nama ibu
+                    buildLabel('Nama Ibu'),
+                    TextField(
+                      controller: _namaIbuController,
+                      decoration: customInputDecoration('Contoh: Fatimah'),
+                    ),
+                    const SizedBox(height: 14),
+
+                    // Input email orang tua
+                    buildLabel('Email'),
+                    TextField(
+                      controller: _emailController,
+                      enabled:
+                          !isEdit, // Email tidak bisa diedit saat mode edit
+                      decoration: customInputDecoration('contoh@email.com'),
+                    ),
+                    const SizedBox(height: 14),
+
+                    // Input nomor hp
+                    buildLabel('No HP Wali'),
+                    TextField(
+                      controller: _noHpWaliController,
+                      keyboardType: TextInputType.phone,
+                      decoration: customInputDecoration('08xxxxxxxxxx'),
+                    ),
+                    const SizedBox(height: 14),
+                    // Input pekerjaan orang tua
+                    buildLabel('Pekerjaan'),
+                    TextField(
+                      controller: _pekerjaanController,
+                      decoration: customInputDecoration('Contoh: Wiraswasta'),
+                    ),
+                    const SizedBox(height: 14),
+
+                    // Password (hanya tampil saat tambah baru)
+                    // jika bukan dalam mode edit maka tampilkan field password
+                    if (!isEdit) ...[
+                      // Label input password
+                      buildLabel('Password'),
+                      // Input field password
+                      TextField(
+                        controller: _passwordController,
+                        obscureText: _obscurePassword,
+                        decoration: customInputDecoration(
+                          'Min. 6 karakter',
+                        ).copyWith(
+                          // icon sebelah kanan
+                          suffixIcon: GestureDetector(
+                            // saat icon ditekan, ubah show/hide password
+                            onTap:
+                                () => setState(
+                                  () => _obscurePassword = !_obscurePassword,
+                                ),
+                            child: Icon(
+                              // Jika password tersebumyi, tampilkan mata tertutup
+                              _obscurePassword
+                                  ? Icons.visibility_off_outlined
+                                  // Jika password terlihat, tampilkan mata terbuka
+                                  : Icons.visibility_outlined,
+                              size: 18,
+                              color: AppColors.textSecondary,
+                            ),
+                          ),
+                        ),
+                      ),
+
+                      const SizedBox(height: 14),
+                    ],
+
+                    // Status
+                    buildLabel('Status Orang Tua'),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 6,
+                      ),
+                      decoration: BoxDecoration(
+                        color: AppColors.softCard,
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: RadioListTile<bool>(
+                              activeColor: AppColors.primary,
+                              contentPadding: EdgeInsets.zero,
+                              value: true,
+                              groupValue: isActive,
+                              onChanged: (value) {
+                                if (value != null) {
+                                  setState(() => isActive = value);
+                                }
+                              },
+                              title: const Text(
+                                'Aktif',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  fontFamily: 'Poppins',
+                                ),
+                              ),
+                              dense: true,
+                            ),
+                          ),
+                          Expanded(
+                            child: RadioListTile<bool>(
+                              activeColor: AppColors.primary,
+                              contentPadding: EdgeInsets.zero,
+                              value: false,
+                              groupValue: isActive,
+                              onChanged: (value) {
+                                if (value != null) {
+                                  setState(() => isActive = value);
+                                }
+                              },
+                              title: const Text(
+                                'Tidak Aktif',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  fontFamily: 'Poppins',
+                                ),
+                              ),
+                              dense: true,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    const SizedBox(height: 18),
+
+                    // Tombol aksi simpan dan batal
+                    Row(
+                      children: [
+                        buildActionButton(
+                          title: isLoading ? 'Loading...' : 'Simpan',
+                          isPrimary: true,
+                          onTap: isLoading ? () {} : saveData,
+                        ),
+                        const SizedBox(width: 12),
+                        buildActionButton(
+                          title: 'Batal',
+                          onTap: () => Navigator.pop(context),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

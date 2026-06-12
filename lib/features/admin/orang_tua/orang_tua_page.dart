@@ -81,90 +81,185 @@ class _OrangTuaPageState extends State<OrangTuaPage> {
     }
   }
 
+  // Widget untuk menampilkan badge status aktif atau tidak aktif
+  Widget _buildStatusBadge(bool isActive) {
+    return Container(
+      // Memberikan jarak di dalam badge agar teks terlihat rapi
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+
+      // Mengatur tampilan badge
+      decoration: BoxDecoration(
+        // Warna latar berbeda sesuai status
+        color: isActive ? AppColors.successBg : AppColors.dangerBg,
+
+        // Membuat sudut badge menjadi melengkung
+        borderRadius: BorderRadius.circular(20),
+      ),
+
+      // Menampilkan teks status
+      child: Text(
+        // Jika aktif tampilkan "Aktif", jika tidak tampilkan "Tidak Aktif"
+        isActive ? 'Aktif' : 'Tidak Aktif',
+
+        style: TextStyle(
+          fontSize: 11,
+          fontWeight: FontWeight.w600,
+          fontFamily: 'Poppins',
+
+          // Warna teks menyesuaikan status
+          color: isActive ? AppColors.successText : AppColors.dangerText,
+        ),
+      ),
+    );
+  }
+
   // Fungsi untuk membuat kartu data orang tua
   Widget buildOrangTuaCard(OrangTuaModel item) {
+    final namaOrangTua =
+        (item.namaAyah != null && item.namaAyah!.isNotEmpty)
+            ? item.namaAyah!
+            : (item.namaIbu != null && item.namaIbu!.isNotEmpty)
+            ? item.namaIbu!
+            : '-';
+
+    final noHpText =
+        (item.noHpWali != null && item.noHpWali!.isNotEmpty)
+            ? item.noHpWali!
+            : (item.noHp != null && item.noHp!.isNotEmpty)
+            ? item.noHp!
+            : '-';
+
     return Container(
       // Memberi jarak antar kartu
-      margin: const EdgeInsets.only(bottom: 18),
+      margin: const EdgeInsets.only(bottom: 14),
 
       // Memberi ruang di dalam kartu
-      padding: const EdgeInsets.all(14),
+      padding: const EdgeInsets.all(16),
 
       // Mengatur tampilan kartu seperti warna, sudut melengkung, dan bayangan
       decoration: BoxDecoration(
         color: AppColors.card,
-        borderRadius: BorderRadius.circular(10),
-        boxShadow: const [
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
           BoxShadow(
-            color: Color.fromRGBO(0, 0, 0, 0.14),
-            blurRadius: 5,
-            offset: Offset(0, 3),
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
           ),
         ],
       ),
 
-      child: Column(
+      child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Menampilkan nama orang tua sebagai judul utama kartu
-          Text(
-            item.namaAyah ?? item.namaIbu ?? '',
-            style: const TextStyle(
-              fontSize: 15,
-              fontWeight: FontWeight.w600,
-              fontFamily: 'Poppins',
+          Container(
+            width: 46,
+            height: 46,
+            decoration: BoxDecoration(
+              color: AppColors.softPrimary,
+              borderRadius: BorderRadius.circular(14),
+            ),
+            child: const Icon(
+              Icons.family_restroom_outlined,
+              color: AppColors.primary,
+              size: 24,
             ),
           ),
 
-          const SizedBox(height: 6),
+          const SizedBox(width: 14),
 
-          // Menampilkan email orang tua
-          Text(
-            'Email: ${item.email}',
-            style: const TextStyle(fontFamily: 'Poppins'),
-          ),
-
-          // Menampilkan nomor HP orang tua
-          Text(
-            'No HP: ${item.noHpWali}',
-            style: const TextStyle(fontFamily: 'Poppins'),
-          ),
-
-          // Menampilkan status orang tua
-          Text(
-            'Status: ${item.isActive ? 'Aktif' : 'Tidak Aktif'}',
-            style: const TextStyle(fontFamily: 'Poppins'),
-          ),
-
-          const SizedBox(height: 10),
-
-          // Tombol edit diletakkan di kanan bawah kartu
-          Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              SizedBox(
-                height: 30,
-                child: ElevatedButton(
-                  // aksi saat tombol edit di tekan
-                  onPressed: () => goToForm(item: item),
-
-                  // Mengatur tampilan tombol edit
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.softPrimary,
-                    foregroundColor: AppColors.primaryDark,
-                    elevation: 2,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                  ),
-
-                  child: const Text(
-                    'Edit',
-                    style: TextStyle(fontSize: 12, fontFamily: 'Poppins'),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  namaOrangTua,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                    fontFamily: 'Poppins',
+                    color: AppColors.textPrimary,
                   ),
                 ),
+
+                const SizedBox(height: 6),
+
+                Row(
+                  children: [
+                    const Icon(
+                      Icons.email_outlined,
+                      size: 14,
+                      color: AppColors.textSecondary,
+                    ),
+                    const SizedBox(width: 5),
+                    Expanded(
+                      child: Text(
+                        item.email,
+                        style: const TextStyle(
+                          fontSize: 12,
+                          fontFamily: 'Poppins',
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+
+                const SizedBox(height: 4),
+
+                Row(
+                  children: [
+                    const Icon(
+                      Icons.phone_outlined,
+                      size: 14,
+                      color: AppColors.textSecondary,
+                    ),
+                    const SizedBox(width: 5),
+                    Expanded(
+                      child: Text(
+                        noHpText,
+                        style: const TextStyle(
+                          fontSize: 12,
+                          fontFamily: 'Poppins',
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+
+                const SizedBox(height: 10),
+
+                _buildStatusBadge(item.isActive),
+              ],
+            ),
+          ),
+
+          const SizedBox(width: 8),
+
+          SizedBox(
+            height: 34,
+            child: ElevatedButton(
+              // aksi saat tombol edit di tekan
+              onPressed: () => goToForm(item: item),
+
+              // Mengatur tampilan tombol edit
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.softPrimary,
+                foregroundColor: AppColors.primary,
+                elevation: 0,
+                padding: const EdgeInsets.symmetric(horizontal: 14),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                textStyle: const TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  fontFamily: 'Poppins',
+                ),
               ),
-            ],
+              child: const Text('Edit'),
+            ),
           ),
         ],
       ),
@@ -177,78 +272,113 @@ class _OrangTuaPageState extends State<OrangTuaPage> {
       // Warna latar belakang halaman
       backgroundColor: AppColors.background,
 
-      // AppBar di bagian atas halaman
-      appBar: AppBar(
-        backgroundColor: AppColors.background,
-        elevation: 0,
-        scrolledUnderElevation: 0,
-
-        // Mengatur warna ikon menjadi hitam
-        iconTheme: const IconThemeData(color: Colors.black),
-
-        // Judul halaman
-        title: const Text(
-          'Kelola Data Orang Tua',
-          style: TextStyle(color: Colors.black),
-        ),
-      ),
-
       // Isi halaman
-      body: Padding(
-        // Memberi jarak isi dari tepi layar
-        padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
-        child: Column(
-          children: [
-            // Tombol tambah orang tua diletakkan di kanan atas
-            Align(
-              alignment: Alignment.centerRight,
-              child: SizedBox(
-                height: 38,
-                child: ElevatedButton(
+      body: SafeArea(
+        child: Padding(
+          // Memberi jarak isi dari tepi layar
+          padding: const EdgeInsets.fromLTRB(20, 24, 20, 20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  InkWell(
+                    onTap: () => Navigator.pop(context),
+                    borderRadius: BorderRadius.circular(20),
+                    child: const Icon(
+                      Icons.chevron_left_rounded,
+                      color: AppColors.textPrimary,
+                      size: 30,
+                    ),
+                  ),
+
+                  const SizedBox(width: 8),
+
+                  const Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Kelola Data Orang Tua',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w700,
+                            fontFamily: 'Poppins',
+                            color: AppColors.textPrimary,
+                          ),
+                        ),
+                        SizedBox(height: 2),
+                        Text(
+                          'Atur data akun orang tua dan status keaktifannya',
+                          style: TextStyle(
+                            fontSize: 11,
+                            fontFamily: 'Poppins',
+                            color: AppColors.textSecondary,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+
+              const SizedBox(height: 24),
+
+              SizedBox(
+                width: double.infinity,
+                height: 46,
+                child: ElevatedButton.icon(
                   // aksi saat tombol tambah di tekan
                   onPressed: () => goToForm(),
 
                   // Mengatur tampilan tombol tambah
+                  icon: const Icon(Icons.add_rounded, size: 20),
+                  label: const Text('Tambah Orang Tua'),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.softPrimary,
-                    foregroundColor: AppColors.primaryDark,
-                    elevation: 2,
+                    backgroundColor: AppColors.primary,
+                    foregroundColor: AppColors.buttonText,
+                    elevation: 3,
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(20),
+                      borderRadius: BorderRadius.circular(16),
                     ),
-                  ),
-
-                  child: const Text(
-                    'Tambah Orang Tua',
-                    style: TextStyle(fontFamily: 'Poppins'),
+                    textStyle: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      fontFamily: 'Poppins',
+                    ),
                   ),
                 ),
               ),
-            ),
 
-            const SizedBox(height: 20),
+              const SizedBox(height: 22),
 
-            Expanded(
-              child:
-                  isLoading // Jika sedang memuat data, tampilkan indikator loading
-                      ? const Center(
-                        child: CircularProgressIndicator(
-                          color: AppColors.primary,
+              Expanded(
+                child:
+                    isLoading // Jika sedang memuat data, tampilkan indikator loading
+                        ? const Center(
+                          child: CircularProgressIndicator(
+                            color: AppColors.primary,
+                          ),
+                        )
+                        : dataList.isEmpty
+                        ? const Center(
+                          child: Text(
+                            'Belum ada data orang tua',
+                            style: TextStyle(fontFamily: 'Poppins'),
+                          ),
+                        )
+                        : RefreshIndicator(
+                          onRefresh: fetchData,
+                          child: ListView.builder(
+                            itemCount: dataList.length,
+                            itemBuilder: (context, index) {
+                              return buildOrangTuaCard(dataList[index]);
+                            },
+                          ),
                         ),
-                      )
-                      : dataList.isEmpty
-                      ? const Center(child: Text('Belum ada data orang tua'))
-                      : RefreshIndicator(
-                        onRefresh: fetchData,
-                        child: ListView.builder(
-                          itemCount: dataList.length,
-                          itemBuilder: (context, index) {
-                            return buildOrangTuaCard(dataList[index]);
-                          },
-                        ),
-                      ),
-            ),
-          ],
+              ),
+            ],
+          ),
         ),
       ),
     );
