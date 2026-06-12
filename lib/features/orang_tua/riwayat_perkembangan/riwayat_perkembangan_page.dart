@@ -48,7 +48,9 @@ class _RiwayatPerkembanganPageState extends State<RiwayatPerkembanganPage> {
       // Ambil data periode dari database
       final list = await _service.getPeriodeList();
       // simpan data periode ke state
-      setState(() => _periodeListData = list);
+      setState(() {
+        _periodeListData = list;
+      });
     } catch (_) {}
   }
 
@@ -63,12 +65,20 @@ class _RiwayatPerkembanganPageState extends State<RiwayatPerkembanganPage> {
 
       // Jika id_orang_tua tidak ditemukan
       if (idOrangTua == null) {
-        // Matikan loading
-        setState(() => _isLoadingAnak = false);
+        setState(() {
+          // Matikan loading karena proses tidak bisa dilanjutkan
+          _isLoadingAnak = false;
+          // Kosongkan daftar anak karena user tidak memiliki data orang tua
+          _anakList = [];
+          // reset anak yang dipilih
+          _selectedAnak = null;
+          // Kosongkan daftar laporan karena tidak ada anak yang dapat ditampilkan
+          _laporanList = [];
+        });
         return;
       }
 
-      // Ambil daftar anak dari database
+      // Ambil daftar anak aktif dari database
       final list = await _service.getAnakList(idOrangTua);
 
       // Update state setelah data berhasil didapat
@@ -76,20 +86,21 @@ class _RiwayatPerkembanganPageState extends State<RiwayatPerkembanganPage> {
         _anakList = list;
         _isLoadingAnak = false;
 
-        // Jika daftar anak tidak kosong
+        // Jika daftar berhasil ditemukan
         if (list.isNotEmpty) {
-          // Otomatis pilih anak aktif pertama
-          _selectedAnak = list.firstWhere(
-            (a) => a.isActive,
-
-            // Jika tidak ada yang aktif, pilih data pertama
-            orElse: () => list.first,
-          );
-
-          // Load laporan berdasarkan anak yang dipilih
-          _loadLaporan(_selectedAnak!.id);
+          // pilih anak pertama sebagai pilihan default
+          _selectedAnak = list.first;
+        } else {
+          // Jika tidak ada data anak, reset pilihan anak dan kosongkan daftar laporan
+          _selectedAnak = null;
+          _laporanList = [];
         }
       });
+
+      // Setelah state diperbarui, ambil data laporan untuk anak yang dipilih secara otomatis
+      if (list.isNotEmpty) {
+        _loadLaporan(list.first.id);
+      }
     } catch (e) {
       // Jika error, matikan loading
       setState(() => _isLoadingAnak = false);
