@@ -3,6 +3,7 @@ import 'riwayat_ortu_model.dart';
 import 'riwayat_ortu_service.dart';
 import 'detail_laporan_ortu_page.dart';
 import '../../../services/user_session.dart';
+import '../../../core/theme/app_colors.dart';
 
 // Halaman riwayat perkembangan orang tua
 class RiwayatPerkembanganPage extends StatefulWidget {
@@ -144,7 +145,7 @@ class _RiwayatPerkembanganPageState extends State<RiwayatPerkembanganPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       // Warna background utama halaman
-      backgroundColor: const Color(0xFFDDE8EF),
+      backgroundColor: AppColors.background,
 
       body: SafeArea(
         child: Column(
@@ -155,7 +156,11 @@ class _RiwayatPerkembanganPageState extends State<RiwayatPerkembanganPage> {
             Expanded(
               child:
                   _isLoadingAnak
-                      ? const Center(child: CircularProgressIndicator())
+                      ? const Center(
+                        child: CircularProgressIndicator(
+                          color: AppColors.primary,
+                        ),
+                      )
                       : SingleChildScrollView(
                         padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
 
@@ -169,7 +174,11 @@ class _RiwayatPerkembanganPageState extends State<RiwayatPerkembanganPage> {
                             _buildFilterPeriode(),
                             const SizedBox(height: 14),
                             if (_isLoadingLaporan)
-                              const Center(child: CircularProgressIndicator())
+                              const Center(
+                                child: CircularProgressIndicator(
+                                  color: AppColors.primary,
+                                ),
+                              )
                             else ...[
                               ..._laporanList.map((l) => _buildLaporanCard(l)),
 
@@ -268,7 +277,7 @@ class _RiwayatPerkembanganPageState extends State<RiwayatPerkembanganPage> {
                       const Icon(
                         Icons.person_outline_rounded,
                         size: 16,
-                        color: Color(0xFF185FA5),
+                        color: AppColors.secondary,
                       ),
                       const SizedBox(width: 8),
 

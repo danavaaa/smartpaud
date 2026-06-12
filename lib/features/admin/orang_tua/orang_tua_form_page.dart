@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'orang_tua_service.dart';
+import '../../../core/theme/app_colors.dart';
 
 // Halaman form untuk menambah atau mengedit data orang tua
 class OrangTuaFormPage extends StatefulWidget {
@@ -201,8 +202,8 @@ class _OrangTuaFormPageState extends State<OrangTuaFormPage> {
       child: ElevatedButton(
         onPressed: onTap,
         style: ElevatedButton.styleFrom(
-          backgroundColor: const Color(0xFFD9D4D4),
-          foregroundColor: Colors.black,
+          backgroundColor: AppColors.softPrimary,
+          foregroundColor: AppColors.primaryDark,
           elevation: 3,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
@@ -223,11 +224,11 @@ class _OrangTuaFormPageState extends State<OrangTuaFormPage> {
 
     return Scaffold(
       // Warna latar belakang halaman
-      backgroundColor: const Color(0xFFDCE5E8),
+      backgroundColor: AppColors.background,
 
       // AppBar di bagian atas halaman
       appBar: AppBar(
-        backgroundColor: const Color(0xFFDCE5E8),
+        backgroundColor: AppColors.background,
         elevation: 0,
         scrolledUnderElevation: 0,
         iconTheme: const IconThemeData(color: Colors.black),
@@ -247,7 +248,7 @@ class _OrangTuaFormPageState extends State<OrangTuaFormPage> {
               width: double.infinity,
               padding: const EdgeInsets.fromLTRB(14, 16, 14, 18),
               decoration: BoxDecoration(
-                color: const Color(0xFFEAF0F1),
+                color: AppColors.card,
                 borderRadius: BorderRadius.circular(6),
               ),
               child: Column(

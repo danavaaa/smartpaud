@@ -4,6 +4,7 @@ import '../riwayat_perkembangan/riwayat_ortu_model.dart';
 import '../riwayat_perkembangan/riwayat_ortu_service.dart';
 import '../profile/profile_ortu_page.dart';
 import '../../../services/user_session.dart';
+import '../../../core/theme/app_colors.dart';
 
 // Halaman dashboard orang tua
 class OrangTuaDashboardPage extends StatefulWidget {
@@ -112,7 +113,7 @@ class _OrangTuaDashboardPageState extends State<OrangTuaDashboardPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       // Warna background utama halaman
-      backgroundColor: const Color(0xFFDDE8EF),
+      backgroundColor: AppColors.background,
 
       body: SafeArea(
         child: SingleChildScrollView(
@@ -242,7 +243,9 @@ class _OrangTuaDashboardPageState extends State<OrangTuaDashboardPage> {
           // Dropdown pilih anak
           if (_isLoadingAnak)
             // Jika data anak masih dalam proses diambil dari database, tampilkan loading di tengah layar
-            const Center(child: CircularProgressIndicator())
+            const Center(
+              child: CircularProgressIndicator(color: AppColors.primary),
+            )
           else if (_anakList.isEmpty)
             // Jika loading selesai tetapi daftar anak kosong, tampilkan pesan informasi
             const Text(
@@ -258,7 +261,7 @@ class _OrangTuaDashboardPageState extends State<OrangTuaDashboardPage> {
               padding: const EdgeInsets.symmetric(horizontal: 12),
 
               decoration: BoxDecoration(
-                color: const Color(0xFFEAF1F5),
+                color: AppColors.background,
                 borderRadius: BorderRadius.circular(10),
               ),
 
@@ -285,7 +288,7 @@ class _OrangTuaDashboardPageState extends State<OrangTuaDashboardPage> {
                               const Icon(
                                 Icons.person_outline_rounded,
                                 size: 16,
-                                color: Color(0xFF185FA5),
+                                color: AppColors.secondary,
                               ),
                               const SizedBox(width: 8),
 
@@ -346,7 +349,7 @@ class _OrangTuaDashboardPageState extends State<OrangTuaDashboardPage> {
               const Icon(
                 Icons.access_time_rounded,
                 size: 16,
-                color: Color(0xFF185FA5),
+                color: AppColors.secondary,
               ),
               const SizedBox(width: 8),
 
@@ -375,7 +378,7 @@ class _OrangTuaDashboardPageState extends State<OrangTuaDashboardPage> {
                   'Lihat semua',
                   style: TextStyle(
                     fontSize: 11,
-                    color: Color(0xFF185FA5),
+                    color: AppColors.secondary,
                     fontFamily: 'Poppins',
                   ),
                 ),
@@ -386,7 +389,9 @@ class _OrangTuaDashboardPageState extends State<OrangTuaDashboardPage> {
 
           if (_isLoadingLaporan)
             // Jika data laporan masih diambil dari database, tampilkan loading spinner di tengah
-            const Center(child: CircularProgressIndicator())
+            const Center(
+              child: CircularProgressIndicator(color: AppColors.primary),
+            )
           else if (_laporanList.isEmpty)
             // Jika loading selesai tetapi tidak ada laporan, tampilkan pesan bahwa laporan belum tersedia
             const Center(
@@ -414,7 +419,7 @@ class _OrangTuaDashboardPageState extends State<OrangTuaDashboardPage> {
                       padding: const EdgeInsets.all(12),
 
                       decoration: BoxDecoration(
-                        color: const Color(0xFFEAF1F5),
+                        color: AppColors.background,
                         borderRadius: BorderRadius.circular(10),
                       ),
 
@@ -514,10 +519,10 @@ class _OrangTuaDashboardPageState extends State<OrangTuaDashboardPage> {
               width: 36,
               height: 36,
               decoration: BoxDecoration(
-                color: const Color(0xFFDDE8EF),
+                color: AppColors.background,
                 borderRadius: BorderRadius.circular(10),
               ),
-              child: Icon(icon, size: 20, color: const Color(0xFF185FA5)),
+              child: Icon(icon, size: 20, color: AppColors.primary),
             ),
 
             const SizedBox(width: 14),

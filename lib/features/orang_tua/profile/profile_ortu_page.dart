@@ -4,6 +4,7 @@ import 'profile_ortu_model.dart';
 import 'profile_ortu_service.dart';
 import '../../../services/user_session.dart';
 import '../../../services/auth_service.dart';
+import '../../../core/theme/app_colors.dart';
 
 class ProfileOrtuPage extends StatefulWidget {
   const ProfileOrtuPage({super.key});
@@ -79,7 +80,7 @@ class _ProfileOrtuPageState extends State<ProfileOrtuPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       // Warna background
-      backgroundColor: const Color(0xFFDDE8EF),
+      backgroundColor: AppColors.background,
       body: SafeArea(
         child: Column(
           children: [
@@ -88,7 +89,11 @@ class _ProfileOrtuPageState extends State<ProfileOrtuPage> {
             Expanded(
               child:
                   _isLoading
-                      ? const Center(child: CircularProgressIndicator())
+                      ? const Center(
+                        child: CircularProgressIndicator(
+                          color: AppColors.primary,
+                        ),
+                      )
                       : SingleChildScrollView(
                         padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
                         child: Column(
@@ -167,13 +172,13 @@ class _ProfileOrtuPageState extends State<ProfileOrtuPage> {
             width: 72,
             height: 72,
             decoration: const BoxDecoration(
-              color: Color(0xFFDDE8EF),
+              color: AppColors.background,
               shape: BoxShape.circle,
             ),
             child: const Icon(
               Icons.person_outline_rounded,
               size: 36,
-              color: Color(0xFF185FA5),
+              color: AppColors.secondary,
             ),
           ),
           const SizedBox(height: 12),
@@ -193,7 +198,7 @@ class _ProfileOrtuPageState extends State<ProfileOrtuPage> {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
             decoration: BoxDecoration(
-              color: const Color(0xFFDDE8EF),
+              color: AppColors.background,
               borderRadius: BorderRadius.circular(20),
             ),
             child: const Text(
@@ -201,7 +206,7 @@ class _ProfileOrtuPageState extends State<ProfileOrtuPage> {
               style: TextStyle(
                 fontSize: 12,
                 fontFamily: 'Poppins',
-                color: Color(0xFF185FA5),
+                color: AppColors.secondary,
               ),
             ),
           ),
@@ -372,7 +377,7 @@ class _ProfileOrtuPageState extends State<ProfileOrtuPage> {
                           style: const TextStyle(
                             fontSize: 11,
                             fontWeight: FontWeight.w600,
-                            color: Color(0xFF185FA5),
+                            color: AppColors.secondary,
                             fontFamily: 'Poppins',
                           ),
                         ),

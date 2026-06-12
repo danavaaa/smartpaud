@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../riwayat_laporan/riwayat_laporan_model.dart';
 import 'detail_laporan_page.dart';
 import 'riwayat_laporan_service.dart';
+import '../../../core/theme/app_colors.dart';
 
 // halaman riwayat laporan guru
 class RiwayatLaporanPage extends StatefulWidget {
@@ -117,7 +118,7 @@ class _RiwayatLaporanPageState extends State<RiwayatLaporanPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       // Background halaman
-      backgroundColor: const Color(0xFFDDE8EF),
+      backgroundColor: AppColors.background,
 
       body: SafeArea(
         child: Column(
@@ -128,7 +129,11 @@ class _RiwayatLaporanPageState extends State<RiwayatLaporanPage> {
             Expanded(
               child:
                   _isLoading // Tampilkan loading indicator saat data sedang dimuat
-                      ? const Center(child: CircularProgressIndicator())
+                      ? const Center(
+                        child: CircularProgressIndicator(
+                          color: AppColors.primary,
+                        ),
+                      )
                       : SingleChildScrollView(
                         padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
 
@@ -452,7 +457,7 @@ class _RiwayatLaporanPageState extends State<RiwayatLaporanPage> {
             CircleAvatar(
               radius: 20,
 
-              backgroundColor: const Color(0xFFDDE8EF),
+              backgroundColor: AppColors.background,
 
               child: Text(
                 laporan.inisial,
@@ -461,7 +466,7 @@ class _RiwayatLaporanPageState extends State<RiwayatLaporanPage> {
                   fontSize: 12,
                   fontWeight: FontWeight.w600,
 
-                  color: Color(0xFF185FA5),
+                  color: AppColors.secondary,
 
                   fontFamily: 'Poppins',
                 ),

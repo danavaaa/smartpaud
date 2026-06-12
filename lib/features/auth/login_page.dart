@@ -3,6 +3,7 @@ import '../../services/auth_service.dart';
 import '../admin/dashboard/admin_dashboard.dart';
 import '../guru/dashboard/guru_dashboard.dart';
 import '../orang_tua/dashboard/orang_tua_dashboard.dart';
+import '../../../core/theme/app_colors.dart';
 
 // Halaman login yang menangani autentikasi dan navigasi berdasarkan peran user
 class LoginPage extends StatefulWidget {
@@ -167,7 +168,7 @@ class _LoginPageState extends State<LoginPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       // latar belakang
-      backgroundColor: const Color(0xFFDCE5E8),
+      backgroundColor: AppColors.background,
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
@@ -245,7 +246,7 @@ class _LoginPageState extends State<LoginPage> {
                           color:
                               emailError != null
                                   ? const Color(0xFFD32F2F)
-                                  : const Color(0xFF185FA5),
+                                  : AppColors.secondary,
                           width: 1.5,
                         ),
                       ),
@@ -302,7 +303,7 @@ class _LoginPageState extends State<LoginPage> {
                           color:
                               passwordError != null
                                   ? const Color(0xFFD32F2F)
-                                  : const Color(0xFF185FA5),
+                                  : AppColors.secondary,
                           width: 1.5,
                         ),
                       ),
@@ -345,8 +346,8 @@ class _LoginPageState extends State<LoginPage> {
                         // jika sedang loading, tombol tidak bisa ditekan
                         onPressed: isLoading ? null : login,
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFFD9D4D4),
-                          foregroundColor: Colors.black,
+                          backgroundColor: AppColors.softPrimary,
+                          foregroundColor: AppColors.primaryDark,
                           elevation: 0,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(8),

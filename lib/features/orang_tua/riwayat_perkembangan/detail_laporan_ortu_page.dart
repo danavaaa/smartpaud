@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'riwayat_ortu_model.dart';
+import '../../../core/theme/app_colors.dart';
 
 class DetailLaporanOrtuPage extends StatelessWidget {
   // Data laporan yang dikirim dari halaman sebelumnya
@@ -12,7 +13,7 @@ class DetailLaporanOrtuPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       // Warna background halaman
-      backgroundColor: const Color(0xFFDDE8EF),
+      backgroundColor: AppColors.background,
 
       body: SafeArea(
         child: Column(
@@ -120,7 +121,7 @@ class DetailLaporanOrtuPage extends StatelessWidget {
           // Avatar berisi inisial siswa
           CircleAvatar(
             radius: 22,
-            backgroundColor: const Color(0xFFDDE8EF),
+            backgroundColor: AppColors.background,
 
             child: Text(
               // Mengambil inisial dari nama siswa
@@ -129,7 +130,7 @@ class DetailLaporanOrtuPage extends StatelessWidget {
               style: const TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w600,
-                color: Color(0xFF185FA5),
+                color: AppColors.secondary,
                 fontFamily: 'Poppins',
               ),
             ),
@@ -320,7 +321,7 @@ class DetailLaporanOrtuPage extends StatelessWidget {
           Row(
             children: [
               // Icon card
-              Icon(icon, size: 18, color: const Color(0xFF185FA5)),
+              Icon(icon, size: 18, color: AppColors.primary),
 
               const SizedBox(width: 8),
 
@@ -348,7 +349,7 @@ class DetailLaporanOrtuPage extends StatelessWidget {
             padding: const EdgeInsets.all(12),
 
             decoration: BoxDecoration(
-              color: const Color(0xFFDDE8EF),
+              color: AppColors.background,
               borderRadius: BorderRadius.circular(8),
             ),
 

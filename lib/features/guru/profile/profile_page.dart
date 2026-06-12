@@ -4,6 +4,7 @@ import 'profile_service.dart';
 import '../../auth/login_page.dart';
 import '../../../services/user_session.dart';
 import '../../../services/auth_service.dart';
+import '../../../core/theme/app_colors.dart';
 
 // Halaman profile guru
 class ProfilePage extends StatefulWidget {
@@ -60,7 +61,7 @@ class _ProfilePageState extends State<ProfilePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       // Background utama halaman
-      backgroundColor: const Color(0xFFDDE8EF),
+      backgroundColor: AppColors.background,
 
       body: SafeArea(
         child: Column(
@@ -71,7 +72,11 @@ class _ProfilePageState extends State<ProfilePage> {
             Expanded(
               child:
                   _isLoading
-                      ? const Center(child: CircularProgressIndicator())
+                      ? const Center(
+                        child: CircularProgressIndicator(
+                          color: AppColors.primary,
+                        ),
+                      )
                       : SingleChildScrollView(
                         padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
 
@@ -165,7 +170,7 @@ class _ProfilePageState extends State<ProfilePage> {
             height: 72,
 
             decoration: const BoxDecoration(
-              color: Color(0xFFDDE8EF),
+              color: AppColors.background,
 
               shape: BoxShape.circle,
             ),
@@ -175,7 +180,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
               size: 36,
 
-              color: Color(0xFF185FA5),
+              color: AppColors.secondary,
             ),
           ),
 
@@ -199,7 +204,7 @@ class _ProfilePageState extends State<ProfilePage> {
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
 
             decoration: BoxDecoration(
-              color: const Color(0xFFDDE8EF),
+              color: AppColors.background,
 
               borderRadius: BorderRadius.circular(20),
             ),
@@ -211,7 +216,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
                 fontFamily: 'Poppins',
 
-                color: Color(0xFF185FA5),
+                color: AppColors.secondary,
               ),
             ),
           ),

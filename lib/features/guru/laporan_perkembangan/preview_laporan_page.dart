@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'dart:io';
 import 'laporan_service.dart';
+import '../../../core/theme/app_colors.dart';
 
 // HAlaman preview hasil AI
 class PreviewLaporanPage extends StatefulWidget {
@@ -105,7 +106,7 @@ class _PreviewLaporanPageState extends State<PreviewLaporanPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       // Background halaman
-      backgroundColor: const Color(0xFFDDE8EF),
+      backgroundColor: AppColors.background,
 
       body: SafeArea(
         child: Column(
@@ -228,7 +229,7 @@ class _PreviewLaporanPageState extends State<PreviewLaporanPage> {
           CircleAvatar(
             radius: 22,
 
-            backgroundColor: const Color(0xFFDDE8EF),
+            backgroundColor: AppColors.background,
 
             child: Text(
               _inisial(widget.namaSiswa),
@@ -236,7 +237,7 @@ class _PreviewLaporanPageState extends State<PreviewLaporanPage> {
               style: const TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w600,
-                color: Color(0xFF185FA5),
+                color: AppColors.secondary,
                 fontFamily: 'Poppins',
               ),
             ),
@@ -353,7 +354,7 @@ class _PreviewLaporanPageState extends State<PreviewLaporanPage> {
           Row(
             children: [
               // Icon card
-              Icon(icon, size: 18, color: const Color(0xFF185FA5)),
+              Icon(icon, size: 18, color: AppColors.primary),
 
               const SizedBox(width: 8),
 
@@ -380,7 +381,7 @@ class _PreviewLaporanPageState extends State<PreviewLaporanPage> {
             padding: const EdgeInsets.all(12),
 
             decoration: BoxDecoration(
-              color: const Color(0xFFDDE8EF),
+              color: AppColors.background,
 
               borderRadius: BorderRadius.circular(8),
             ),
@@ -451,7 +452,7 @@ class _PreviewLaporanPageState extends State<PreviewLaporanPage> {
               onPressed: _isSaving ? null : _simpanLaporan,
 
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF185FA5),
+                backgroundColor: AppColors.primary,
 
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(16),

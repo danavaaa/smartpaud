@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'riwayat_laporan_model.dart';
+import '../../../core/theme/app_colors.dart';
 
 // halaman detail laporan
 class DetailLaporanPage extends StatelessWidget {
@@ -10,7 +11,7 @@ class DetailLaporanPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       // Warna background halaman
-      backgroundColor: const Color(0xFFDDE8EF),
+      backgroundColor: AppColors.background,
 
       body: SafeArea(
         child: Column(
@@ -121,7 +122,7 @@ class DetailLaporanPage extends StatelessWidget {
           CircleAvatar(
             radius: 22,
 
-            backgroundColor: const Color(0xFFDDE8EF),
+            backgroundColor: AppColors.background,
 
             child: Text(
               laporan.inisial,
@@ -131,7 +132,7 @@ class DetailLaporanPage extends StatelessWidget {
 
                 fontWeight: FontWeight.w600,
 
-                color: Color(0xFF185FA5),
+                color: AppColors.secondary,
 
                 fontFamily: 'Poppins',
               ),
@@ -320,7 +321,7 @@ class DetailLaporanPage extends StatelessWidget {
           Row(
             children: [
               // Icon section
-              Icon(icon, size: 18, color: const Color(0xFF185FA5)),
+              Icon(icon, size: 18, color: AppColors.primary),
 
               const SizedBox(width: 8),
 
@@ -352,7 +353,7 @@ class DetailLaporanPage extends StatelessWidget {
             padding: const EdgeInsets.all(12),
 
             decoration: BoxDecoration(
-              color: const Color(0xFFDDE8EF),
+              color: AppColors.background,
 
               borderRadius: BorderRadius.circular(8),
             ),

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'data_siswa_model.dart';
 import 'data_siswa_service.dart';
 import 'detail_siswa.dart';
+import '../../../core/theme/app_colors.dart';
 
 // halaman data siswa
 class DataSiswaPage extends StatefulWidget {
@@ -84,7 +85,7 @@ class _DataSiswaPageState extends State<DataSiswaPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFDDE8EF),
+      backgroundColor: AppColors.background,
       body: SafeArea(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -95,7 +96,11 @@ class _DataSiswaPageState extends State<DataSiswaPage> {
             Expanded(
               child:
                   _isLoading
-                      ? const Center(child: CircularProgressIndicator())
+                      ? const Center(
+                        child: CircularProgressIndicator(
+                          color: AppColors.primary,
+                        ),
+                      )
                       : SingleChildScrollView(
                         padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
 
@@ -381,7 +386,7 @@ class _DataSiswaPageState extends State<DataSiswaPage> {
             CircleAvatar(
               radius: 18,
 
-              backgroundColor: const Color(0xFFDDE8EF),
+              backgroundColor: AppColors.background,
 
               child: Text(
                 siswa.inisial,
@@ -389,7 +394,7 @@ class _DataSiswaPageState extends State<DataSiswaPage> {
                 style: const TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.w600,
-                  color: Color(0xFF185FA5),
+                  color: AppColors.secondary,
                   fontFamily: 'Poppins',
                 ),
               ),

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'orang_tua_form_page.dart';
 import 'orang_tua_model.dart';
 import 'orang_tua_service.dart';
+import '../../../core/theme/app_colors.dart';
 
 // Halaman untuk menampilkan dan mengelola data orang tua
 class OrangTuaPage extends StatefulWidget {
@@ -91,7 +92,7 @@ class _OrangTuaPageState extends State<OrangTuaPage> {
 
       // Mengatur tampilan kartu seperti warna, sudut melengkung, dan bayangan
       decoration: BoxDecoration(
-        color: const Color(0xFFF7F4F4),
+        color: AppColors.card,
         borderRadius: BorderRadius.circular(10),
         boxShadow: const [
           BoxShadow(
@@ -149,8 +150,8 @@ class _OrangTuaPageState extends State<OrangTuaPage> {
 
                   // Mengatur tampilan tombol edit
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFD9D4D4),
-                    foregroundColor: Colors.black,
+                    backgroundColor: AppColors.softPrimary,
+                    foregroundColor: AppColors.primaryDark,
                     elevation: 2,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(16),
@@ -174,11 +175,11 @@ class _OrangTuaPageState extends State<OrangTuaPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       // Warna latar belakang halaman
-      backgroundColor: const Color(0xFFDCE5E8),
+      backgroundColor: AppColors.background,
 
       // AppBar di bagian atas halaman
       appBar: AppBar(
-        backgroundColor: const Color(0xFFDCE5E8),
+        backgroundColor: AppColors.background,
         elevation: 0,
         scrolledUnderElevation: 0,
 
@@ -209,8 +210,8 @@ class _OrangTuaPageState extends State<OrangTuaPage> {
 
                   // Mengatur tampilan tombol tambah
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFD9D4D4),
-                    foregroundColor: Colors.black,
+                    backgroundColor: AppColors.softPrimary,
+                    foregroundColor: AppColors.primaryDark,
                     elevation: 2,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(20),
@@ -230,7 +231,11 @@ class _OrangTuaPageState extends State<OrangTuaPage> {
             Expanded(
               child:
                   isLoading // Jika sedang memuat data, tampilkan indikator loading
-                      ? const Center(child: CircularProgressIndicator())
+                      ? const Center(
+                        child: CircularProgressIndicator(
+                          color: AppColors.primary,
+                        ),
+                      )
                       : dataList.isEmpty
                       ? const Center(child: Text('Belum ada data orang tua'))
                       : RefreshIndicator(

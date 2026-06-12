@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'siswa_service.dart';
+import '../../../core/theme/app_colors.dart';
 
 // Halaman form untuk menambah atau mengedit data siswa
 class SiswaFormPage extends StatefulWidget {
@@ -257,8 +258,8 @@ class _SiswaFormPageState extends State<SiswaFormPage> {
       child: ElevatedButton(
         onPressed: onTap,
         style: ElevatedButton.styleFrom(
-          backgroundColor: const Color(0xFFD9D4D4),
-          foregroundColor: Colors.black,
+          backgroundColor: AppColors.softPrimary,
+          foregroundColor: AppColors.primaryDark,
           elevation: 3,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
@@ -279,11 +280,11 @@ class _SiswaFormPageState extends State<SiswaFormPage> {
 
     return Scaffold(
       // Warna latar belakang halaman
-      backgroundColor: const Color(0xFFDCE5E8),
+      backgroundColor: AppColors.background,
 
       // AppBar di bagian atas halaman
       appBar: AppBar(
-        backgroundColor: const Color(0xFFDCE5E8),
+        backgroundColor: AppColors.background,
         elevation: 0,
         scrolledUnderElevation: 0,
         iconTheme: const IconThemeData(color: Colors.black),
@@ -303,7 +304,7 @@ class _SiswaFormPageState extends State<SiswaFormPage> {
               width: double.infinity,
               padding: const EdgeInsets.fromLTRB(14, 16, 14, 18),
               decoration: BoxDecoration(
-                color: const Color(0xFFEAF0F1),
+                color: AppColors.card,
                 borderRadius: BorderRadius.circular(6),
               ),
               child: Column(
@@ -334,7 +335,10 @@ class _SiswaFormPageState extends State<SiswaFormPage> {
                         decoration: customInputDecoration(
                           'Pilih tanggal lahir',
                         ).copyWith(
-                          suffixIcon: const Icon(Icons.keyboard_arrow_down),
+                          suffixIcon: const Icon(
+                            Icons.keyboard_arrow_down,
+                            color: AppColors.primaryDark,
+                          ),
                         ),
                       ),
                     ),
@@ -364,7 +368,11 @@ class _SiswaFormPageState extends State<SiswaFormPage> {
                   // Kelas
                   buildLabel('Kelas'),
                   _isLoadingDropdown
-                      ? const Center(child: CircularProgressIndicator())
+                      ? const Center(
+                        child: CircularProgressIndicator(
+                          color: AppColors.primary,
+                        ),
+                      )
                       : DropdownButtonFormField<String>(
                         value: selectedKelasId,
                         decoration: customInputDecoration('Pilih Kelas'),

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'periode_ajaran_form_page.dart';
 import 'periode_ajaran_model.dart';
 import 'periode_ajaran_service.dart';
+import '../../../core/theme/app_colors.dart';
 
 // halaman untuk menampilkan daftar periode ajaran
 class PeriodeAjaranPage extends StatefulWidget {
@@ -57,70 +58,136 @@ class _PeriodeAjaranPageState extends State<PeriodeAjaranPage> {
   // widget untuk menampilkan card periode ajaran
   Widget buildPeriodCard(PeriodeAjaranModel item) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 18),
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      margin: const EdgeInsets.only(bottom: 14),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFFF7F4F4),
-        borderRadius: BorderRadius.circular(4),
+        color: AppColors.card,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Expanded(
-            child: DefaultTextStyle(
-              style: const TextStyle(
-                color: Colors.black,
-                fontSize: 12,
-                fontFamily: 'Poppins',
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    item.tahunAjaran,
-                    style: const TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                      fontFamily: 'Poppins',
-                    ),
-                  ),
-                  const SizedBox(height: 2),
-                  Text(item.semester),
-                  Text(item.tanggalMulai),
-                  Text(item.tanggalSelesai),
-                  Text('Status: ${item.isActive ? 'Aktif' : 'Tidak Aktif'}'),
-                ],
-              ),
+          Container(
+            width: 46,
+            height: 46,
+            decoration: BoxDecoration(
+              color: AppColors.softPrimary,
+              borderRadius: BorderRadius.circular(14),
+            ),
+            child: const Icon(
+              Icons.calendar_month_outlined,
+              color: AppColors.primary,
+              size: 24,
             ),
           ),
-          // tombol edit
-          const SizedBox(width: 8),
-          Column(
-            children: [
-              SizedBox(
-                height: 28,
-                child: ElevatedButton(
-                  onPressed: () => goToForm(item: item),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFD9D4D4),
-                    foregroundColor: Colors.black,
-                    elevation: 3,
-                    padding: const EdgeInsets.symmetric(horizontal: 14),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(14),
-                    ),
-                    textStyle: const TextStyle(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w500,
-                      fontFamily: 'Poppins',
-                    ),
+
+          const SizedBox(width: 14),
+
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  item.tahunAjaran,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                    fontFamily: 'Poppins',
+                    color: AppColors.textPrimary,
                   ),
-                  child: const Text('Edit'),
+                ),
+
+                const SizedBox(height: 4),
+
+                Text(
+                  item.semester,
+                  style: const TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w500,
+                    fontFamily: 'Poppins',
+                    color: AppColors.textPrimary,
+                  ),
+                ),
+
+                const SizedBox(height: 6),
+
+                Row(
+                  children: [
+                    const Icon(
+                      Icons.date_range_outlined,
+                      size: 14,
+                      color: AppColors.textSecondary,
+                    ),
+                    const SizedBox(width: 5),
+                    Expanded(
+                      child: Text(
+                        '${item.tanggalMulai} s/d ${item.tanggalSelesai}',
+                        style: const TextStyle(
+                          fontSize: 12,
+                          fontFamily: 'Poppins',
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+
+                const SizedBox(height: 10),
+
+                _buildStatusBadge(item.isActive),
+              ],
+            ),
+          ),
+
+          const SizedBox(width: 8),
+          SizedBox(
+            height: 34,
+            child: ElevatedButton(
+              onPressed: () => goToForm(item: item),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.softPrimary,
+                foregroundColor: AppColors.primary,
+                elevation: 0,
+                padding: const EdgeInsets.symmetric(horizontal: 14),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                textStyle: const TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  fontFamily: 'Poppins',
                 ),
               ),
-            ],
+              child: const Text('Edit'),
+            ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildStatusBadge(bool isActive) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      decoration: BoxDecoration(
+        color: isActive ? AppColors.successBg : AppColors.dangerBg,
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Text(
+        isActive ? 'Aktif' : 'Tidak Aktif',
+        style: TextStyle(
+          fontSize: 11,
+          fontWeight: FontWeight.w600,
+          fontFamily: 'Poppins',
+          color: isActive ? AppColors.successText : AppColors.dangerText,
+        ),
       ),
     );
   }
@@ -128,7 +195,7 @@ class _PeriodeAjaranPageState extends State<PeriodeAjaranPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFDCE5E8),
+      backgroundColor: AppColors.background,
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.fromLTRB(20, 24, 20, 20),
@@ -136,58 +203,85 @@ class _PeriodeAjaranPageState extends State<PeriodeAjaranPage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // tombol kembali ke halaman sebelumnya
-              InkWell(
-                onTap: () => Navigator.pop(context),
-                child: const Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(Icons.chevron_left, color: Colors.black),
-                    SizedBox(width: 6),
-                    // judul halaman
-                    Text(
-                      'Kelola Periode Ajaran',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w500,
-                        fontFamily: 'Poppins',
-                      ),
+              Row(
+                children: [
+                  InkWell(
+                    onTap: () => Navigator.pop(context),
+                    borderRadius: BorderRadius.circular(20),
+                    child: const Icon(
+                      Icons.chevron_left_rounded,
+                      color: AppColors.textPrimary,
+                      size: 30,
                     ),
-                  ],
-                ),
+                  ),
+
+                  const SizedBox(width: 8),
+
+                  const Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // judul halaman
+                        Text(
+                          'Kelola Periode Ajaran',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w700,
+                            fontFamily: 'Poppins',
+                            color: AppColors.textPrimary,
+                          ),
+                        ),
+                        SizedBox(height: 2),
+                        Text(
+                          'Atur tahun ajaran dan status periode aktif',
+                          style: TextStyle(
+                            fontSize: 11,
+                            fontFamily: 'Poppins',
+                            color: AppColors.textSecondary,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
               ),
-              const SizedBox(height: 28),
-              // tombol untuk menambah periode ajaran baru
-              Align(
-                alignment: Alignment.centerRight,
-                child: SizedBox(
-                  height: 34,
-                  child: ElevatedButton(
-                    onPressed: () => goToForm(),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFFD9D4D4),
-                      foregroundColor: Colors.black,
-                      elevation: 4,
-                      padding: const EdgeInsets.symmetric(horizontal: 18),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(18),
-                      ),
-                      textStyle: const TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w500,
-                        fontFamily: 'Poppins',
-                      ),
+
+              const SizedBox(height: 24),
+
+              SizedBox(
+                width: double.infinity,
+                height: 46,
+                child: ElevatedButton.icon(
+                  onPressed: () => goToForm(),
+                  icon: const Icon(Icons.add_rounded, size: 20),
+                  label: const Text('Tambah Periode'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primary,
+                    foregroundColor: AppColors.buttonText,
+                    elevation: 3,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
                     ),
-                    child: const Text('Tambah Periode'),
+                    textStyle: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      fontFamily: 'Poppins',
+                    ),
                   ),
                 ),
               ),
+
               const SizedBox(height: 22),
               // daftar periode ajaran
               Expanded(
                 child:
                     // jika sedang loading, tampilkan indikator loading
                     isLoading
-                        ? const Center(child: CircularProgressIndicator())
+                        ? const Center(
+                          child: CircularProgressIndicator(
+                            color: AppColors.primary,
+                          ),
+                        )
                         : dataList.isEmpty
                         ? const Center(
                           // jika tidak ada data, tampilkan pesan kosong

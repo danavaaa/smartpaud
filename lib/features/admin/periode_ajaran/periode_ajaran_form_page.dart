@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'periode_ajaran_model.dart';
 import 'periode_ajaran_service.dart';
+import '../../../core/theme/app_colors.dart';
 
 // halaman form tambah/edit periode ajaran
 class PeriodeAjaranFormPage extends StatefulWidget {
@@ -55,19 +56,23 @@ class _PeriodeAjaranFormPageState extends State<PeriodeAjaranFormPage> {
       hintText: hint,
       hintStyle: const TextStyle(
         fontSize: 12,
-        color: Color(0xFFB8B1B1),
+        color: AppColors.textSecondary,
         fontFamily: 'Poppins',
       ),
       filled: true,
-      fillColor: const Color(0xFFF7F4F4),
+      fillColor: AppColors.cardWhite,
       contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
       border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(3),
+        borderRadius: BorderRadius.circular(12),
         borderSide: BorderSide.none,
       ),
       enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(3),
+        borderRadius: BorderRadius.circular(12),
         borderSide: BorderSide.none,
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: const BorderSide(color: AppColors.primary),
       ),
     );
   }
@@ -75,14 +80,15 @@ class _PeriodeAjaranFormPageState extends State<PeriodeAjaranFormPage> {
   // widget untuk membuat label diatas input yang konsisten
   Widget buildLabel(String text) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 6),
+      padding: const EdgeInsets.only(bottom: 7),
       child: Align(
         alignment: Alignment.centerLeft,
         child: Text(
           text,
           style: const TextStyle(
             fontSize: 13,
-            fontWeight: FontWeight.w500,
+            fontWeight: FontWeight.w600,
+            color: AppColors.textPrimary,
             fontFamily: 'Poppins',
           ),
         ),
@@ -94,26 +100,30 @@ class _PeriodeAjaranFormPageState extends State<PeriodeAjaranFormPage> {
   Widget buildActionButton({
     required String title,
     required VoidCallback onTap,
+    bool isPrimary = false,
   }) {
-    return SizedBox(
-      width: 95,
-      height: 32,
-      child: ElevatedButton(
-        onPressed: onTap,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: const Color(0xFFD9D4D4),
-          foregroundColor: Colors.black,
-          elevation: 3,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
+    return Expanded(
+      child: SizedBox(
+        height: 44,
+        child: ElevatedButton(
+          onPressed: onTap,
+          style: ElevatedButton.styleFrom(
+            backgroundColor:
+                isPrimary ? AppColors.primary : AppColors.softPrimary,
+            foregroundColor:
+                isPrimary ? AppColors.buttonText : AppColors.primaryDark,
+            elevation: isPrimary ? 3 : 1,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(14),
+            ),
+            textStyle: const TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+              fontFamily: 'Poppins',
+            ),
           ),
-          textStyle: const TextStyle(
-            fontSize: 12,
-            fontWeight: FontWeight.w500,
-            fontFamily: 'Poppins',
-          ),
+          child: Text(title),
         ),
-        child: Text(title),
       ),
     );
   }
@@ -189,7 +199,7 @@ class _PeriodeAjaranFormPageState extends State<PeriodeAjaranFormPage> {
     final title = isEdit ? 'Edit Periode Ajaran' : 'Tambah Periode Ajaran';
 
     return Scaffold(
-      backgroundColor: const Color(0xFFDCE5E8),
+      backgroundColor: AppColors.background,
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.fromLTRB(20, 24, 20, 20),
@@ -197,33 +207,63 @@ class _PeriodeAjaranFormPageState extends State<PeriodeAjaranFormPage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // tombol kembali ke halaman sebelumnya
-              InkWell(
-                onTap: () => Navigator.pop(context),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Icon(Icons.chevron_left, color: Colors.black),
-                    const SizedBox(width: 6),
-                    // judul halaman yang berubah sesuai mode tambah atau edit
-                    Text(
-                      title,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w500,
-                        fontFamily: 'Poppins',
-                      ),
+              Row(
+                children: [
+                  InkWell(
+                    onTap: () => Navigator.pop(context),
+                    borderRadius: BorderRadius.circular(20),
+                    child: const Icon(
+                      Icons.chevron_left_rounded,
+                      color: AppColors.textPrimary,
+                      size: 30,
                     ),
-                  ],
-                ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // judul halaman yang berubah sesuai mode tambah atau edit
+                        Text(
+                          title,
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w700,
+                            fontFamily: 'Poppins',
+                            color: AppColors.textPrimary,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          isEdit
+                              ? 'Perbarui data periode ajaran'
+                              : 'Tambahkan tahun ajaran dan semester baru',
+                          style: const TextStyle(
+                            fontSize: 11,
+                            fontFamily: 'Poppins',
+                            color: AppColors.textSecondary,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
               ),
               const SizedBox(height: 24),
               // container utama yang berisi form input periode ajaran
               Container(
                 width: double.infinity,
-                padding: const EdgeInsets.fromLTRB(14, 16, 14, 18),
+                padding: const EdgeInsets.fromLTRB(18, 20, 18, 20),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFEAF0F1),
-                  borderRadius: BorderRadius.circular(2),
+                  color: AppColors.card,
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.08),
+                      blurRadius: 8,
+                      offset: const Offset(0, 3),
+                    ),
+                  ],
                 ),
                 child: Column(
                   children: [
@@ -261,7 +301,10 @@ class _PeriodeAjaranFormPageState extends State<PeriodeAjaranFormPage> {
                       readOnly: true,
                       onTap: () => pickDate(_tanggalMulaiController),
                       decoration: customInputDecoration('dd/mm/yy').copyWith(
-                        suffixIcon: const Icon(Icons.keyboard_arrow_down),
+                        suffixIcon: const Icon(
+                          Icons.keyboard_arrow_down,
+                          color: AppColors.primaryDark,
+                        ),
                       ),
                     ),
                     const SizedBox(height: 10),
@@ -272,66 +315,81 @@ class _PeriodeAjaranFormPageState extends State<PeriodeAjaranFormPage> {
                       readOnly: true,
                       onTap: () => pickDate(_tanggalSelesaiController),
                       decoration: customInputDecoration('dd/mm/yy').copyWith(
-                        suffixIcon: const Icon(Icons.keyboard_arrow_down),
+                        suffixIcon: const Icon(
+                          Icons.keyboard_arrow_down,
+                          color: AppColors.primaryDark,
+                        ),
                       ),
                     ),
                     const SizedBox(height: 12),
 
                     buildLabel('Status Periode'),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: RadioListTile<bool>(
-                            contentPadding: EdgeInsets.zero,
-                            value: true,
-                            groupValue: isActive,
-                            onChanged: (value) {
-                              if (value != null) {
-                                setState(() => isActive = value);
-                              }
-                            },
-                            title: const Text(
-                              'Aktif',
-                              style: TextStyle(
-                                fontSize: 12,
-                                fontFamily: 'Poppins',
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 6,
+                      ),
+                      decoration: BoxDecoration(
+                        color: AppColors.softCard,
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: RadioListTile<bool>(
+                              activeColor: AppColors.primary,
+                              contentPadding: EdgeInsets.zero,
+                              value: true,
+                              groupValue: isActive,
+                              onChanged: (value) {
+                                if (value != null) {
+                                  setState(() => isActive = value);
+                                }
+                              },
+                              title: const Text(
+                                'Aktif',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  fontFamily: 'Poppins',
+                                ),
                               ),
+                              dense: true,
                             ),
-                            dense: true,
                           ),
-                        ),
-                        Expanded(
-                          child: RadioListTile<bool>(
-                            contentPadding: EdgeInsets.zero,
-                            value: false,
-                            groupValue: isActive,
-                            onChanged: (value) {
-                              if (value != null) {
-                                setState(() => isActive = value);
-                              }
-                            },
-                            title: const Text(
-                              'Tidak Aktif',
-                              style: TextStyle(
-                                fontSize: 12,
-                                fontFamily: 'Poppins',
+                          Expanded(
+                            child: RadioListTile<bool>(
+                              activeColor: AppColors.primary,
+                              contentPadding: EdgeInsets.zero,
+                              value: false,
+                              groupValue: isActive,
+                              onChanged: (value) {
+                                if (value != null) {
+                                  setState(() => isActive = value);
+                                }
+                              },
+                              title: const Text(
+                                'Tidak Aktif',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  fontFamily: 'Poppins',
+                                ),
                               ),
+                              dense: true,
                             ),
-                            dense: true,
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                     const SizedBox(height: 14),
                     // tombol aksi simpan dan batal
                     Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         buildActionButton(
-                          title: isLoading ? 'isLoading...' : 'Simpan',
-                          onTap: isLoading ? () => {} : saveData,
+                          title: isLoading ? 'Loading...' : 'Simpan',
+                          isPrimary: true,
+                          onTap: isLoading ? () {} : saveData,
                         ),
-                        const SizedBox(width: 18),
+                        const SizedBox(width: 12),
                         buildActionButton(
                           title: 'Batal',
                           onTap: () {

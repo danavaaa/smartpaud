@@ -7,6 +7,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../../../services/user_session.dart';
+import '../../../core/theme/app_colors.dart';
 
 class BuatLaporanPage extends StatefulWidget {
   const BuatLaporanPage({super.key});
@@ -301,7 +302,7 @@ class _BuatLaporanPageState extends State<BuatLaporanPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFDDE8EF),
+      backgroundColor: AppColors.background,
 
       body: SafeArea(
         child: Column(
@@ -398,7 +399,9 @@ class _BuatLaporanPageState extends State<BuatLaporanPage> {
       child:
           // indikator loading saat data kelas masih dimuat
           _isLoadingSiswa
-              ? const Center(child: CircularProgressIndicator())
+              ? const Center(
+                child: CircularProgressIndicator(color: AppColors.primary),
+              )
               // Menampilkan dropdown ketika data selesai dimuat
               : DropdownButtonHideUnderline(
                 child: DropdownButton<String>(
@@ -475,7 +478,9 @@ class _BuatLaporanPageState extends State<BuatLaporanPage> {
 
       child:
           _isLoadingSiswa
-              ? const Center(child: CircularProgressIndicator())
+              ? const Center(
+                child: CircularProgressIndicator(color: AppColors.primary),
+              )
               : DropdownButtonHideUnderline(
                 child: DropdownButton<Map<String, dynamic>>(
                   value: _selectedSiswa,
@@ -754,7 +759,7 @@ class _BuatLaporanPageState extends State<BuatLaporanPage> {
               // Aksi ketika tombol generate ai ditekan
               onPressed: _isLoading ? null : _generateAi,
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF185FA5),
+                backgroundColor: AppColors.primary,
 
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(16),

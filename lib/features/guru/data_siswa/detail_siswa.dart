@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'data_siswa_model.dart';
+import '../../../core/theme/app_colors.dart';
 
 // halaman detail siswa
 class DetailSiswaPage extends StatelessWidget {
@@ -10,7 +11,7 @@ class DetailSiswaPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFDDE8EF),
+      backgroundColor: AppColors.background,
       body: SafeArea(
         child: Column(
           children: [
@@ -78,7 +79,7 @@ class DetailSiswaPage extends StatelessWidget {
                           value: siswa.noHpWali,
 
                           // Warna khusus untuk nomor HP
-                          valueColor: const Color(0xFF185FA5),
+                          valueColor: AppColors.primary,
                         ),
                       ],
                     ),
@@ -152,7 +153,7 @@ class DetailSiswaPage extends StatelessWidget {
           CircleAvatar(
             radius: 28,
 
-            backgroundColor: const Color(0xFFDDE8EF),
+            backgroundColor: AppColors.background,
 
             child: Text(
               // Menampilkan inisial siswa
@@ -161,7 +162,7 @@ class DetailSiswaPage extends StatelessWidget {
               style: const TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.w700,
-                color: Color(0xFF185FA5),
+                color: AppColors.secondary,
                 fontFamily: 'Poppins',
               ),
             ),

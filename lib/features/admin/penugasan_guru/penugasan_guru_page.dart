@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'penugasan_guru_form_page.dart';
 import 'penugasan_guru_model.dart';
 import 'penugasan_guru_service.dart';
+import '../../../core/theme/app_colors.dart';
 
 // Halaman untuk menampilkan dan mengelola daftar penugasan guru
 class PenugasanGuruPage extends StatefulWidget {
@@ -94,7 +95,7 @@ class _PenugasanGuruPageState extends State<PenugasanGuruPage> {
 
       // Mengatur tampilan kartu seperti warna, sudut, dan bayangan
       decoration: BoxDecoration(
-        color: const Color(0xFFF7F4F4),
+        color: AppColors.card,
         borderRadius: BorderRadius.circular(10),
         boxShadow: const [
           BoxShadow(
@@ -139,8 +140,8 @@ class _PenugasanGuruPageState extends State<PenugasanGuruPage> {
 
                   // Mengatur tampilan tombol edit
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFD9D4D4),
-                    foregroundColor: Colors.black,
+                    backgroundColor: AppColors.softPrimary,
+                    foregroundColor: AppColors.primaryDark,
                     elevation: 2,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(16),
@@ -166,11 +167,11 @@ class _PenugasanGuruPageState extends State<PenugasanGuruPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       // Warna latar belakang halaman
-      backgroundColor: const Color(0xFFDCE5E8),
+      backgroundColor: AppColors.background,
 
       // AppBar di bagian atas halaman
       appBar: AppBar(
-        backgroundColor: const Color(0xFFDCE5E8),
+        backgroundColor: AppColors.background,
         elevation: 0,
         scrolledUnderElevation: 0,
 
@@ -202,8 +203,8 @@ class _PenugasanGuruPageState extends State<PenugasanGuruPage> {
 
                   // Mengatur tampilan tombol
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFD9D4D4),
-                    foregroundColor: Colors.black,
+                    backgroundColor: AppColors.softPrimary,
+                    foregroundColor: AppColors.primaryDark,
                     elevation: 2,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(20),

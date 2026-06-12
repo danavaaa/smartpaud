@@ -6,6 +6,7 @@ import 'features/admin/dashboard/admin_dashboard.dart';
 import 'features/orang_tua/dashboard/orang_tua_dashboard.dart';
 import 'services/user_session.dart';
 import 'services/auth_service.dart';
+import 'core/theme/app_colors.dart';
 
 // Widget utama aplikasi
 class MyApp extends StatelessWidget {
@@ -21,9 +22,29 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         // Mengatur font default aplikasi menjadi Poppins
         fontFamily: 'Poppins',
+        useMaterial3: true,
+
+        scaffoldBackgroundColor: AppColors.background,
+
+        primaryColor: AppColors.primary,
+
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: AppColors.primary,
+          primary: AppColors.primary,
+          surface: AppColors.card,
+        ),
+
+        elevatedButtonTheme: ElevatedButtonThemeData(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: AppColors.primary,
+            foregroundColor: Colors.white,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(14),
+            ),
+          ),
+        ),
       ),
 
-      // Delegates untuk mendukung lokalizasi (multibahasa)
       localizationsDelegates: const [
         // Localization untuk Material widget
         GlobalMaterialLocalizations.delegate,

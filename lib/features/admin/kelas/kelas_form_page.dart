@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'kelas_service.dart';
+import '../../../core/theme/app_colors.dart';
 
 // Halaman form untuk menambah atau mengedit data kelas
 class KelasFormPage extends StatefulWidget {
@@ -166,8 +167,8 @@ class _KelasFormPageState extends State<KelasFormPage> {
       child: ElevatedButton(
         onPressed: onTap,
         style: ElevatedButton.styleFrom(
-          backgroundColor: const Color(0xFFD9D4D4),
-          foregroundColor: Colors.black,
+          backgroundColor: AppColors.softPrimary,
+          foregroundColor: AppColors.primaryDark,
           elevation: 3,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
@@ -190,11 +191,11 @@ class _KelasFormPageState extends State<KelasFormPage> {
 
     return Scaffold(
       // Warna latar belakang halaman
-      backgroundColor: const Color(0xFFDCE5E8),
+      backgroundColor: AppColors.background,
 
       // AppBar di bagian atas halaman
       appBar: AppBar(
-        backgroundColor: const Color(0xFFDCE5E8),
+        backgroundColor: AppColors.background,
         elevation: 0,
         scrolledUnderElevation: 0,
         iconTheme: const IconThemeData(color: Colors.black),
@@ -214,7 +215,7 @@ class _KelasFormPageState extends State<KelasFormPage> {
               width: double.infinity,
               padding: const EdgeInsets.fromLTRB(14, 16, 14, 18),
               decoration: BoxDecoration(
-                color: const Color(0xFFEAF0F1),
+                color: AppColors.card,
                 borderRadius: BorderRadius.circular(6),
               ),
               child: Column(

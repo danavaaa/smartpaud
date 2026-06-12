@@ -6,6 +6,7 @@ import '../profile/profile_page.dart';
 import '../profile/profile_service.dart';
 import '../profile/profile_model.dart';
 import '../../../services/user_session.dart';
+import '../../../core/theme/app_colors.dart';
 
 // Halaman dashboard untuk guru
 class GuruDashboardPage extends StatefulWidget {
@@ -67,7 +68,7 @@ class _GuruDashboardPageState extends State<GuruDashboardPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFDDE8EF),
+      backgroundColor: AppColors.background,
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(20),
@@ -208,14 +209,16 @@ class _GuruDashboardPageState extends State<GuruDashboardPage> {
           // Tampil loading atau data kelas yang diampu
           if (_isLoadingKelas)
             // jika data kelas masih loading, tampilkan indikator loading di tengah
-            const Center(child: CircularProgressIndicator())
+            const Center(
+              child: CircularProgressIndicator(color: AppColors.primary),
+            )
           else if (_kelasList.isEmpty)
             // Kalau loading selesai tapi data kelas kosong, tampilkan pesan bahwa guru belum punya kelas
             Container(
               width: double.infinity,
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
               decoration: BoxDecoration(
-                color: const Color(0xFFDDE8EF),
+                color: AppColors.background,
                 borderRadius: BorderRadius.circular(10),
               ),
               child: const Text(
@@ -241,7 +244,7 @@ class _GuruDashboardPageState extends State<GuruDashboardPage> {
                 ),
 
                 decoration: BoxDecoration(
-                  color: const Color(0xFFDDE8EF),
+                  color: AppColors.background,
                   borderRadius: BorderRadius.circular(10),
                 ),
 
@@ -314,11 +317,11 @@ class _GuruDashboardPageState extends State<GuruDashboardPage> {
               height: 36,
 
               decoration: BoxDecoration(
-                color: const Color(0xFFDDE8EF),
+                color: AppColors.background,
                 borderRadius: BorderRadius.circular(10),
               ),
 
-              child: Icon(icon, size: 20, color: const Color(0xFF185FA5)),
+              child: Icon(icon, size: 20, color: AppColors.primary),
             ),
 
             const SizedBox(width: 14),
