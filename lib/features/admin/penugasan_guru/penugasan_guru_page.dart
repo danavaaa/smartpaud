@@ -81,6 +81,38 @@ class _PenugasanGuruPageState extends State<PenugasanGuruPage> {
     }
   }
 
+  // Widget untuk menampilkan badge status aktif atau tidak aktif
+  Widget _buildStatusBadge(bool isActive) {
+    return Container(
+      // Memberikan jarak di dalam badge agar teks terlihat rapi
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+
+      // Mengatur tampilan badge
+      decoration: BoxDecoration(
+        // Warna latar berbeda sesuai status
+        color: isActive ? AppColors.successBg : AppColors.dangerBg,
+
+        // Membuat sudut badge menjadi melengkung
+        borderRadius: BorderRadius.circular(20),
+      ),
+
+      // Menampilkan teks status
+      child: Text(
+        // Jika aktif tampilkan "Aktif", jika tidak tampilkan "Tidak Aktif"
+        isActive ? 'Aktif' : 'Tidak Aktif',
+
+        style: TextStyle(
+          fontSize: 11,
+          fontWeight: FontWeight.w600,
+          fontFamily: 'Poppins',
+
+          // Warna teks menyesuaikan status
+          color: isActive ? AppColors.successText : AppColors.dangerText,
+        ),
+      ),
+    );
+  }
+
   // Fungsi untuk membuat kartu data penugasan guru
   Widget buildPenugasanCard({
     required PenugasanGuruModel item,
@@ -88,74 +120,135 @@ class _PenugasanGuruPageState extends State<PenugasanGuruPage> {
   }) {
     return Container(
       // Memberi jarak antar kartu
-      margin: const EdgeInsets.only(bottom: 18),
+      margin: const EdgeInsets.only(bottom: 14),
 
       // Memberi ruang di dalam kartu
-      padding: const EdgeInsets.all(14),
+      padding: const EdgeInsets.all(16),
 
       // Mengatur tampilan kartu seperti warna, sudut, dan bayangan
       decoration: BoxDecoration(
         color: AppColors.card,
-        borderRadius: BorderRadius.circular(10),
-        boxShadow: const [
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
           BoxShadow(
-            color: Color.fromRGBO(0, 0, 0, 0.14),
-            blurRadius: 5,
-            offset: Offset(0, 3),
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
           ),
         ],
       ),
-
-      child: Column(
+      child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Menampilkan nama guru sebagai judul utama
-          Text(
-            item.namaGuru,
-            style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+          Container(
+            width: 46,
+            height: 46,
+            decoration: BoxDecoration(
+              color: AppColors.softPrimary,
+              borderRadius: BorderRadius.circular(14),
+            ),
+            child: const Icon(
+              Icons.assignment_ind_outlined,
+              color: AppColors.primary,
+              size: 24,
+            ),
           ),
 
-          const SizedBox(height: 6),
+          const SizedBox(width: 14),
 
-          // Menampilkan informasi kelas
-          Text('Kelas: ${item.namaKelas}'),
-
-          // Menampilkan peran guru
-          Text('Peran: ${item.peran}'),
-
-          // Menampilkan status penugasan
-          Text('Status: ${item.isActive ? 'Aktif' : 'Tidak Aktif'}'),
-
-          const SizedBox(height: 10),
-
-          // Tombol edit diletakkan di kanan bawah kartu
-          Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              SizedBox(
-                height: 30,
-                child: ElevatedButton(
-                  // Fungsi tombol edit
-                  onPressed: () => goToForm(item: item),
-
-                  // Mengatur tampilan tombol edit
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.softPrimary,
-                    foregroundColor: AppColors.primaryDark,
-                    elevation: 2,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    textStyle: const TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w500,
-                    ),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  item.namaGuru,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                    fontFamily: 'Poppins',
+                    color: AppColors.textPrimary,
                   ),
+                ),
 
-                  child: const Text('Edit'),
+                const SizedBox(height: 6),
+
+                Row(
+                  children: [
+                    const Icon(
+                      Icons.groups_2_outlined,
+                      size: 14,
+                      color: AppColors.textSecondary,
+                    ),
+                    const SizedBox(width: 5),
+                    Expanded(
+                      child: Text(
+                        item.namaKelas,
+                        style: const TextStyle(
+                          fontSize: 12,
+                          fontFamily: 'Poppins',
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+
+                const SizedBox(height: 4),
+
+                Row(
+                  children: [
+                    const Icon(
+                      Icons.badge_outlined,
+                      size: 14,
+                      color: AppColors.textSecondary,
+                    ),
+                    const SizedBox(width: 5),
+                    Expanded(
+                      child: Text(
+                        item.peran,
+                        style: const TextStyle(
+                          fontSize: 12,
+                          fontFamily: 'Poppins',
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+
+                const SizedBox(height: 10),
+
+                _buildStatusBadge(item.isActive),
+              ],
+            ),
+          ),
+
+          const SizedBox(width: 8),
+
+          SizedBox(
+            height: 34,
+            child: ElevatedButton(
+              // Fungsi tombol edit
+              onPressed: () => goToForm(item: item),
+
+              // Mengatur tampilan tombol edit
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.softPrimary,
+                foregroundColor: AppColors.primary,
+                elevation: 0,
+                padding: const EdgeInsets.symmetric(horizontal: 14),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                textStyle: const TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  fontFamily: 'Poppins',
                 ),
               ),
-            ],
+
+              child: const Text('Edit'),
+            ),
           ),
         ],
       ),
@@ -169,79 +262,114 @@ class _PenugasanGuruPageState extends State<PenugasanGuruPage> {
       // Warna latar belakang halaman
       backgroundColor: AppColors.background,
 
-      // AppBar di bagian atas halaman
-      appBar: AppBar(
-        backgroundColor: AppColors.background,
-        elevation: 0,
-        scrolledUnderElevation: 0,
-
-        // Mengatur warna ikon menjadi hitam
-        iconTheme: const IconThemeData(color: Colors.black),
-
-        // Judul halaman
-        title: const Text(
-          'Penugasan Guru',
-          style: TextStyle(color: Colors.black),
-        ),
-      ),
-
-      // Isi halaman
-      body: Padding(
-        // Memberi jarak isi dari tepi layar
-        padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
-
-        child: Column(
-          children: [
-            // Tombol tambah penugasan diletakkan di kanan atas
-            Align(
-              alignment: Alignment.centerRight,
-              child: SizedBox(
-                height: 38,
-                child: ElevatedButton(
-                  // Fungsi tombol tambah penugasan
-                  onPressed: () => goToForm(),
-
-                  // Mengatur tampilan tombol
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.softPrimary,
-                    foregroundColor: AppColors.primaryDark,
-                    elevation: 2,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(20),
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(20, 24, 20, 20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  InkWell(
+                    onTap: () => Navigator.pop(context),
+                    borderRadius: BorderRadius.circular(20),
+                    child: const Icon(
+                      Icons.chevron_left_rounded,
+                      color: AppColors.textPrimary,
+                      size: 30,
                     ),
                   ),
 
-                  child: const Text('Tambah Penugasan'),
+                  const SizedBox(width: 8),
+
+                  const Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Penugasan Guru',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w700,
+                            fontFamily: 'Poppins',
+                            color: AppColors.textPrimary,
+                          ),
+                        ),
+                        SizedBox(height: 2),
+                        Text(
+                          'Atur guru, kelas, dan peran penugasan',
+                          style: TextStyle(
+                            fontSize: 11,
+                            fontFamily: 'Poppins',
+                            color: AppColors.textSecondary,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+
+              const SizedBox(height: 24),
+
+              SizedBox(
+                width: double.infinity,
+                height: 46,
+                child: ElevatedButton.icon(
+                  // Fungsi tombol tambah penugasan
+                  onPressed: () => goToForm(),
+                  icon: const Icon(Icons.add_rounded, size: 20),
+                  label: const Text('Tambah Penugasan'),
+
+                  // Mengatur tampilan tombol
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primary,
+                    foregroundColor: AppColors.buttonText,
+                    elevation: 3,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    textStyle: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      fontFamily: 'Poppins',
+                    ),
+                  ),
                 ),
               ),
-            ),
 
-            const SizedBox(height: 20),
+              const SizedBox(height: 22),
 
-            Expanded(
-              child:
-                  isLoading
-                      ? const Center(
-                        child: CircularProgressIndicator(),
-                      ) // Menampilkan indikator loading saat data sedang dimuat
-                      : dataList.isEmpty
-                      ? const Center(
-                        child: Text('Belum ada data penugasan'),
-                      ) // Menampilkan pesan jika tidak ada data penugasan
-                      : RefreshIndicator(
-                        onRefresh: fetchData,
-                        child: ListView.builder(
-                          itemCount: dataList.length,
-                          itemBuilder: (context, index) {
-                            return buildPenugasanCard(
-                              item: dataList[index],
-                              context: context,
-                            );
-                          },
+              Expanded(
+                child:
+                    isLoading
+                        ? const Center(
+                          child: CircularProgressIndicator(
+                            color: AppColors.primary,
+                          ),
+                        )
+                        : dataList.isEmpty
+                        ? const Center(
+                          child: Text(
+                            'Belum ada data penugasan',
+                            style: TextStyle(fontFamily: 'Poppins'),
+                          ),
+                        )
+                        : RefreshIndicator(
+                          onRefresh: fetchData,
+                          child: ListView.builder(
+                            itemCount: dataList.length,
+                            itemBuilder: (context, index) {
+                              return buildPenugasanCard(
+                                item: dataList[index],
+                                context: context,
+                              );
+                            },
+                          ),
                         ),
-                      ),
-            ),
-          ],
+              ),
+            ],
+          ),
         ),
       ),
     );
