@@ -66,12 +66,14 @@ class _PenugasanGuruFormPageState extends State<PenugasanGuruFormPage> {
   // Fungsi untuk mengambil data guru dan kelas yang akan digunakan pada dropdown form
   Future<void> fetchDropdownData() async {
     try {
-      // Mengambil seluruh data guru dari service
-      final guruResult = await _service.getAllGuru();
-
-      // Mengambil seluruh data kelas dari service
-      final kelasResult = await _service.getAllKelas();
-
+      // Mengambil data guru aktif untuk dropdown
+      final guruResult = await _service.getGuruAktifDropdown(
+        selectedGuruId: widget.idGuru,
+      );
+      // Mengambil data kelas aktif untuk dropdown
+      final kelasResult = await _service.getKelasAktifDropdown(
+        selectedKelasId: widget.idKelas,
+      );
       if (!mounted) return;
 
       // Menyimpan hasil data guru dan kelas ke state agar dropdown bisa menampilkan pilihan
