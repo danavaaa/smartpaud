@@ -6,6 +6,7 @@ import 'preview_laporan_page.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import '../../../services/user_session.dart';
 
 class BuatLaporanPage extends StatefulWidget {
   const BuatLaporanPage({super.key});
@@ -29,17 +30,86 @@ class _BuatLaporanPageState extends State<BuatLaporanPage> {
     _loadSiswa();
   }
 
-  // Memuat data siswa dari Supabase
+  // Fungsi untuk memuat data siswa berdasarkan kelas yang diampu guru
   Future<void> _loadSiswa() async {
     try {
-      final response = await Supabase.instance.client
+      // ambil id guru yang sedang login dari session
+      final idGuru = UserSession().idUser ?? '';
+      // jika id guru tidak ditemukan, maka kosongkan daftar siswa
+      if (idGuru.isEmpty) {
+        setState(() {
+          _siswaList = [];
+          _isLoadingSiswa = false;
+        });
+        return;
+      }
+
+      // Ambil kelas aktif yang diampu guru
+      final penugasanResponse = await Supabase.instance.client
+          .from('penugasan_guru')
+          .select('''
+          id_kelas,
+          is_active,
+
+          kelas (
+            id,
+            nama_kelas,
+            is_active,
+
+            periode_ajaran (
+              id,
+              is_active
+            )
+          )
+        ''')
+          // filter berdasarkan guru yang login
+          .eq('id_guru', idGuru)
+          // hanya mengambil penugasan aktif
+          .eq('is_active', true);
+
+      final penugasanList = List<Map<String, dynamic>>.from(penugasanResponse);
+
+      // filter kelas dan periode ajaran aktif
+      final kelasAktifIds =
+          penugasanList
+              .where((item) {
+                // ambil data kelas
+                final kelas = item['kelas'] as Map<String, dynamic>?;
+                // ambil data periode ajaran
+                final periode =
+                    kelas?['periode_ajaran'] as Map<String, dynamic>?;
+                // periksa status aktif kelas
+                final kelasAktif = kelas?['is_active'] == true;
+                // periksa status aktif periode ajaran
+                final periodeAktif = periode?['is_active'] == true;
+                // hanya mengambil data yang aktif
+                return kelasAktif && periodeAktif;
+              })
+              // mengambil id kelas dari hasil filter
+              .map((item) => item['id_kelas'] as String)
+              .toList();
+      // jika tidak ada kelas aktif yang diampu guru
+      if (kelasAktifIds.isEmpty) {
+        setState(() {
+          _siswaList = [];
+          _isLoadingSiswa = false;
+        });
+        return;
+      }
+
+      // Ambil siswa aktif dari kelas aktif yang diampu guru
+      final siswaResponse = await Supabase.instance.client
           .from('siswa')
           .select('id, nama_siswa, kelas(nama_kelas)')
+          // hanya siswa aktif
           .eq('is_active', true)
+          // hanya siswa yang berada pada kelas aktif
+          .inFilter('id_kelas', kelasAktifIds)
+          // urutkan berdasarkan nama siswa
           .order('nama_siswa');
-
+      // simpan data ke state
       setState(() {
-        _siswaList = List<Map<String, dynamic>>.from(response);
+        _siswaList = List<Map<String, dynamic>>.from(siswaResponse);
         _isLoadingSiswa = false;
       });
     } catch (e) {
