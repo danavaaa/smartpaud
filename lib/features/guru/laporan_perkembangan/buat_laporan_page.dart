@@ -19,10 +19,26 @@ class BuatLaporanPage extends StatefulWidget {
 class _BuatLaporanPageState extends State<BuatLaporanPage> {
   final TextEditingController _catatanCtrl = TextEditingController();
 
-  // data siswa
+  // menyimpan daftar siswa yang berhasil diambil dari database untuk dropdown
   List<Map<String, dynamic>> _siswaList = [];
+  // menyimpan daftar kelas yang diampu guru untuk digunakan pada dropdown
+  List<Map<String, dynamic>> _kelasList = [];
+  String? _selectedKelasId;
   Map<String, dynamic>? _selectedSiswa;
   bool _isLoadingSiswa = true;
+
+  // filter data siswa berdasarkan kelas yang dipilih
+  List<Map<String, dynamic>> get _filteredSiswaList {
+    // jika belum ada kelas yg dipilih, maka tampilkan seluruh data siswa
+    if (_selectedKelasId == null || _selectedKelasId == 'Semua') {
+      return _siswaList;
+    }
+    // Menyaring data siswa berdasarkan id_kelas yang sesuai dengan kelas yang dipilih
+    return _siswaList.where((siswa) {
+      // Hanya siswa yang memiliki id_kelas sama dengan kelas yang dipilih yang akan ditampilkan
+      return siswa['id_kelas'] == _selectedKelasId;
+    }).toList();
+  }
 
   @override
   void initState() {
@@ -39,6 +55,7 @@ class _BuatLaporanPageState extends State<BuatLaporanPage> {
       if (idGuru.isEmpty) {
         setState(() {
           _siswaList = [];
+          _kelasList = [];
           _isLoadingSiswa = false;
         });
         return;
@@ -69,38 +86,47 @@ class _BuatLaporanPageState extends State<BuatLaporanPage> {
 
       final penugasanList = List<Map<String, dynamic>>.from(penugasanResponse);
 
-      // filter kelas dan periode ajaran aktif
+      // filter kelas aktif dan periode aktif
+      final kelasAktif =
+          penugasanList.where((item) {
+            // mengambil data relasi kelas
+            final kelas = item['kelas'] as Map<String, dynamic>?;
+            // mengambil dta relasi periode ajaran
+            final periode = kelas?['periode_ajaran'] as Map<String, dynamic>?;
+            // periksa status aktif kelas
+            final kelasAktif = kelas?['is_active'] == true;
+            // periksa status aktif periode ajaran
+            final periodeAktif = periode?['is_active'] == true;
+
+            return kelasAktif && periodeAktif;
+          }).toList();
+
+      // ambil seluruh id_kelas dari hasil filter
       final kelasAktifIds =
-          penugasanList
-              .where((item) {
-                // ambil data kelas
-                final kelas = item['kelas'] as Map<String, dynamic>?;
-                // ambil data periode ajaran
-                final periode =
-                    kelas?['periode_ajaran'] as Map<String, dynamic>?;
-                // periksa status aktif kelas
-                final kelasAktif = kelas?['is_active'] == true;
-                // periksa status aktif periode ajaran
-                final periodeAktif = periode?['is_active'] == true;
-                // hanya mengambil data yang aktif
-                return kelasAktif && periodeAktif;
-              })
-              // mengambil id kelas dari hasil filter
-              .map((item) => item['id_kelas'] as String)
-              .toList();
-      // jika tidak ada kelas aktif yang diampu guru
+          kelasAktif.map((item) => item['id_kelas'] as String).toSet().toList();
+
+      // Jika guru tidak memiliki kelas aktif, kosongkan data dan hentikan proses.
       if (kelasAktifIds.isEmpty) {
         setState(() {
           _siswaList = [];
+          _kelasList = [];
           _isLoadingSiswa = false;
         });
         return;
       }
 
-      // Ambil siswa aktif dari kelas aktif yang diampu guru
+      // ambil id dan nama kelas yang akan digunakan sebagai item pada dropdown pemilihan kelas.
+      final kelasDropdownList =
+          kelasAktif.map((item) {
+            final kelas = item['kelas'] as Map<String, dynamic>;
+
+            return {'id': kelas['id'], 'nama_kelas': kelas['nama_kelas']};
+          }).toList();
+
+      // Mengambil seluruh siswa aktif yang berada pada kelas aktif yang diampu guru.
       final siswaResponse = await Supabase.instance.client
           .from('siswa')
-          .select('id, nama_siswa, kelas(nama_kelas)')
+          .select('id, nama_siswa, id_kelas, kelas(nama_kelas)')
           // hanya siswa aktif
           .eq('is_active', true)
           // hanya siswa yang berada pada kelas aktif
@@ -109,6 +135,7 @@ class _BuatLaporanPageState extends State<BuatLaporanPage> {
           .order('nama_siswa');
       // simpan data ke state
       setState(() {
+        _kelasList = List<Map<String, dynamic>>.from(kelasDropdownList);
         _siswaList = List<Map<String, dynamic>>.from(siswaResponse);
         _isLoadingSiswa = false;
       });
@@ -287,6 +314,10 @@ class _BuatLaporanPageState extends State<BuatLaporanPage> {
 
                 child: Column(
                   children: [
+                    // Card pilih kelas
+                    _buildPilihKelasCard(),
+                    const SizedBox(height: 12),
+
                     // Card pilih siswa
                     _buildPilihSiswaCard(),
                     const SizedBox(height: 12),
@@ -348,12 +379,82 @@ class _BuatLaporanPageState extends State<BuatLaporanPage> {
     );
   }
 
+  // widget dropdown pilih kelas
+  Widget _buildPilihKelasCard() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(18),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 6,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child:
+          // indikator loading saat data kelas masih dimuat
+          _isLoadingSiswa
+              ? const Center(child: CircularProgressIndicator())
+              // Menampilkan dropdown ketika data selesai dimuat
+              : DropdownButtonHideUnderline(
+                child: DropdownButton<String>(
+                  value: _selectedKelasId,
+                  // Placeholder ketika belum ada kelas dipilih
+                  hint: const Text(
+                    'Pilih Kelas',
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: Colors.grey,
+                      fontFamily: 'Poppins',
+                    ),
+                  ),
+                  isExpanded: true,
+                  icon: const Icon(Icons.keyboard_arrow_down_rounded),
+                  // daftar item dropdown
+                  items: [
+                    // Opsi untuk menampilkan seluruh kelas
+                    const DropdownMenuItem<String>(
+                      value: 'Semua',
+                      child: Text(
+                        'Semua Kelas',
+                        style: TextStyle(fontSize: 16, fontFamily: 'Poppins'),
+                      ),
+                    ),
+                    // menambahkan daftar kelas yang diperoleh dari database
+                    ..._kelasList.map((kelas) {
+                      return DropdownMenuItem<String>(
+                        value: kelas['id'] as String,
+                        child: Text(
+                          kelas['nama_kelas'] as String,
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontFamily: 'Poppins',
+                          ),
+                        ),
+                      );
+                    }),
+                  ],
+                  onChanged: (val) {
+                    setState(() {
+                      _selectedKelasId = val;
+                      _selectedSiswa = null;
+                    });
+                  },
+                ),
+              ),
+    );
+  }
+
   // pilih siswa dengan dropdown
   Widget _buildPilihSiswaCard() {
     return Container(
       // Lebar full
       width: double.infinity,
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
 
       decoration: BoxDecoration(
         // Warna card
@@ -378,10 +479,11 @@ class _BuatLaporanPageState extends State<BuatLaporanPage> {
               : DropdownButtonHideUnderline(
                 child: DropdownButton<Map<String, dynamic>>(
                   value: _selectedSiswa,
-                  hint: const Text(
-                    'Pilih Siswa',
-
-                    style: TextStyle(
+                  hint: Text(
+                    _filteredSiswaList.isEmpty
+                        ? 'Tidak ada siswa aktif'
+                        : 'Pilih Siswa',
+                    style: const TextStyle(
                       fontSize: 16,
                       color: Colors.grey,
                       fontFamily: 'Poppins',
@@ -393,13 +495,16 @@ class _BuatLaporanPageState extends State<BuatLaporanPage> {
                   icon: const Icon(Icons.keyboard_arrow_down_rounded),
 
                   items:
-                      _siswaList.map((siswa) {
+                      _filteredSiswaList.map((siswa) {
                         return DropdownMenuItem<Map<String, dynamic>>(
                           value: siswa,
 
                           child: Text(
                             siswa['nama_siswa'] as String,
-                            style: const TextStyle(fontFamily: 'Poppins'),
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontFamily: 'Poppins',
+                            ),
                           ),
                         );
                       }).toList(),
@@ -418,7 +523,7 @@ class _BuatLaporanPageState extends State<BuatLaporanPage> {
 
       child: Container(
         width: double.infinity,
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.all(16),
 
         decoration: BoxDecoration(
           color: Colors.white,
@@ -488,14 +593,20 @@ class _BuatLaporanPageState extends State<BuatLaporanPage> {
         child: Column(
           children: [
             Row(
-              children: const [
-                Icon(Icons.camera_alt_outlined, color: Color(0xFF185FA5)),
-                SizedBox(width: 12),
+              children: [
+                const Icon(Icons.camera_alt_outlined, color: Color(0xFF185FA5)),
+                const SizedBox(width: 12),
 
                 // Text placeholder upload foto
                 Text(
-                  'Unggah Foto Kegiatan',
-                  style: TextStyle(fontFamily: 'Poppins'),
+                  _selectedImage == null
+                      ? 'Unggah Foto Kegiatan'
+                      : 'Foto berhasil dipilih',
+                  style: TextStyle(
+                    fontFamily: 'Poppins',
+                    fontSize: 16,
+                    color: _selectedImage == null ? Colors.grey : Colors.black,
+                  ),
                 ),
               ],
             ),
