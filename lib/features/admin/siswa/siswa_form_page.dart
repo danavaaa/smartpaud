@@ -212,19 +212,23 @@ class _SiswaFormPageState extends State<SiswaFormPage> {
       hintText: hint,
       hintStyle: const TextStyle(
         fontSize: 12,
-        color: Color(0xFFB8B1B1),
+        color: AppColors.textSecondary,
         fontFamily: 'Poppins',
       ),
       filled: true,
-      fillColor: const Color(0xFFF7F4F4),
+      fillColor: AppColors.softCard,
       contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
       border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(3),
+        borderRadius: BorderRadius.circular(12),
         borderSide: BorderSide.none,
       ),
       enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(3),
+        borderRadius: BorderRadius.circular(12),
         borderSide: BorderSide.none,
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: const BorderSide(color: AppColors.primary),
       ),
     );
   }
@@ -232,14 +236,15 @@ class _SiswaFormPageState extends State<SiswaFormPage> {
   // Fungsi untuk membuat label di atas field input
   Widget buildLabel(String text) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 6),
+      padding: const EdgeInsets.only(bottom: 7),
       child: Align(
         alignment: Alignment.centerLeft,
         child: Text(
           text,
           style: const TextStyle(
             fontSize: 13,
-            fontWeight: FontWeight.w500,
+            fontWeight: FontWeight.w600,
+            color: AppColors.textPrimary,
             fontFamily: 'Poppins',
           ),
         ),
@@ -251,23 +256,29 @@ class _SiswaFormPageState extends State<SiswaFormPage> {
   Widget buildActionButton({
     required String title,
     required VoidCallback onTap,
+    bool isPrimary = false,
   }) {
-    return SizedBox(
-      width: 95,
-      height: 32,
-      child: ElevatedButton(
-        onPressed: onTap,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: AppColors.softPrimary,
-          foregroundColor: AppColors.primaryDark,
-          elevation: 3,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
+    return Expanded(
+      child: SizedBox(
+        height: 44,
+        child: ElevatedButton(
+          onPressed: onTap,
+          style: ElevatedButton.styleFrom(
+            backgroundColor:
+                isPrimary ? AppColors.primary : AppColors.softPrimary,
+            foregroundColor:
+                isPrimary ? AppColors.buttonText : AppColors.primaryDark,
+            elevation: isPrimary ? 3 : 1,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(14),
+            ),
+            textStyle: const TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+              fontFamily: 'Poppins',
+            ),
           ),
-        ),
-        child: Text(
-          title,
-          style: const TextStyle(fontSize: 12, fontFamily: 'Poppins'),
+          child: Text(title),
         ),
       ),
     );
@@ -281,213 +292,301 @@ class _SiswaFormPageState extends State<SiswaFormPage> {
     return Scaffold(
       // Warna latar belakang halaman
       backgroundColor: AppColors.background,
-
-      // AppBar di bagian atas halaman
-      appBar: AppBar(
-        backgroundColor: AppColors.background,
-        elevation: 0,
-        scrolledUnderElevation: 0,
-        iconTheme: const IconThemeData(color: Colors.black),
-
-        // Menampilkan judul halaman sesuai mode
-        title: Text(title, style: const TextStyle(color: Colors.black)),
-      ),
-
-      // Isi halaman
-      body: SingleChildScrollView(
-        // Memberi jarak isi dari tepi layar
-        padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
-        child: Column(
-          children: [
-            // Container utama form input
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.fromLTRB(14, 16, 14, 18),
-              decoration: BoxDecoration(
-                color: AppColors.card,
-                borderRadius: BorderRadius.circular(6),
-              ),
-              child: Column(
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.fromLTRB(20, 24, 20, 20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
                 children: [
-                  // Input nama siswa
-                  buildLabel('Nama Siswa'),
-                  TextField(
-                    controller: _namaController,
-                    decoration: customInputDecoration('Contoh: Budi Santoso'),
+                  InkWell(
+                    onTap: () => Navigator.pop(context),
+                    borderRadius: BorderRadius.circular(20),
+                    child: const Icon(
+                      Icons.chevron_left_rounded,
+                      color: AppColors.textPrimary,
+                      size: 30,
+                    ),
                   ),
-                  const SizedBox(height: 12),
 
-                  // Input tempat lahir
-                  buildLabel('Tempat Lahir'),
-                  TextField(
-                    controller: _tempatLahirController,
-                    decoration: customInputDecoration('Contoh: Surabaya'),
+                  const SizedBox(width: 8),
+
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          title,
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w700,
+                            fontFamily: 'Poppins',
+                            color: AppColors.textPrimary,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          isEdit
+                              ? 'Perbarui data siswa dan status keaktifannya'
+                              : 'Tambahkan data siswa baru ke kelas aktif',
+                          style: const TextStyle(
+                            fontSize: 11,
+                            fontFamily: 'Poppins',
+                            color: AppColors.textSecondary,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                  const SizedBox(height: 12),
+                ],
+              ),
 
-                  // Tanggal Lahir
-                  buildLabel('Tanggal Lahir'),
-                  GestureDetector(
-                    onTap: _pilihTanggalLahir,
-                    child: AbsorbPointer(
-                      child: TextField(
-                        controller: _tanggalLahirController,
-                        decoration: customInputDecoration(
-                          'Pilih tanggal lahir',
-                        ).copyWith(
-                          suffixIcon: const Icon(
-                            Icons.keyboard_arrow_down,
-                            color: AppColors.primaryDark,
+              const SizedBox(height: 24),
+
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.fromLTRB(18, 20, 18, 20),
+                decoration: BoxDecoration(
+                  color: AppColors.card,
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.08),
+                      blurRadius: 8,
+                      offset: const Offset(0, 3),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  children: [
+                    // Input nama siswa
+                    buildLabel('Nama Siswa'),
+                    TextField(
+                      controller: _namaController,
+                      decoration: customInputDecoration('Contoh: Richa'),
+                    ),
+                    const SizedBox(height: 14),
+
+                    // Input tempat lahir
+                    buildLabel('Tempat Lahir'),
+                    TextField(
+                      controller: _tempatLahirController,
+                      decoration: customInputDecoration('Contoh: Surabaya'),
+                    ),
+                    const SizedBox(height: 14),
+
+                    // Tanggal Lahir
+                    buildLabel('Tanggal Lahir'),
+                    GestureDetector(
+                      onTap: _pilihTanggalLahir,
+                      child: AbsorbPointer(
+                        child: TextField(
+                          controller: _tanggalLahirController,
+                          decoration: customInputDecoration(
+                            'Pilih tanggal lahir',
+                          ).copyWith(
+                            suffixIcon: const Icon(
+                              Icons.keyboard_arrow_down,
+                              color: AppColors.primaryDark,
+                            ),
                           ),
                         ),
                       ),
                     ),
-                  ),
-                  const SizedBox(height: 12),
+                    const SizedBox(height: 14),
 
-                  // Jenis Kelamin
-                  buildLabel('Jenis Kelamin'),
-                  DropdownButtonFormField<String>(
-                    value: selectedJenisKelamin,
-                    decoration: customInputDecoration('Pilih Jenis Kelamin'),
-                    items: const [
-                      DropdownMenuItem(
-                        value: 'Laki-laki',
-                        child: Text('Laki-laki'),
-                      ),
-                      DropdownMenuItem(
-                        value: 'Perempuan',
-                        child: Text('Perempuan'),
-                      ),
-                    ],
-                    onChanged:
-                        (value) => setState(() => selectedJenisKelamin = value),
-                  ),
-                  const SizedBox(height: 12),
-
-                  // Kelas
-                  buildLabel('Kelas'),
-                  _isLoadingDropdown
-                      ? const Center(
-                        child: CircularProgressIndicator(
-                          color: AppColors.primary,
+                    // Jenis Kelamin
+                    buildLabel('Jenis Kelamin'),
+                    DropdownButtonFormField<String>(
+                      value: selectedJenisKelamin,
+                      decoration: customInputDecoration('Pilih Jenis Kelamin'),
+                      items: const [
+                        DropdownMenuItem(
+                          value: 'Laki-laki',
+                          child: Text(
+                            'Laki-laki',
+                            style: TextStyle(
+                              fontSize: 13,
+                              fontFamily: 'Poppins',
+                            ),
+                          ),
                         ),
-                      )
-                      : DropdownButtonFormField<String>(
-                        value: selectedKelasId,
-                        decoration: customInputDecoration('Pilih Kelas'),
-                        items:
-                            kelasList.map((kelas) {
+                        DropdownMenuItem(
+                          value: 'Perempuan',
+                          child: Text(
+                            'Perempuan',
+                            style: TextStyle(
+                              fontSize: 13,
+                              fontFamily: 'Poppins',
+                            ),
+                          ),
+                        ),
+                      ],
+                      onChanged: (value) {
+                        setState(() => selectedJenisKelamin = value);
+                      },
+                    ),
+
+                    const SizedBox(height: 14),
+
+                    // Kelas
+                    buildLabel('Kelas'),
+                    _isLoadingDropdown
+                        ? const Center(
+                          child: CircularProgressIndicator(
+                            color: AppColors.primary,
+                          ),
+                        )
+                        : DropdownButtonFormField<String>(
+                          value: selectedKelasId,
+                          decoration: customInputDecoration('Pilih Kelas'),
+                          items:
+                              kelasList.map((kelas) {
+                                return DropdownMenuItem<String>(
+                                  value: kelas['id'],
+                                  child: Text(
+                                    kelas['nama_kelas'],
+                                    style: const TextStyle(
+                                      fontSize: 13,
+                                      fontFamily: 'Poppins',
+                                    ),
+                                  ),
+                                );
+                              }).toList(),
+                          onChanged: (value) {
+                            setState(() => selectedKelasId = value);
+                          },
+                        ),
+
+                    const SizedBox(height: 14),
+
+                    // Dropdown untuk memilih orang tua
+                    buildLabel('Orang Tua'),
+                    // Jika data kelas dan orang tua masih dimuat, tampilkan indikator loading
+                    _isLoadingDropdown
+                        ? const SizedBox()
+                        : DropdownButtonFormField<String>(
+                          value: selectedOrangTuaId,
+                          decoration: customInputDecoration('Pilih Orang Tua'),
+
+                          // tampilan input dropdown
+                          items: [
+                            // Opsi jika siswa tidak memiliki orang tua yang dipilih
+                            const DropdownMenuItem<String>(
+                              value: null,
+                              child: Text(
+                                '-- Tidak Ada --',
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  fontFamily: 'Poppins',
+                                ),
+                              ),
+                            ),
+                            // Tambahkan semua data orang tua dari list
+                            ...orangTuaList.map((ot) {
                               return DropdownMenuItem<String>(
-                                value: kelas['id'],
-                                child: Text(kelas['nama_kelas']),
+                                value: ot['id_orang_tua'] as String?,
+                                child: Text(
+                                  ot['nama'] ?? '-',
+                                  style: const TextStyle(
+                                    fontSize: 13,
+                                    fontFamily: 'Poppins',
+                                  ),
+                                ),
                               );
-                            }).toList(),
-                        onChanged:
-                            (value) => setState(() => selectedKelasId = value),
+                            }),
+                          ],
+
+                          // Saat user memilih item dropdown,simpan ID orang tua yang dipilih ke state
+                          onChanged: (value) {
+                            setState(() => selectedOrangTuaId = value);
+                          },
+                        ),
+                    const SizedBox(height: 14),
+
+                    // Pilihan status siswa
+                    buildLabel('Status Siswa'),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 6,
                       ),
-                  const SizedBox(height: 12),
-
-                  // Dropdown untuk memilih orang tua
-                  buildLabel('Orang Tua'),
-                  // Jika data kelas dan orang tua masih dimuat, tampilkan indikator loading
-                  _isLoadingDropdown
-                      ? const SizedBox()
-                      : DropdownButtonFormField<String>(
-                        value: selectedOrangTuaId,
-                        decoration: customInputDecoration('Pilih Orang Tua'),
-
-                        // tampilan input dropdown
-                        items: [
-                          // Opsi jika siswa tidak memiliki orang tua yang dipilih
-                          const DropdownMenuItem<String>(
-                            value: null,
-                            child: Text('-- Tidak Ada --'),
+                      decoration: BoxDecoration(
+                        color: AppColors.softCard,
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: RadioListTile<bool>(
+                              activeColor: AppColors.primary,
+                              contentPadding: EdgeInsets.zero,
+                              value: true,
+                              groupValue: isActive,
+                              onChanged: (value) {
+                                if (value != null) {
+                                  setState(() => isActive = value);
+                                }
+                              },
+                              title: const Text(
+                                'Aktif',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  fontFamily: 'Poppins',
+                                ),
+                              ),
+                              dense: true,
+                            ),
                           ),
-
-                          // Tambahkan semua data orang tua dari list
-                          ...orangTuaList.map((ot) {
-                            return DropdownMenuItem<String>(
-                              value: ot['id_orang_tua'] as String?,
-
-                              // ID orang tua yang akan disimpan saat dipilih
-                              child: Text(ot['nama'] ?? '-'),
-                              // Nama orang tua yang ditampilkan di dropdown
-                            );
-                          }),
+                          Expanded(
+                            child: RadioListTile<bool>(
+                              activeColor: AppColors.primary,
+                              contentPadding: EdgeInsets.zero,
+                              value: false,
+                              groupValue: isActive,
+                              onChanged: (value) {
+                                if (value != null) {
+                                  setState(() => isActive = value);
+                                }
+                              },
+                              title: const Text(
+                                'Tidak Aktif',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  fontFamily: 'Poppins',
+                                ),
+                              ),
+                              dense: true,
+                            ),
+                          ),
                         ],
-
-                        // Saat user memilih item dropdown,simpan ID orang tua yang dipilih ke state
-                        onChanged:
-                            (value) =>
-                                setState(() => selectedOrangTuaId = value),
                       ),
-                  const SizedBox(height: 12),
+                    ),
 
-                  // Pilihan status siswa
-                  buildLabel('Status Siswa'),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: RadioListTile<bool>(
-                          contentPadding: EdgeInsets.zero,
-                          value: true,
-                          groupValue: isActive,
-                          onChanged: (value) {
-                            if (value != null) setState(() => isActive = value);
-                          },
-                          title: const Text(
-                            'Aktif',
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontFamily: 'Poppins',
-                            ),
-                          ),
-                          dense: true,
+                    const SizedBox(height: 18),
+
+                    // Tombol aksi Simpan dan Batal
+                    Row(
+                      children: [
+                        buildActionButton(
+                          title: isLoading ? 'Loading...' : 'Simpan',
+                          isPrimary: true,
+                          onTap: isLoading ? () {} : saveData,
                         ),
-                      ),
-                      Expanded(
-                        child: RadioListTile<bool>(
-                          contentPadding: EdgeInsets.zero,
-                          value: false,
-                          groupValue: isActive,
-                          onChanged: (value) {
-                            if (value != null) setState(() => isActive = value);
-                          },
-                          title: const Text(
-                            'Tidak Aktif',
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontFamily: 'Poppins',
-                            ),
-                          ),
-                          dense: true,
+                        const SizedBox(width: 12),
+                        buildActionButton(
+                          title: 'Batal',
+                          onTap: () => Navigator.pop(context),
+                          // aksi saat tombol batal ditekan
                         ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 14),
-
-                  // Tombol aksi Simpan dan Batal
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      buildActionButton(
-                        title: isLoading ? 'Loading' : 'Simpan',
-                        onTap: isLoading ? () {} : saveData,
-                      ),
-                      const SizedBox(width: 18),
-                      buildActionButton(
-                        title: 'Batal',
-                        onTap: () => Navigator.pop(context),
-                        // aksi saat tombol batal ditekan
-                      ),
-                    ],
-                  ),
-                ],
+                      ],
+                    ),
+                  ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

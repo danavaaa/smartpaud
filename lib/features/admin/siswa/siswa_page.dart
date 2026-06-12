@@ -79,84 +79,148 @@ class _SiswaPageState extends State<SiswaPage> {
     if (result == true) fetchData();
   }
 
+  // Widget untuk menampilkan badge status aktif atau tidak aktif
+  Widget _buildStatusBadge(bool isActive) {
+    return Container(
+      // Memberikan jarak di dalam badge agar teks terlihat rapi
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+
+      // Mengatur tampilan badge
+      decoration: BoxDecoration(
+        // Warna latar berbeda sesuai status
+        color: isActive ? AppColors.successBg : AppColors.dangerBg,
+
+        // Membuat sudut badge menjadi melengkung
+        borderRadius: BorderRadius.circular(20),
+      ),
+
+      // Menampilkan teks status
+      child: Text(
+        // Jika aktif tampilkan "Aktif", jika tidak tampilkan "Tidak Aktif"
+        isActive ? 'Aktif' : 'Tidak Aktif',
+
+        style: TextStyle(
+          fontSize: 11,
+          fontWeight: FontWeight.w600,
+          fontFamily: 'Poppins',
+
+          // Warna teks menyesuaikan status
+          color: isActive ? AppColors.successText : AppColors.dangerText,
+        ),
+      ),
+    );
+  }
+
   // Fungsi untuk membuat kartu data siswa
   Widget buildSiswaCard(SiswaModel item, BuildContext context) {
     return Container(
       // Memberi jarak antar kartu
-      margin: const EdgeInsets.only(bottom: 18),
+      margin: const EdgeInsets.only(bottom: 14),
 
       // Memberi ruang di dalam kartu
-      padding: const EdgeInsets.all(14),
+      padding: const EdgeInsets.all(16),
 
       // Mengatur tampilan kartu seperti warna, sudut melengkung, dan bayangan
       decoration: BoxDecoration(
         color: AppColors.card,
-        borderRadius: BorderRadius.circular(10),
-        boxShadow: const [
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
           BoxShadow(
-            color: Color.fromRGBO(0, 0, 0, 0.14),
-            blurRadius: 5,
-            offset: Offset(0, 3),
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
           ),
         ],
       ),
 
-      child: Column(
+      child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Menampilkan nama siswa sebagai judul utama kartu
-          Text(
-            item.namaSiswa,
-            style: const TextStyle(
-              fontSize: 15,
-              fontWeight: FontWeight.w600,
-              fontFamily: 'Poppins',
+          Container(
+            width: 46,
+            height: 46,
+            decoration: BoxDecoration(
+              color: AppColors.softPrimary,
+              borderRadius: BorderRadius.circular(14),
+            ),
+            child: const Icon(
+              Icons.menu_book_outlined,
+              color: AppColors.primary,
+              size: 24,
             ),
           ),
 
-          const SizedBox(height: 6),
+          const SizedBox(width: 14),
 
-          // Menampilkan kelas siswa
-          Text(
-            'Kelas: ${item.namaKelas}',
-            style: const TextStyle(fontFamily: 'Poppins'),
-          ),
-
-          // Menampilkan status siswa
-          Text(
-            'Status: ${item.isActive ? "Aktif" : "Tidak Aktif"}',
-            style: const TextStyle(fontFamily: 'Poppins'),
-          ),
-
-          const SizedBox(height: 10),
-
-          // Tombol edit
-          Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              SizedBox(
-                height: 30,
-                child: ElevatedButton(
-                  // aksi saat tombol edit di tekan
-                  onPressed: () => goToForm(item: item),
-
-                  // Mengatur tampilan tombol edit
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.softPrimary,
-                    foregroundColor: AppColors.primaryDark,
-                    elevation: 2,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                  ),
-
-                  child: const Text(
-                    'Edit',
-                    style: TextStyle(fontSize: 12, fontFamily: 'Poppins'),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  item.namaSiswa,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                    fontFamily: 'Poppins',
+                    color: AppColors.textPrimary,
                   ),
                 ),
+
+                const SizedBox(height: 6),
+
+                Row(
+                  children: [
+                    const Icon(
+                      Icons.groups_2_outlined,
+                      size: 14,
+                      color: AppColors.textSecondary,
+                    ),
+                    const SizedBox(width: 5),
+                    Expanded(
+                      child: Text(
+                        item.namaKelas,
+                        style: const TextStyle(
+                          fontSize: 12,
+                          fontFamily: 'Poppins',
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+
+                const SizedBox(height: 10),
+
+                _buildStatusBadge(item.isActive),
+              ],
+            ),
+          ),
+
+          const SizedBox(width: 8),
+
+          SizedBox(
+            height: 34,
+            child: ElevatedButton(
+              // aksi saat tombol edit di tekan
+              onPressed: () => goToForm(item: item),
+
+              // Mengatur tampilan tombol edit
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.softPrimary,
+                foregroundColor: AppColors.primary,
+                elevation: 0,
+                padding: const EdgeInsets.symmetric(horizontal: 14),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                textStyle: const TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  fontFamily: 'Poppins',
+                ),
               ),
-            ],
+              child: const Text('Edit'),
+            ),
           ),
         ],
       ),
@@ -169,80 +233,113 @@ class _SiswaPageState extends State<SiswaPage> {
       // Warna latar belakang halaman
       backgroundColor: AppColors.background,
 
-      // AppBar di bagian atas halaman
-      appBar: AppBar(
-        backgroundColor: AppColors.background,
-        elevation: 0,
-        scrolledUnderElevation: 0,
-
-        // Mengatur warna ikon menjadi hitam
-        iconTheme: const IconThemeData(color: Colors.black),
-
-        // Judul halaman
-        title: const Text(
-          'Kelola Data Siswa',
-          style: TextStyle(color: Colors.black),
-        ),
-      ),
-
       // Isi halaman
-      body: Padding(
-        // Memberi jarak isi dari tepi layar
-        padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
-        child: Column(
-          children: [
-            // Tombol tambah siswa
-            Align(
-              alignment: Alignment.centerRight,
-              child: SizedBox(
-                height: 38,
-                child: ElevatedButton(
-                  // aksi saat tombol tambah di tekan
-                  onPressed: () => goToForm(),
-
-                  // Mengatur tampilan tombol tambah
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.softPrimary,
-                    foregroundColor: AppColors.primaryDark,
-                    elevation: 2,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(20),
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(20, 24, 20, 20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  InkWell(
+                    onTap: () => Navigator.pop(context),
+                    borderRadius: BorderRadius.circular(20),
+                    child: const Icon(
+                      Icons.chevron_left_rounded,
+                      color: AppColors.textPrimary,
+                      size: 30,
                     ),
                   ),
 
-                  child: const Text(
-                    'Tambah Siswa',
-                    style: TextStyle(fontFamily: 'Poppins'),
+                  const SizedBox(width: 8),
+
+                  const Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Kelola Data Siswa',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w700,
+                            fontFamily: 'Poppins',
+                            color: AppColors.textPrimary,
+                          ),
+                        ),
+                        SizedBox(height: 2),
+                        Text(
+                          'Atur data siswa, kelas, dan status keaktifannya',
+                          style: TextStyle(
+                            fontSize: 11,
+                            fontFamily: 'Poppins',
+                            color: AppColors.textSecondary,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+
+              const SizedBox(height: 24),
+
+              SizedBox(
+                width: double.infinity,
+                height: 46,
+                child: ElevatedButton.icon(
+                  // aksi saat tombol tambah di tekan
+                  onPressed: () => goToForm(),
+                  icon: const Icon(Icons.add_rounded, size: 20),
+                  label: const Text('Tambah Siswa'),
+                  // Mengatur tampilan tombol tambah
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primary,
+                    foregroundColor: AppColors.buttonText,
+                    elevation: 3,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    textStyle: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      fontFamily: 'Poppins',
+                    ),
                   ),
                 ),
               ),
-            ),
 
-            const SizedBox(height: 20),
+              const SizedBox(height: 22),
 
-            Expanded(
-              child:
-                  isLoading // Jika sedang memuat data, tampilkan indikator loading
-                      ? const Center(
-                        child: CircularProgressIndicator(
-                          color: AppColors.primary,
+              Expanded(
+                child:
+                    isLoading // Jika sedang memuat data, tampilkan indikator loading
+                        ? const Center(
+                          child: CircularProgressIndicator(
+                            color: AppColors.primary,
+                          ),
+                        )
+                        : dataList
+                            .isEmpty // Jika tidak ada data siswa, tampilkan pesan kosong
+                        ? const Center(
+                          child: Text(
+                            'Belum ada data siswa',
+                            style: TextStyle(fontFamily: 'Poppins'),
+                          ),
+                        )
+                        : RefreshIndicator(
+                          // Jika ada data siswa, tampilkan dalam bentuk list dengan fitur pull-to-refresh
+                          onRefresh: fetchData,
+                          child: ListView.builder(
+                            itemCount: dataList.length,
+                            itemBuilder: (context, index) {
+                              return buildSiswaCard(dataList[index], context);
+                            },
+                          ),
                         ),
-                      )
-                      : dataList
-                          .isEmpty // Jika tidak ada data siswa, tampilkan pesan kosong
-                      ? const Center(child: Text('Belum ada data siswa'))
-                      : RefreshIndicator(
-                        // Jika ada data siswa, tampilkan dalam bentuk list dengan fitur pull-to-refresh
-                        onRefresh: fetchData,
-                        child: ListView.builder(
-                          itemCount: dataList.length,
-                          itemBuilder: (context, index) {
-                            return buildSiswaCard(dataList[index], context);
-                          },
-                        ),
-                      ),
-            ),
-          ],
+              ),
+            ],
+          ),
         ),
       ),
     );
