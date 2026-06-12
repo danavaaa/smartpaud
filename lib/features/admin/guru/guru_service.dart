@@ -67,15 +67,24 @@ class GuruService {
     required String noHp,
     required bool isActive,
   }) async {
-    // Memperbarui data guru berdasarkan id_user
+    // Update data guru di tabel users
     await client
         .from('users')
         .update({
           'nama': nama,
           'email': email,
-          'no_hp': noHp,
+          'no_hp': noHp.isEmpty ? null : noHp,
           'is_active': isActive,
         })
-        .eq('id_user', idUser);
+        .eq('id_user', idUser)
+        .eq('role', 'guru');
+
+    // Jika guru dinonaktifkan, maka semua penugasan guru tersebut ikut dinonaktifkan
+    if (!isActive) {
+      await client
+          .from('penugasan_guru')
+          .update({'is_active': false})
+          .eq('id_guru', idUser);
+    }
   }
 }
