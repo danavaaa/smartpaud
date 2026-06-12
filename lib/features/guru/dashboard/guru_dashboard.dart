@@ -50,8 +50,8 @@ class _GuruDashboardPageState extends State<GuruDashboardPage> {
         return;
       }
 
-      // Ambil data kelas yang diampu guru berdasarkan idUser
-      final kelas = await _service.getKelasDiampu(idUser);
+      // Ambil daftar kelas aktif yang diampu  guru berdasarkan idUser yang sedang login
+      final kelas = await _service.getKelasDiampuAktif(idUser);
 
       // Simpan hasil data ke state
       setState(() {

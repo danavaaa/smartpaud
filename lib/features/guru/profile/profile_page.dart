@@ -36,8 +36,8 @@ class _ProfilePageState extends State<ProfilePage> {
       // ambil data profile berdasarkan id user yang tersimpan di session
       final userId = UserSession().idUser ?? '';
       final profile = await _service.getProfile(userId);
-      // ambil data kelas berdasarkan id user yang tersimpan di session
-      final kelas = await _service.getKelasDiampu(userId);
+      // ambil data semua kelas yang pernah/masih diampu
+      final kelas = await _service.getSemuaKelasDiampu(userId);
 
       setState(() {
         _profile = profile; // simpan profile
