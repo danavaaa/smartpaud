@@ -59,24 +59,26 @@ class _OrangTuaDashboardPageState extends State<OrangTuaDashboardPage> {
 
       // Ambil daftar anak berdasarkan id_orang_tua
       final list = await _service.getAnakList(idOrangTua);
+      // Dashboard hanya menampilkan anak aktif
+      final anakAktifList = list.where((anak) => anak.isActive).toList();
 
       setState(() {
-        // Simpan daftar anak ke state
-        _anakList = list;
+        // Simpan hanya anak aktif ke state dashboard
+        _anakList = anakAktifList;
 
         // Loading selesai
         _isLoadingAnak = false;
 
-        // Kalau ada data anak
-        if (list.isNotEmpty) {
-          // Pilih anak yang aktif, kalau tidak ada yang aktif, ambil anak pertama
-          _selectedAnak = list.firstWhere(
-            (a) => a.isActive,
-            orElse: () => list.first,
-          );
+        // Jika ada anak aktif, pilih anak pertama
+        if (anakAktifList.isNotEmpty) {
+          _selectedAnak = anakAktifList.first;
 
-          // Setelah anak dipilih, ambil laporan anak tersebut
+          // Setelah anak aktif dipilih, ambil laporan anak tersebut
           _loadLaporan(_selectedAnak!.id);
+        } else {
+          // Jika tidak ada anak aktif, kosongkan pilihan dan laporan
+          _selectedAnak = null;
+          _laporanList = [];
         }
       });
     } catch (e) {
@@ -289,7 +291,7 @@ class _OrangTuaDashboardPageState extends State<OrangTuaDashboardPage> {
 
                               // Menampilkan nama anak dan status anak
                               Text(
-                                '${anak.nama} (${anak.isActive ? 'Aktif' : 'Tidak Aktif'})',
+                                anak.nama,
                                 style: const TextStyle(
                                   fontSize: 13,
                                   fontFamily: 'Poppins',
