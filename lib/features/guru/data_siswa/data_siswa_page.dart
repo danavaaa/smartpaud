@@ -143,22 +143,43 @@ class _DataSiswaPageState extends State<DataSiswaPage> {
       child: Row(
         children: [
           // Tombol back
-          GestureDetector(
+          InkWell(
             // Kembali ke halaman sebelumnya
             onTap: () => Navigator.pop(context),
-
-            child: const Icon(Icons.chevron_left_rounded, size: 28),
+            borderRadius: BorderRadius.circular(20),
+            child: const Icon(
+              Icons.chevron_left_rounded,
+              size: 30,
+              color: AppColors.textPrimary,
+            ),
           ),
 
           const SizedBox(width: 8),
 
           // Judul halaman
-          const Text(
-            'Data Siswa',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w600,
-              fontFamily: 'Poppins',
+          const Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Data Siswa',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w700,
+                    fontFamily: 'Poppins',
+                    color: AppColors.textPrimary,
+                  ),
+                ),
+                SizedBox(height: 2),
+                Text(
+                  'Daftar siswa berdasarkan kelas yang diampu',
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontFamily: 'Poppins',
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+              ],
             ),
           ),
         ],
@@ -170,14 +191,14 @@ class _DataSiswaPageState extends State<DataSiswaPage> {
   Widget _buildSearchBar() {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
+        color: AppColors.card,
+        borderRadius: BorderRadius.circular(16),
 
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
-            blurRadius: 6,
-            offset: const Offset(0, 2),
+            color: Colors.black.withValues(alpha: 0.06),
+            blurRadius: 9,
+            offset: const Offset(0, 3),
           ),
         ],
       ),
@@ -187,14 +208,17 @@ class _DataSiswaPageState extends State<DataSiswaPage> {
         controller: _searchController,
         onChanged: (val) => setState(() => _searchQuery = val),
 
-        style: const TextStyle(fontSize: 13, fontFamily: 'Poppins'),
-
+        style: const TextStyle(
+          fontSize: 13,
+          fontFamily: 'Poppins',
+          color: AppColors.textPrimary,
+        ),
         decoration: InputDecoration(
           // Hint pencarian
-          hintText: 'Cari Siswa',
+          hintText: 'Cari nama siswa',
 
           hintStyle: const TextStyle(
-            color: Colors.grey,
+            color: AppColors.textSecondary,
             fontSize: 13,
             fontFamily: 'Poppins',
           ),
@@ -202,8 +226,8 @@ class _DataSiswaPageState extends State<DataSiswaPage> {
           // Icon search kiri
           prefixIcon: const Icon(
             Icons.search_rounded,
-            color: Colors.grey,
-            size: 20,
+            color: AppColors.textSecondary,
+            size: 22,
           ),
 
           // Tombol clear search
@@ -220,7 +244,7 @@ class _DataSiswaPageState extends State<DataSiswaPage> {
 
                     child: const Icon(
                       Icons.close_rounded,
-                      color: Colors.grey,
+                      color: AppColors.textSecondary,
                       size: 18,
                     ),
                   )
@@ -228,7 +252,7 @@ class _DataSiswaPageState extends State<DataSiswaPage> {
 
           border: InputBorder.none,
 
-          contentPadding: const EdgeInsets.symmetric(vertical: 12),
+          contentPadding: const EdgeInsets.symmetric(vertical: 14),
         ),
       ),
     );
@@ -236,39 +260,75 @@ class _DataSiswaPageState extends State<DataSiswaPage> {
 
   // widget filter untuk kelas dan periode
   Widget _buildFilterRow() {
-    // Buat list unik berdasarkan nama_kelas
+    // Set digunakan untuk memastikan nama kelas yang ditampilkan pada dropdown tidak memiliki data duplikat
     final seen = <String>{};
+
+    // Menambahkan pilihan default "Semua" pada dropdown kelas
     final kelasItems = <Map<String, dynamic>>[
       {'nama_kelas': 'Semua'},
     ];
+
+    // Mengambil daftar nama kelas unik dari _kelasList
     for (final k in _kelasList) {
       final nama = k['nama_kelas'] as String;
+
+      // Menambahkan kelas hanya jika belum pernah dimasukkan sebelumnya
       if (seen.add(nama)) {
         kelasItems.add({'nama_kelas': nama});
       }
     }
 
-    // Buat list periode unik dari data siswa
+    // Mengurutkan daftar kelas secara alfabbet
+    final kelasSorted =
+        kelasItems.skip(1).toList()..sort(
+          (a, b) => (a['nama_kelas'] as String).toLowerCase().compareTo(
+            (b['nama_kelas'] as String).toLowerCase(),
+          ),
+        );
+
+    // Menggabungkan kembali item "Semua" di posisi pertama dengan daftar kelas yang sudah diurutkan
+    final kelasDropdownItems = [
+      {'nama_kelas': 'Semua'},
+      ...kelasSorted,
+    ];
+
+    // Set digunakan untuk menyimpan daftar periode yang unik dan menambahkan pilihan default "Semua"
     final periodeSet = <String>{'Semua'};
+
+    // Mengambil seluruh periode dari data siswa
     for (final s in _siswaList) {
-      if (s.periode != '-') periodeSet.add(s.periode);
+      // Menambahkan periode hanya jika nilainya valid
+      if (s.periode != '-') {
+        periodeSet.add(s.periode);
+      }
     }
-    final periodeItems = periodeSet.toList();
+
+    // Mengubah Set menjadi List kemudian mengurutkannya
+    final periodeItems =
+        periodeSet.toList()..sort((a, b) {
+          // Memastikan opsi "Semua" selalu berada di urutan pertama
+          if (a == 'Semua') return -1;
+          if (b == 'Semua') return 1;
+
+          // Mengurutkan periode secara alfabetis
+          return a.compareTo(b);
+        });
 
     return Row(
       children: [
         // Dropdown kelas
         Expanded(
           child: Container(
+            height: 52,
             padding: const EdgeInsets.symmetric(horizontal: 12),
             decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(10),
+              color: AppColors.card,
+              borderRadius: BorderRadius.circular(16),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.04),
-                  blurRadius: 6,
-                  offset: const Offset(0, 2),
+                  color: Colors.black.withValues(alpha: 0.06),
+                  blurRadius: 8,
+                  offset: const Offset(0, 3),
                 ),
               ],
             ),
@@ -278,17 +338,19 @@ class _DataSiswaPageState extends State<DataSiswaPage> {
                 isExpanded: true,
                 icon: const Icon(
                   Icons.keyboard_arrow_down_rounded,
-                  color: Colors.grey,
+                  color: AppColors.textSecondary,
                 ),
                 items:
-                    kelasItems.map((k) {
+                    kelasDropdownItems.map((k) {
                       return DropdownMenuItem<String>(
                         value: k['nama_kelas'] as String,
                         child: Text(
                           k['nama_kelas'] as String,
                           style: const TextStyle(
                             fontSize: 13,
+                            fontWeight: FontWeight.w600,
                             fontFamily: 'Poppins',
+                            color: AppColors.textPrimary,
                           ),
                         ),
                       );
@@ -304,17 +366,18 @@ class _DataSiswaPageState extends State<DataSiswaPage> {
         // Dropdown periode
         Expanded(
           child: Container(
+            height: 52,
             padding: const EdgeInsets.symmetric(horizontal: 12),
 
             decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(10),
+              color: AppColors.card,
+              borderRadius: BorderRadius.circular(16),
 
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.04),
-                  blurRadius: 6,
-                  offset: const Offset(0, 2),
+                  color: Colors.black.withValues(alpha: 0.06),
+                  blurRadius: 8,
+                  offset: const Offset(0, 3),
                 ),
               ],
             ),
@@ -325,7 +388,7 @@ class _DataSiswaPageState extends State<DataSiswaPage> {
                 isExpanded: true,
                 icon: const Icon(
                   Icons.keyboard_arrow_down_rounded,
-                  color: Colors.grey,
+                  color: AppColors.textSecondary,
                 ),
                 items:
                     periodeItems.map((e) {
@@ -334,9 +397,12 @@ class _DataSiswaPageState extends State<DataSiswaPage> {
 
                         child: Text(
                           e,
+                          overflow: TextOverflow.ellipsis,
                           style: const TextStyle(
                             fontSize: 13,
+                            fontWeight: FontWeight.w600,
                             fontFamily: 'Poppins',
+                            color: AppColors.textPrimary,
                           ),
                         ),
                       );
@@ -363,19 +429,19 @@ class _DataSiswaPageState extends State<DataSiswaPage> {
             MaterialPageRoute(builder: (_) => DetailSiswaPage(siswa: siswa)),
           ),
       child: Container(
-        margin: const EdgeInsets.only(bottom: 10),
+        margin: const EdgeInsets.only(bottom: 12),
 
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        padding: const EdgeInsets.all(14),
 
         decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(12),
+          color: AppColors.card,
+          borderRadius: BorderRadius.circular(16),
 
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.04),
-              blurRadius: 6,
-              offset: const Offset(0, 2),
+              color: Colors.black.withValues(alpha: 0.06),
+              blurRadius: 9,
+              offset: const Offset(0, 3),
             ),
           ],
         ),
@@ -384,17 +450,17 @@ class _DataSiswaPageState extends State<DataSiswaPage> {
           children: [
             // avatar inisial nama siswa
             CircleAvatar(
-              radius: 18,
+              radius: 22,
 
-              backgroundColor: AppColors.background,
+              backgroundColor: AppColors.softPrimary,
 
               child: Text(
                 siswa.inisial,
 
                 style: const TextStyle(
                   fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.secondary,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.primary,
                   fontFamily: 'Poppins',
                 ),
               ),
@@ -404,21 +470,40 @@ class _DataSiswaPageState extends State<DataSiswaPage> {
 
             // Nama siswa
             Expanded(
-              child: Text(
-                siswa.namaSiswa,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    siswa.namaSiswa,
 
-                style: const TextStyle(fontSize: 14, fontFamily: 'Poppins'),
+                    style: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.textPrimary,
+                      fontFamily: 'Poppins',
+                    ),
+                  ),
+
+                  const SizedBox(height: 3),
+
+                  Text(
+                    '${siswa.namaKelas} · ${siswa.periode}',
+                    style: const TextStyle(
+                      fontSize: 11,
+                      color: AppColors.textSecondary,
+                      fontFamily: 'Poppins',
+                    ),
+                  ),
+                ],
               ),
             ),
-
             // Badge status aktif/nonaktif
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
 
               decoration: BoxDecoration(
                 // Warna badge berdasarkan status
-                color:
-                    isAktif ? const Color(0xFFEAF3DE) : const Color(0xFFFCEBEB),
+                color: isAktif ? AppColors.successBg : AppColors.dangerBg,
 
                 borderRadius: BorderRadius.circular(20),
               ),
@@ -428,13 +513,11 @@ class _DataSiswaPageState extends State<DataSiswaPage> {
 
                 style: TextStyle(
                   fontSize: 11,
+                  fontWeight: FontWeight.w600,
                   fontFamily: 'Poppins',
 
                   // Warna text status
-                  color:
-                      isAktif
-                          ? const Color(0xFF3B6D11)
-                          : const Color(0xFFA32D2D),
+                  color: isAktif ? AppColors.successText : AppColors.dangerText,
                 ),
               ),
             ),
@@ -453,8 +536,11 @@ class _DataSiswaPageState extends State<DataSiswaPage> {
         child: Column(
           children: [
             // Icon empty
-            Icon(Icons.search_off_rounded, size: 48, color: Colors.grey),
-
+            Icon(
+              Icons.search_off_rounded,
+              size: 48,
+              color: AppColors.textSecondary,
+            ),
             SizedBox(height: 8),
 
             // Text empty
@@ -462,7 +548,7 @@ class _DataSiswaPageState extends State<DataSiswaPage> {
               'Siswa tidak ditemukan',
 
               style: TextStyle(
-                color: Colors.grey,
+                color: AppColors.textSecondary,
                 fontFamily: 'Poppins',
                 fontSize: 13,
               ),
@@ -475,26 +561,36 @@ class _DataSiswaPageState extends State<DataSiswaPage> {
 
   // widget untuk menampilkan catatan di bagian bawah halaman
   Widget _buildFooterNote() {
-    return Row(
-      children: const [
-        // Icon info
-        Icon(Icons.info_outline_rounded, size: 13, color: Colors.grey),
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      decoration: BoxDecoration(
+        color: AppColors.softCard,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: const Row(
+        children: [
+          // Icon info
+          Icon(
+            Icons.info_outline_rounded,
+            size: 14,
+            color: AppColors.textSecondary,
+          ),
+          SizedBox(width: 8),
 
-        SizedBox(width: 6),
+          // Informasi tambahan
+          Expanded(
+            child: Text(
+              'Hanya menampilkan siswa aktif berdasarkan kelas yang diampu',
 
-        // Informasi tambahan
-        Expanded(
-          child: Text(
-            'Hanya menampilkan siswa berdasarkan kelas yang diampu',
-
-            style: TextStyle(
-              fontSize: 11,
-              color: Colors.grey,
-              fontFamily: 'Poppins',
+              style: TextStyle(
+                fontSize: 11,
+                color: AppColors.textSecondary,
+                fontFamily: 'Poppins',
+              ),
             ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }
