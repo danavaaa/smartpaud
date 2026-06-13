@@ -124,6 +124,13 @@ class _BuatLaporanPageState extends State<BuatLaporanPage> {
             return {'id': kelas['id'], 'nama_kelas': kelas['nama_kelas']};
           }).toList();
 
+      // Urutkan kelas dari A sampai Z
+      kelasDropdownList.sort(
+        (a, b) => (a['nama_kelas'] as String).toLowerCase().compareTo(
+          (b['nama_kelas'] as String).toLowerCase(),
+        ),
+      );
+
       // Mengambil seluruh siswa aktif yang berada pada kelas aktif yang diampu guru.
       final siswaResponse = await Supabase.instance.client
           .from('siswa')
@@ -135,9 +142,18 @@ class _BuatLaporanPageState extends State<BuatLaporanPage> {
           // urutkan berdasarkan nama siswa
           .order('nama_siswa');
       // simpan data ke state
+      final siswaList = List<Map<String, dynamic>>.from(siswaResponse);
+
+      // Urutkan siswa dari A sampai Z
+      siswaList.sort(
+        (a, b) => (a['nama_siswa'] as String).toLowerCase().compareTo(
+          (b['nama_siswa'] as String).toLowerCase(),
+        ),
+      );
+
       setState(() {
-        _kelasList = List<Map<String, dynamic>>.from(kelasDropdownList);
-        _siswaList = List<Map<String, dynamic>>.from(siswaResponse);
+        _kelasList = kelasDropdownList;
+        _siswaList = siswaList;
         _isLoadingSiswa = false;
       });
     } catch (e) {
@@ -347,32 +363,70 @@ class _BuatLaporanPageState extends State<BuatLaporanPage> {
     );
   }
 
+  // Fungsi untuk membuat dekorasi card yang dapat digunakan di berbagai widget agar tampilan aplikasi tetap konsisten
+  BoxDecoration _cardDecoration({double radius = 16}) {
+    return BoxDecoration(
+      // Warna latar belakang card
+      color: AppColors.card,
+
+      // Mengatur tingkat kelengkungan sudut card
+      borderRadius: BorderRadius.circular(radius),
+
+      // Memberikan efek bayangan agar card terlihat lebih menonjol
+      boxShadow: [
+        BoxShadow(
+          color: Colors.black.withValues(alpha: 0.06),
+          blurRadius: 9,
+          offset: const Offset(0, 3),
+        ),
+      ],
+    );
+  }
+
   // header halaman dengan tombol kembali dan judul
   Widget _buildHeader() {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 20, 20, 10),
+      padding: const EdgeInsets.fromLTRB(20, 20, 20, 8),
 
       child: Row(
         children: [
           // Tombol kembali
-          GestureDetector(
+          InkWell(
             onTap: () => Navigator.pop(context),
-
-            child: const Icon(Icons.chevron_left_rounded, size: 30),
+            borderRadius: BorderRadius.circular(20),
+            child: const Icon(
+              Icons.chevron_left_rounded,
+              size: 30,
+              color: AppColors.textPrimary,
+            ),
           ),
 
           const SizedBox(width: 8),
 
           // Judul halaman
           const Expanded(
-            child: Text(
-              'Buat Laporan Perkembangan',
-
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.w600,
-                fontFamily: 'Poppins',
-              ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Buat Laporan',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w700,
+                    fontFamily: 'Poppins',
+                    color: AppColors.textPrimary,
+                  ),
+                ),
+                SizedBox(height: 2),
+                Text(
+                  'Catat perkembangan literasi membaca anak',
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontFamily: 'Poppins',
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+              ],
             ),
           ),
         ],
@@ -384,18 +438,9 @@ class _BuatLaporanPageState extends State<BuatLaporanPage> {
   Widget _buildPilihKelasCard() {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(18),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
-            blurRadius: 6,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
+      height: 56,
+      padding: const EdgeInsets.symmetric(horizontal: 14),
+      decoration: _cardDecoration(),
       child:
           // indikator loading saat data kelas masih dimuat
           _isLoadingSiswa
@@ -407,16 +452,19 @@ class _BuatLaporanPageState extends State<BuatLaporanPage> {
                 child: DropdownButton<String>(
                   value: _selectedKelasId,
                   // Placeholder ketika belum ada kelas dipilih
+                  isExpanded: true,
+                  icon: const Icon(
+                    Icons.keyboard_arrow_down_rounded,
+                    color: AppColors.textSecondary,
+                  ),
                   hint: const Text(
                     'Pilih Kelas',
                     style: TextStyle(
-                      fontSize: 16,
-                      color: Colors.grey,
+                      fontSize: 14,
+                      color: AppColors.textSecondary,
                       fontFamily: 'Poppins',
                     ),
                   ),
-                  isExpanded: true,
-                  icon: const Icon(Icons.keyboard_arrow_down_rounded),
                   // daftar item dropdown
                   items: [
                     // Opsi untuk menampilkan seluruh kelas
@@ -424,7 +472,12 @@ class _BuatLaporanPageState extends State<BuatLaporanPage> {
                       value: 'Semua',
                       child: Text(
                         'Semua Kelas',
-                        style: TextStyle(fontSize: 16, fontFamily: 'Poppins'),
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          fontFamily: 'Poppins',
+                          color: AppColors.textPrimary,
+                        ),
                       ),
                     ),
                     // menambahkan daftar kelas yang diperoleh dari database
@@ -434,8 +487,10 @@ class _BuatLaporanPageState extends State<BuatLaporanPage> {
                         child: Text(
                           kelas['nama_kelas'] as String,
                           style: const TextStyle(
-                            fontSize: 16,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
                             fontFamily: 'Poppins',
+                            color: AppColors.textPrimary,
                           ),
                         ),
                       );
@@ -457,25 +512,9 @@ class _BuatLaporanPageState extends State<BuatLaporanPage> {
     return Container(
       // Lebar full
       width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-
-      decoration: BoxDecoration(
-        // Warna card
-        color: Colors.white,
-
-        // Radius sudut card
-        borderRadius: BorderRadius.circular(18),
-
-        // Shadow card
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
-            blurRadius: 6,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-
+      height: 56,
+      padding: const EdgeInsets.symmetric(horizontal: 14),
+      decoration: _cardDecoration(),
       child:
           _isLoadingSiswa
               ? const Center(
@@ -484,21 +523,21 @@ class _BuatLaporanPageState extends State<BuatLaporanPage> {
               : DropdownButtonHideUnderline(
                 child: DropdownButton<Map<String, dynamic>>(
                   value: _selectedSiswa,
+                  isExpanded: true,
+                  icon: const Icon(
+                    Icons.keyboard_arrow_down_rounded,
+                    color: AppColors.textSecondary,
+                  ),
                   hint: Text(
                     _filteredSiswaList.isEmpty
                         ? 'Tidak ada siswa aktif'
                         : 'Pilih Siswa',
                     style: const TextStyle(
-                      fontSize: 16,
-                      color: Colors.grey,
+                      fontSize: 14,
+                      color: AppColors.textSecondary,
                       fontFamily: 'Poppins',
                     ),
                   ),
-
-                  isExpanded: true,
-
-                  icon: const Icon(Icons.keyboard_arrow_down_rounded),
-
                   items:
                       _filteredSiswaList.map((siswa) {
                         return DropdownMenuItem<Map<String, dynamic>>(
@@ -507,8 +546,10 @@ class _BuatLaporanPageState extends State<BuatLaporanPage> {
                           child: Text(
                             siswa['nama_siswa'] as String,
                             style: const TextStyle(
-                              fontSize: 16,
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
                               fontFamily: 'Poppins',
+                              color: AppColors.textPrimary,
                             ),
                           ),
                         );
@@ -528,46 +569,44 @@ class _BuatLaporanPageState extends State<BuatLaporanPage> {
 
       child: Container(
         width: double.infinity,
-        padding: const EdgeInsets.all(16),
-
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(18),
-
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.04),
-              blurRadius: 6,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
-
+        height: 56,
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        decoration: _cardDecoration(),
         child: Row(
           children: [
             // Icon kalender
-            const Icon(Icons.calendar_today_outlined, color: Color(0xFF185FA5)),
+            const Icon(
+              Icons.calendar_today_outlined,
+              color: AppColors.primary,
+              size: 22,
+            ),
 
             const SizedBox(width: 14),
 
             // Menampilkan tanggal
-            Text(
-              // Jika belum memilih tanggal
-              _tanggalLaporan == null
-                  ? 'Tanggal Laporan'
-                  // Jika sudah memilih tanggal
-                  : DateFormat(
-                    'dd MMMM yyyy',
-                    'id_ID',
-                  ).format(_tanggalLaporan!),
+            Expanded(
+              child: Text(
+                // Jika belum memilih tanggal
+                _tanggalLaporan == null
+                    ? 'Tanggal Laporan'
+                    // Jika sudah memilih tanggal
+                    : DateFormat(
+                      'dd MMMM yyyy',
+                      'id_ID',
+                    ).format(_tanggalLaporan!),
 
-              style: TextStyle(
-                fontSize: 16,
-
-                // Warna abu jika belum memilih
-                color: _tanggalLaporan == null ? Colors.grey : Colors.black,
-
-                fontFamily: 'Poppins',
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight:
+                      _tanggalLaporan == null
+                          ? FontWeight.w500
+                          : FontWeight.w600,
+                  color:
+                      _tanggalLaporan == null
+                          ? AppColors.textSecondary
+                          : AppColors.textPrimary,
+                  fontFamily: 'Poppins',
+                ),
               ),
             ),
           ],
@@ -584,43 +623,47 @@ class _BuatLaporanPageState extends State<BuatLaporanPage> {
       child: Container(
         width: double.infinity,
         padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(14),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.04),
-              blurRadius: 6,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
+        decoration: _cardDecoration(),
         child: Column(
           children: [
             Row(
               children: [
-                const Icon(Icons.camera_alt_outlined, color: Color(0xFF185FA5)),
+                const Icon(
+                  Icons.camera_alt_outlined,
+                  color: AppColors.primary,
+                  size: 23,
+                ),
+
                 const SizedBox(width: 12),
 
                 // Text placeholder upload foto
-                Text(
-                  _selectedImage == null
-                      ? 'Unggah Foto Kegiatan'
-                      : 'Foto berhasil dipilih',
-                  style: TextStyle(
-                    fontFamily: 'Poppins',
-                    fontSize: 16,
-                    color: _selectedImage == null ? Colors.grey : Colors.black,
+                Expanded(
+                  child: Text(
+                    _selectedImage == null
+                        ? 'Unggah Foto Kegiatan'
+                        : 'Foto berhasil dipilih',
+                    style: TextStyle(
+                      fontFamily: 'Poppins',
+                      fontSize: 14,
+                      fontWeight:
+                          _selectedImage == null
+                              ? FontWeight.w500
+                              : FontWeight.w600,
+                      color:
+                          _selectedImage == null
+                              ? AppColors.textSecondary
+                              : AppColors.textPrimary,
+                    ),
                   ),
                 ),
               ],
             ),
 
             if (_selectedImage != null) ...[
-              const SizedBox(height: 12),
+              const SizedBox(height: 14),
               // Menampilkan gambar yang sudah dipilih
               ClipRRect(
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(14),
                 child: Image.file(
                   _selectedImage!,
                   height: 180,
@@ -640,20 +683,7 @@ class _BuatLaporanPageState extends State<BuatLaporanPage> {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(16),
-
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(18),
-
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
-            blurRadius: 6,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-
+      decoration: _cardDecoration(radius: 18),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -662,13 +692,14 @@ class _BuatLaporanPageState extends State<BuatLaporanPage> {
             'Catatan Literasi Membaca',
 
             style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
+              fontSize: 15,
+              fontWeight: FontWeight.w700,
               fontFamily: 'Poppins',
+              color: AppColors.textPrimary,
             ),
           ),
 
-          const SizedBox(height: 14),
+          const SizedBox(height: 12),
 
           // Input catatan
           TextField(
@@ -678,34 +709,45 @@ class _BuatLaporanPageState extends State<BuatLaporanPage> {
             // Jumlah baris maksimal
             maxLines: 5,
 
+            style: const TextStyle(
+              fontSize: 13,
+              fontFamily: 'Poppins',
+              color: AppColors.textPrimary,
+            ),
             decoration: InputDecoration(
               // Placeholder
-              hintText: 'catatan perkembangan literasi membaca anak',
+              hintText: 'Tuliskan perkembangan literasi membaca anak',
 
               hintStyle: const TextStyle(
-                color: Colors.grey,
+                color: AppColors.textSecondary,
                 fontFamily: 'Poppins',
+                fontSize: 13,
               ),
-
+              filled: true,
+              fillColor: AppColors.softCard,
               // Border default
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(14),
+                borderSide: BorderSide.none,
               ),
 
               // Border saat normal
               enabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(14),
-                borderSide: BorderSide(color: Colors.grey.shade300),
+                borderSide: BorderSide.none,
               ),
 
               // Border saat focus
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(14),
-                borderSide: const BorderSide(color: Color(0xFF185FA5)),
+                borderSide: const BorderSide(
+                  color: AppColors.primary,
+                  width: 1,
+                ),
               ),
 
               // Padding isi textfield
-              contentPadding: const EdgeInsets.all(16),
+              contentPadding: const EdgeInsets.all(14),
             ),
           ),
         ],
@@ -726,22 +768,26 @@ class _BuatLaporanPageState extends State<BuatLaporanPage> {
               // Aksi ketika tombol batal ditekan
               onPressed: () => Navigator.pop(context),
               style: OutlinedButton.styleFrom(
-                backgroundColor: const Color(0xFFF1F1EB),
-
+                backgroundColor: AppColors.card,
+                foregroundColor: AppColors.textPrimary,
+                elevation: 0,
+                side: BorderSide(
+                  color: AppColors.accent.withValues(alpha: 0.45),
+                  width: 1,
+                ),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(16),
                 ),
-
-                side: BorderSide.none,
               ),
 
               child: const Text(
                 'Batal',
 
                 style: TextStyle(
-                  fontSize: 18,
-                  color: Colors.black87,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w700,
                   fontFamily: 'Poppins',
+                  color: AppColors.textPrimary,
                 ),
               ),
             ),
@@ -760,7 +806,8 @@ class _BuatLaporanPageState extends State<BuatLaporanPage> {
               onPressed: _isLoading ? null : _generateAi,
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.primary,
-
+                foregroundColor: AppColors.buttonText,
+                elevation: 3,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(16),
                 ),
@@ -772,7 +819,7 @@ class _BuatLaporanPageState extends State<BuatLaporanPage> {
                         width: 22,
                         height: 22,
                         child: CircularProgressIndicator(
-                          color: Colors.white,
+                          color: AppColors.buttonText,
                           strokeWidth: 2.5,
                         ),
                       )
@@ -780,9 +827,10 @@ class _BuatLaporanPageState extends State<BuatLaporanPage> {
                         'Generate AI',
 
                         style: TextStyle(
-                          fontSize: 18,
-                          color: Colors.white,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w700,
                           fontFamily: 'Poppins',
+                          color: AppColors.buttonText,
                         ),
                       ),
             ),
