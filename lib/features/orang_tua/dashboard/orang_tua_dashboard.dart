@@ -109,6 +109,30 @@ class _OrangTuaDashboardPageState extends State<OrangTuaDashboardPage> {
     }
   }
 
+  // Fungsi untuk membuka halaman Riwayat Perkembangan berdasarkan anak yang dipilih
+  void _goToRiwayatPerkembangan() {
+    // Validasi apakah pengguna sudah memilih anak
+    if (_selectedAnak == null) {
+      // Tampilkan pesan jika belum ada anak yang dipilih
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Pilih anak terlebih dahulu')),
+      );
+      return;
+    }
+
+    // Navigasi ke halaman Riwayat Perkembangan, dengan mengirim id dan nama siswa yang dipilih
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder:
+            (_) => RiwayatPerkembanganPage(
+              idSiswa: _selectedAnak!.id,
+              namaSiswa: _selectedAnak!.nama,
+            ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -170,13 +194,7 @@ class _OrangTuaDashboardPageState extends State<OrangTuaDashboardPage> {
               _buildMenuItem(
                 icon: Icons.description_outlined,
                 label: 'Riwayat Perkembangan',
-                onTap:
-                    () => Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => const RiwayatPerkembanganPage(),
-                      ),
-                    ),
+                onTap: _goToRiwayatPerkembangan,
               ),
 
               // halaman profile orang tua
@@ -426,13 +444,7 @@ class _OrangTuaDashboardPageState extends State<OrangTuaDashboardPage> {
 
               // Tombol lihat semua
               GestureDetector(
-                onTap:
-                    () => Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => const RiwayatPerkembanganPage(),
-                      ),
-                    ),
+                onTap: _goToRiwayatPerkembangan,
                 child: const Text(
                   'Lihat semua',
                   style: TextStyle(

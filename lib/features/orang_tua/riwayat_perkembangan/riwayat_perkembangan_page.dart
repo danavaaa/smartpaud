@@ -2,12 +2,18 @@ import 'package:flutter/material.dart';
 import 'riwayat_ortu_model.dart';
 import 'riwayat_ortu_service.dart';
 import 'detail_laporan_ortu_page.dart';
-import '../../../services/user_session.dart';
 import '../../../core/theme/app_colors.dart';
 
 // Halaman riwayat perkembangan orang tua
 class RiwayatPerkembanganPage extends StatefulWidget {
-  const RiwayatPerkembanganPage({super.key});
+  final String idSiswa;
+  final String namaSiswa;
+
+  const RiwayatPerkembanganPage({
+    super.key,
+    required this.idSiswa,
+    required this.namaSiswa,
+  });
 
   @override
   State<RiwayatPerkembanganPage> createState() =>
@@ -18,126 +24,44 @@ class _RiwayatPerkembanganPageState extends State<RiwayatPerkembanganPage> {
   // Instance service untuk mengambil data dari database
   final _service = RiwayatLaporanOrtuService();
 
-  // Menyimpan daftar anak milik orang tua
-  List<AnakOrtuModel> _anakList = [];
-  // Menyimpan anak yang sedang dipilih pada dropdown
-  AnakOrtuModel? _selectedAnak;
-
   // Menyimpan daftar laporan perkembangan siswa
   List<LaporanOrtuModel> _laporanList = [];
-
-  // Menyimpan daftar periode ajaran
-  List<Map<String, dynamic>> _periodeListData = [];
-  // Menyimpan id periode yang dipilih user
-  String? _selectedPeriodeId;
-  // Status loading saat data anak sedang diambil
-  bool _isLoadingAnak = true;
-
-  // Status loading saat data laporan sedang diambil
-  bool _isLoadingLaporan = false;
+  bool _isLoadingLaporan = true;
 
   @override
   void initState() {
     super.initState();
-    _loadPeriode();
-    _loadAnak();
+    _loadLaporan();
   }
 
-  // Fungsi untuk mengambil daftar periode ajaran
-  Future<void> _loadPeriode() async {
-    try {
-      // Ambil data periode dari database
-      final list = await _service.getPeriodeList();
-      // simpan data periode ke state
-      setState(() {
-        _periodeListData = list;
-      });
-    } catch (_) {}
-  }
-
-  // Fungsi untuk mengambil data anak
-  Future<void> _loadAnak() async {
-    // Set loading anak menjadi true
-    setState(() => _isLoadingAnak = true);
-
-    try {
-      // Ambil id_orang_tua berdasarkan session user yang sedang login
-      final idOrangTua = UserSession().idOrangTua;
-
-      // Jika id_orang_tua tidak ditemukan
-      if (idOrangTua == null) {
-        setState(() {
-          // Matikan loading karena proses tidak bisa dilanjutkan
-          _isLoadingAnak = false;
-          // Kosongkan daftar anak karena user tidak memiliki data orang tua
-          _anakList = [];
-          // reset anak yang dipilih
-          _selectedAnak = null;
-          // Kosongkan daftar laporan karena tidak ada anak yang dapat ditampilkan
-          _laporanList = [];
-        });
-        return;
-      }
-
-      // Ambil daftar anak aktif dari database
-      final list = await _service.getAnakList(idOrangTua);
-
-      // Update state setelah data berhasil didapat
-      setState(() {
-        _anakList = list;
-        _isLoadingAnak = false;
-
-        // Jika daftar berhasil ditemukan
-        if (list.isNotEmpty) {
-          // pilih anak pertama sebagai pilihan default
-          _selectedAnak = list.first;
-        } else {
-          // Jika tidak ada data anak, reset pilihan anak dan kosongkan daftar laporan
-          _selectedAnak = null;
-          _laporanList = [];
-        }
-      });
-
-      // Setelah state diperbarui, ambil data laporan untuk anak yang dipilih secara otomatis
-      if (list.isNotEmpty) {
-        _loadLaporan(list.first.id);
-      }
-    } catch (e) {
-      // Jika error, matikan loading
-      setState(() => _isLoadingAnak = false);
-
-      // Cek apakah widget masih aktif
-      if (mounted) {
-        // Tampilkan pesan error
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Gagal memuat data: $e')));
-      }
-    }
-  }
-
-  // Function untuk mengambil daftar laporan berdasarkan id siswa
-  Future<void> _loadLaporan(String idSiswa) async {
-    // Set loading laporan menjadi true
+  // Function untuk mengambil daftar laporan berdasarkan id siswa, yang dikirim dari halaman sebelumnya
+  Future<void> _loadLaporan() async {
+    // Menampilkan indikator loading selama proses pengambilan data
     setState(() => _isLoadingLaporan = true);
 
     try {
-      // Ambil data laporan dari database
-      // ambil daftar laporan berdasarkan siswa dan filter periode yang dipilih
-      final list = await _service.getLaporanByPeriode(
-        idSiswa,
-        idPeriode: _selectedPeriodeId,
-      );
-      // Update state setelah data berhasil diambil
+      // Memanggil service untuk mengambil daftar laporan siswa
+      final list = await _service.getLaporanByPeriode(widget.idSiswa);
+
+      // hentikan proses jika widget sudah tidak berada di dalam tree
+      if (!mounted) return;
+
+      // Menyimpan hasil data laporan ke state dan mematikan loading
       setState(() {
-        // simpan data laporan ke list
         _laporanList = list;
-        // matikan loading
         _isLoadingLaporan = false;
       });
     } catch (e) {
-      // Jika error, matikan loading
+      // hentikan proses jika widget sudah tidak aktif
+      if (!mounted) return;
+
+      // matikan loading ketika terjadi error
       setState(() => _isLoadingLaporan = false);
+
+      // tampilkan pesan kesalahan kepada user
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Gagal mengambil laporan: $e')));
     }
   }
 
@@ -154,40 +78,29 @@ class _RiwayatPerkembanganPageState extends State<RiwayatPerkembanganPage> {
             _buildHeader(context),
 
             Expanded(
-              child:
-                  _isLoadingAnak
-                      ? const Center(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
+
+                child: Column(
+                  children: [
+                    _buildInfoAnakCard(),
+
+                    const SizedBox(height: 14),
+                    if (_isLoadingLaporan)
+                      const Center(
                         child: CircularProgressIndicator(
                           color: AppColors.primary,
                         ),
                       )
-                      : SingleChildScrollView(
-                        padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
+                    else ...[
+                      ..._laporanList.map((l) => _buildLaporanCard(l)),
 
-                        child: Column(
-                          children: [
-                            // Dropdown untuk memilih anak
-                            _buildDropdownAnak(),
-                            const SizedBox(height: 10),
-
-                            // Dropdown filter periode ajaran
-                            _buildFilterPeriode(),
-                            const SizedBox(height: 14),
-                            if (_isLoadingLaporan)
-                              const Center(
-                                child: CircularProgressIndicator(
-                                  color: AppColors.primary,
-                                ),
-                              )
-                            else ...[
-                              ..._laporanList.map((l) => _buildLaporanCard(l)),
-
-                              // Empty state jika tidak ada laporan
-                              if (_laporanList.isEmpty) _buildEmptyState(),
-                            ],
-                          ],
-                        ),
-                      ),
+                      // Empty state jika tidak ada laporan
+                      if (_laporanList.isEmpty) _buildEmptyState(),
+                    ],
+                  ],
+                ),
+              ),
             ),
           ],
         ),
@@ -224,158 +137,75 @@ class _RiwayatPerkembanganPageState extends State<RiwayatPerkembanganPage> {
     );
   }
 
-  // Dropdown untuk memilih anak
-  Widget _buildDropdownAnak() {
-    // Jika daftar anak kosong
-    if (_anakList.isEmpty) {
-      // Tampilkan pesan
-      return const Text(
-        'Tidak ada data anak',
-        style: TextStyle(
-          fontSize: 12,
-          color: Colors.grey,
-          fontFamily: 'Poppins',
-        ),
-      );
-    }
+  // Widget card yang menampilkan informasi siswa yang sedang dipilih
+  Widget _buildInfoAnakCard() {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14),
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
 
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(10),
+        color: AppColors.card,
+        borderRadius: BorderRadius.circular(16),
 
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
-            blurRadius: 6,
-            offset: const Offset(0, 2),
+            // Memberikan efek bayangan agar card terlihat lebih menonjol
+            color: Colors.black.withValues(alpha: 0.06),
+            blurRadius: 8,
+            offset: const Offset(0, 3),
           ),
         ],
       ),
-
-      child: DropdownButtonHideUnderline(
-        child: DropdownButton<AnakOrtuModel>(
-          // Anak yang sedang dipilih
-          value: _selectedAnak,
-
-          isExpanded: true,
-
-          icon: const Icon(
-            Icons.keyboard_arrow_down_rounded,
-            color: Colors.grey,
-          ),
-
-          // Generate item dropdown dari _anakList
-          items:
-              _anakList.map((anak) {
-                return DropdownMenuItem<AnakOrtuModel>(
-                  value: anak,
-
-                  child: Row(
-                    children: [
-                      const Icon(
-                        Icons.person_outline_rounded,
-                        size: 16,
-                        color: AppColors.secondary,
-                      ),
-                      const SizedBox(width: 8),
-
-                      // Nama anak
-                      Text(
-                        anak.nama,
-                        style: const TextStyle(
-                          fontSize: 13,
-                          fontFamily: 'Poppins',
-                        ),
-                      ),
-                    ],
-                  ),
-                );
-              }).toList(),
-
-          // Saat anak dipilih
-          onChanged: (val) {
-            if (val != null) {
-              // Update state anak yang dipilih
-              setState(() => _selectedAnak = val);
-              _loadLaporan(val.id);
-            }
-          },
-        ),
-      ),
-    );
-  }
-
-  // Dropdown untuk filter laporan berdasarkan periode ajaran
-  Widget _buildFilterPeriode() {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14),
-
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(10),
-
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
-            blurRadius: 6,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-
-      child: DropdownButtonHideUnderline(
-        // Menghilangkan garis bawah default dropdown
-        child: DropdownButton<String?>(
-          // Periode yang sedang dipilih
-          value: _selectedPeriodeId,
-
-          isExpanded: true,
-
-          // Icon panah dropdown
-          icon: const Icon(
-            Icons.keyboard_arrow_down_rounded,
-            color: Colors.grey,
-          ),
-
-          // Daftar item dropdown
-          items: [
-            // Opsi default untuk menampilkan semua periode
-            const DropdownMenuItem<String?>(
-              value: null,
-              child: Text(
-                'Semua Periode',
-                style: TextStyle(fontSize: 13, fontFamily: 'Poppins'),
-              ),
+      child: Row(
+        children: [
+          // Icon siswa sebagai identitas visual card
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: AppColors.softPrimary,
+              borderRadius: BorderRadius.circular(12),
             ),
+            child: const Icon(
+              Icons.person_outline_rounded,
+              color: AppColors.primary,
+              size: 22,
+            ),
+          ),
 
-            // Generate item dropdown dari data periode
-            ..._periodeListData.map((p) {
-              return DropdownMenuItem<String?>(
-                // ID periode sebagai value dropdown
-                value: p['id'] as String,
+          const SizedBox(width: 12),
 
-                // Text yang ditampilkan di dropdown
-                child: Text(
-                  '${p['tahun_ajaran']} – ${p['semester']}',
-                  style: const TextStyle(fontSize: 13, fontFamily: 'Poppins'),
+          // Menampilkan informasi nama siswa
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Teks keterangan
+                const Text(
+                  'Riwayat laporan untuk',
+                  style: TextStyle(
+                    fontSize: 11,
+                    color: AppColors.textSecondary,
+                    fontFamily: 'Poppins',
+                  ),
                 ),
-              );
-            }),
-          ],
 
-          // Saat user memilih periode
-          onChanged: (val) {
-            // Simpan periode yang dipilih
-            setState(() => _selectedPeriodeId = val);
+                const SizedBox(height: 2),
 
-            // Jika anak sudah dipilih, reload laporan berdasarkan periode baru
-            if (_selectedAnak != null) {
-              _loadLaporan(_selectedAnak!.id);
-            }
-          },
-        ),
+                // Menampilkan nama siswa yang diterima dari halaman sebelumnya
+                Text(
+                  widget.namaSiswa,
+                  style: const TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.textPrimary,
+                    fontFamily: 'Poppins',
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -397,7 +227,7 @@ class _RiwayatPerkembanganPageState extends State<RiwayatPerkembanganPage> {
         padding: const EdgeInsets.all(14),
 
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: AppColors.card,
           borderRadius: BorderRadius.circular(12),
 
           boxShadow: [
@@ -434,7 +264,7 @@ class _RiwayatPerkembanganPageState extends State<RiwayatPerkembanganPage> {
                       vertical: 3,
                     ),
                     decoration: BoxDecoration(
-                      color: const Color(0xFFEAF3DE),
+                      color: AppColors.successBg,
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: const Text(
@@ -442,7 +272,7 @@ class _RiwayatPerkembanganPageState extends State<RiwayatPerkembanganPage> {
                       style: TextStyle(
                         fontSize: 10,
                         fontFamily: 'Poppins',
-                        color: Color(0xFF3B6D11),
+                        color: AppColors.successText,
                         fontWeight: FontWeight.w500,
                       ),
                     ),
