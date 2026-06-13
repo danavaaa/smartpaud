@@ -123,25 +123,52 @@ class _ProfileOrtuPageState extends State<ProfileOrtuPage> {
     );
   }
 
-  // header halaman profile
+  // Widget header yang menampilkan tombol kembali, judul halaman,dan deskripsi singkat mengenai profil pengguna
   Widget _buildHeader(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
       child: Row(
         children: [
-          GestureDetector(
-            // kembali ke halaman sebelumnya
+          // Tombol untuk kembali ke halaman sebelumnya
+          InkWell(
             onTap: () => Navigator.pop(context),
-            child: const Icon(Icons.chevron_left_rounded, size: 28),
+            borderRadius: BorderRadius.circular(20),
+            child: const Icon(
+              Icons.chevron_left_rounded,
+              size: 30,
+              color: AppColors.textPrimary,
+            ),
           ),
           const SizedBox(width: 8),
-          // Judul halaman
-          const Text(
-            'Profile Saya',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w600,
-              fontFamily: 'Poppins',
+
+          // Menampilkan judul dan keterangan halaman profil
+          const Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Judul halaman
+                Text(
+                  'Profile Saya',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w700,
+                    fontFamily: 'Poppins',
+                    color: AppColors.textPrimary,
+                  ),
+                ),
+
+                SizedBox(height: 2),
+
+                // Deskripsi singkat mengenai isi halaman
+                Text(
+                  'Informasi akun dan data anak',
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontFamily: 'Poppins',
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+              ],
             ),
           ),
         ],
@@ -153,15 +180,15 @@ class _ProfileOrtuPageState extends State<ProfileOrtuPage> {
   Widget _buildAvatarCard() {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
+      padding: const EdgeInsets.symmetric(vertical: 26, horizontal: 16),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        color: AppColors.card,
+        borderRadius: BorderRadius.circular(18),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
-            blurRadius: 6,
-            offset: const Offset(0, 2),
+            color: Colors.black.withValues(alpha: 0.06),
+            blurRadius: 10,
+            offset: const Offset(0, 3),
           ),
         ],
       ),
@@ -169,16 +196,16 @@ class _ProfileOrtuPageState extends State<ProfileOrtuPage> {
         children: [
           // Avatar icon
           Container(
-            width: 72,
-            height: 72,
-            decoration: const BoxDecoration(
-              color: AppColors.background,
+            width: 78,
+            height: 78,
+            decoration: BoxDecoration(
+              color: AppColors.softPrimary,
               shape: BoxShape.circle,
             ),
             child: const Icon(
               Icons.person_outline_rounded,
-              size: 36,
-              color: AppColors.secondary,
+              size: 38,
+              color: AppColors.primary,
             ),
           ),
           const SizedBox(height: 12),
@@ -187,26 +214,28 @@ class _ProfileOrtuPageState extends State<ProfileOrtuPage> {
           Text(
             _profile?.nama ?? '-',
             style: const TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
+              fontSize: 17,
+              fontWeight: FontWeight.w700,
               fontFamily: 'Poppins',
+              color: AppColors.textPrimary,
             ),
           ),
-          const SizedBox(height: 6),
+          const SizedBox(height: 7),
 
           // Badge role
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 5),
             decoration: BoxDecoration(
-              color: AppColors.background,
+              color: AppColors.softPrimary,
               borderRadius: BorderRadius.circular(20),
             ),
             child: const Text(
               'Orang Tua',
               style: TextStyle(
                 fontSize: 12,
+                fontWeight: FontWeight.w600,
                 fontFamily: 'Poppins',
-                color: AppColors.secondary,
+                color: AppColors.primary,
               ),
             ),
           ),
@@ -221,13 +250,13 @@ class _ProfileOrtuPageState extends State<ProfileOrtuPage> {
       width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(14),
+        color: AppColors.card,
+        borderRadius: BorderRadius.circular(18),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
-            blurRadius: 6,
-            offset: const Offset(0, 2),
+            color: Colors.black.withValues(alpha: 0.06),
+            blurRadius: 10,
+            offset: const Offset(0, 3),
           ),
         ],
       ),
@@ -238,34 +267,34 @@ class _ProfileOrtuPageState extends State<ProfileOrtuPage> {
           const Text(
             'Informasi Akun',
             style: TextStyle(
-              fontSize: 13,
-              fontWeight: FontWeight.w600,
+              fontSize: 14,
+              fontWeight: FontWeight.w700,
               fontFamily: 'Poppins',
-              color: Color(0xFF444444),
+              color: AppColors.textPrimary,
             ),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 14),
           // Baris informasi nama
           _buildInfoRow(
             icon: Icons.person_outline_rounded,
             label: 'Nama',
             value: _profile?.nama ?? '-',
           ),
-          const Divider(height: 16, thickness: 0.5),
+          const Divider(height: 18, thickness: 0.5),
           // Baris informasi email
           _buildInfoRow(
             icon: Icons.email_outlined,
             label: 'Email',
             value: _profile?.email ?? '-',
           ),
-          const Divider(height: 16, thickness: 0.5),
-          // // Baris informasi No Hp
+          const Divider(height: 18, thickness: 0.5),
+          // Baris informasi No Hp
           _buildInfoRow(
             icon: Icons.phone_outlined,
             label: 'No. HP',
             value: _profile?.noHp ?? '-',
           ),
-          const Divider(height: 16, thickness: 0.5),
+          const Divider(height: 18, thickness: 0.5),
           // Baris informasi status akun
           _buildInfoRow(
             icon: Icons.verified_outlined,
@@ -285,25 +314,39 @@ class _ProfileOrtuPageState extends State<ProfileOrtuPage> {
   }) {
     return Row(
       children: [
-        Icon(icon, size: 16, color: Colors.grey), // icon informasi
-        const SizedBox(width: 8),
+        Container(
+          width: 30,
+          height: 30,
+          decoration: BoxDecoration(
+            color: AppColors.softPrimary,
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Icon(icon, size: 16, color: AppColors.primary),
+        ),
+
+        const SizedBox(width: 10),
         // Label field
         Text(
           label,
           style: const TextStyle(
             fontSize: 12,
-            color: Colors.grey,
+            color: AppColors.textSecondary,
             fontFamily: 'Poppins',
           ),
         ),
         const Spacer(),
         // Isi field
-        Text(
-          value,
-          style: const TextStyle(
-            fontSize: 12,
-            fontWeight: FontWeight.w500,
-            fontFamily: 'Poppins',
+        Flexible(
+          child: Text(
+            value,
+            textAlign: TextAlign.right,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              color: AppColors.textPrimary,
+              fontFamily: 'Poppins',
+            ),
           ),
         ),
       ],
@@ -316,13 +359,13 @@ class _ProfileOrtuPageState extends State<ProfileOrtuPage> {
       width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(14),
+        color: AppColors.card,
+        borderRadius: BorderRadius.circular(18),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
-            blurRadius: 6,
-            offset: const Offset(0, 2),
+            color: Colors.black.withValues(alpha: 0.06),
+            blurRadius: 10,
+            offset: const Offset(0, 3),
           ),
         ],
       ),
@@ -333,112 +376,106 @@ class _ProfileOrtuPageState extends State<ProfileOrtuPage> {
           const Text(
             'Data Anak',
             style: TextStyle(
-              fontSize: 13,
-              fontWeight: FontWeight.w600,
+              fontSize: 14,
+              fontWeight: FontWeight.w700,
               fontFamily: 'Poppins',
-              color: Color(0xFF444444),
+              color: AppColors.textPrimary,
             ),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 14),
           // Cek apakah daftar anak kosong, jika kosong, tampilkan teks informasi ke user
           if (_anakList.isEmpty)
             const Text(
               'Belum ada data anak',
               style: TextStyle(
                 fontSize: 12,
-                color: Colors.grey,
+                color: AppColors.textSecondary,
                 fontFamily: 'Poppins',
               ),
             )
           else
             ..._anakList.map(
-              (anak) => Padding(
-                padding: const EdgeInsets.only(bottom: 8),
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 10,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    border: Border.all(
-                      color: Colors.grey.withValues(alpha: 0.2),
-                      width: 0.5,
+              (anak) => Container(
+                margin: const EdgeInsets.only(bottom: 10),
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: AppColors.softCard,
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                child: Row(
+                  children: [
+                    // Avatar inisial anak
+                    CircleAvatar(
+                      radius: 18,
+                      backgroundColor: AppColors.card,
+                      child: Text(
+                        anak.inisial, // ambil inisial nama anak
+                        style: const TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.primary,
+                          fontFamily: 'Poppins',
+                        ),
+                      ),
                     ),
-                  ),
-                  child: Row(
-                    children: [
-                      // Avatar inisial anak
-                      CircleAvatar(
-                        radius: 16,
-                        backgroundColor: Colors.white,
-                        child: Text(
-                          anak.inisial, // ambil inisial nama anak
-                          style: const TextStyle(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w600,
-                            color: AppColors.secondary,
-                            fontFamily: 'Poppins',
+                    const SizedBox(width: 12),
+
+                    // Nama, kelas dan periode
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            anak.nama,
+                            style: const TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w700,
+                              color: AppColors.textPrimary,
+                              fontFamily: 'Poppins',
+                            ),
                           ),
-                        ),
-                      ),
-                      const SizedBox(width: 10),
+                          const SizedBox(height: 2),
 
-                      // Nama, kelas dan periode
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              anak.nama,
-                              style: const TextStyle(
-                                fontSize: 13,
-                                fontWeight: FontWeight.w500,
-                                fontFamily: 'Poppins',
-                              ),
+                          // info kelas dan periode
+                          Text(
+                            '${anak.namaKelas} · ${anak.periode}',
+                            style: const TextStyle(
+                              fontSize: 11,
+                              color: AppColors.textSecondary,
+                              fontFamily: 'Poppins',
                             ),
-                            const SizedBox(height: 2),
-
-                            // info kelas dan periode
-                            Text(
-                              '${anak.namaKelas} · ${anak.periode}',
-                              style: const TextStyle(
-                                fontSize: 11,
-                                color: Colors.grey,
-                                fontFamily: 'Poppins',
-                              ),
-                            ),
-                          ],
-                        ),
+                          ),
+                        ],
                       ),
+                    ),
 
-                      // Badge status anak
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 10,
-                          vertical: 3,
-                        ),
-                        decoration: BoxDecoration(
+                    // Badge status anak
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 4,
+                      ),
+                      decoration: BoxDecoration(
+                        color:
+                            anak.isActive
+                                ? AppColors.successBg
+                                : AppColors.dangerBg,
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Text(
+                        anak.statusText,
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w600,
+                          fontFamily: 'Poppins',
                           color:
                               anak.isActive
-                                  ? const Color(0xFFEAF3DE)
-                                  : const Color(0xFFFCEBEB),
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: Text(
-                          anak.statusText,
-                          style: TextStyle(
-                            fontSize: 11,
-                            fontFamily: 'Poppins',
-                            color:
-                                anak.isActive
-                                    ? const Color(0xFF3B6D11)
-                                    : const Color(0xFFA32D2D),
-                          ),
+                                  ? AppColors.successText
+                                  : AppColors.dangerText,
                         ),
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
               ),
             ),
@@ -474,18 +511,18 @@ class _ProfileOrtuPageState extends State<ProfileOrtuPage> {
                   style: TextStyle(
                     fontSize: 13,
                     fontFamily: 'Poppins',
-                    color: Colors.grey,
+                    color: AppColors.textSecondary,
                   ),
                 ),
                 actions: [
                   // Tombol batal
                   TextButton(
-                    onPressed: () => Navigator.pop(ctx), // tutup dialog
+                    onPressed: () => Navigator.pop(ctx),
                     child: const Text(
                       'Batal',
                       style: TextStyle(
                         fontFamily: 'Poppins',
-                        color: Colors.grey,
+                        color: AppColors.textSecondary,
                       ),
                     ),
                   ),
@@ -493,8 +530,8 @@ class _ProfileOrtuPageState extends State<ProfileOrtuPage> {
                   TextButton(
                     onPressed: () async {
                       Navigator.pop(ctx);
-                      await AuthService()
-                          .logout(); // hapus session dan keluar dari Supabase
+                      await AuthService().logout();
+
                       if (!mounted) return;
                       Navigator.pushAndRemoveUntil(
                         context,
@@ -506,7 +543,7 @@ class _ProfileOrtuPageState extends State<ProfileOrtuPage> {
                       'Logout',
                       style: TextStyle(
                         fontFamily: 'Poppins',
-                        color: Color(0xFFA32D2D),
+                        color: AppColors.dangerText,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
@@ -518,23 +555,24 @@ class _ProfileOrtuPageState extends State<ProfileOrtuPage> {
       // tampilan tombol logout
       child: Container(
         width: double.infinity,
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.symmetric(vertical: 15),
         decoration: BoxDecoration(
-          color: const Color(0xFFFFF0F0),
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: const Color(0xFFF7C1C1), width: 0.5),
+          color: Colors.transparent,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: AppColors.accent, width: 1),
         ),
         child: const Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            SizedBox(width: 10),
+            Icon(Icons.logout_rounded, size: 18, color: AppColors.textPrimary),
+            SizedBox(width: 8),
             Text(
-              'Logout',
+              'LogOut',
               style: TextStyle(
                 fontSize: 14,
-                fontWeight: FontWeight.w500,
+                fontWeight: FontWeight.w700,
                 fontFamily: 'Poppins',
-                color: Color(0xFFA32D2D),
+                color: AppColors.textPrimary,
               ),
             ),
           ],
