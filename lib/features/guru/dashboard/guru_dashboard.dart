@@ -45,23 +45,33 @@ class _GuruDashboardPageState extends State<GuruDashboardPage> {
       // Kalau idUser kosong, berarti user belum login / session tidak ada
       if (idUser.isEmpty) {
         // Matikan loading
-        setState(() => _isLoadingKelas = false);
-
-        // Hentikan function
+        setState(() {
+          _kelasList = [];
+          _isLoadingKelas = false;
+        });
         return;
       }
 
       // Ambil daftar kelas aktif yang diampu  guru berdasarkan idUser yang sedang login
-      final kelas = await _service.getKelasDiampuAktif(idUser);
+      final kelas = List<KelasModel>.from(
+        await _service.getKelasDiampuAktif(idUser),
+      );
+      // Mengurutkan daftar kelas berdasarkan nama kelas secara alfabet
+      kelas.sort(
+        (a, b) =>
+            a.namaKelas.toLowerCase().compareTo(b.namaKelas.toLowerCase()),
+      );
 
-      // Simpan hasil data ke state
       setState(() {
         _kelasList = kelas; // isi daftar kelas
         _isLoadingKelas = false; // loading selesai
       });
     } catch (e) {
       // Kalau terjadi error, matikan loading
-      setState(() => _isLoadingKelas = false);
+      setState(() {
+        _kelasList = [];
+        _isLoadingKelas = false;
+      });
     }
   }
 
@@ -77,22 +87,46 @@ class _GuruDashboardPageState extends State<GuruDashboardPage> {
 
             children: [
               // card dashboard utama
+              const Text(
+                'Dashboard Guru',
+                style: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.w700,
+                  fontFamily: 'Poppins',
+                  color: AppColors.textPrimary,
+                ),
+              ),
+
+              const SizedBox(height: 4),
+
+              const Text(
+                'Kelola data siswa dan laporan perkembangan',
+                style: TextStyle(
+                  fontSize: 12,
+                  fontFamily: 'Poppins',
+                  color: AppColors.textSecondary,
+                ),
+              ),
+
+              const SizedBox(height: 20),
+
               _buildDashboardCard(),
 
               // jarak bawah card
-              const SizedBox(height: 24),
+              const SizedBox(height: 26),
               // label menu cepat
               const Text(
                 'Menu Cepat',
                 style: TextStyle(
                   fontSize: 16,
-                  fontWeight: FontWeight.w600,
+                  fontWeight: FontWeight.w700,
                   fontFamily: 'Poppins',
+                  color: AppColors.textPrimary,
                 ),
               ),
 
               // jarak bawah label
-              const SizedBox(height: 12),
+              const SizedBox(height: 14),
 
               // menu data siswa
               _buildMenuItem(
@@ -156,15 +190,15 @@ class _GuruDashboardPageState extends State<GuruDashboardPage> {
   Widget _buildDashboardCard() {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        color: AppColors.card,
+        borderRadius: BorderRadius.circular(18),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
           ),
         ],
       ),
@@ -174,37 +208,55 @@ class _GuruDashboardPageState extends State<GuruDashboardPage> {
         crossAxisAlignment: CrossAxisAlignment.start,
 
         children: [
-          // judul dashboard
-          const Text(
-            'Dashboard',
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.w600,
-              fontFamily: 'Poppins',
-            ),
-          ),
-          const SizedBox(height: 8),
+          Row(
+            children: [
+              Container(
+                width: 46,
+                height: 46,
+                decoration: BoxDecoration(
+                  color: AppColors.softPrimary,
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                child: const Icon(
+                  Icons.school_outlined,
+                  color: AppColors.primary,
+                  size: 24,
+                ),
+              ),
 
-          // sapaan guru
-          Text(
-            'Halo, $_namaGuru 👋',
-            style: const TextStyle(
-              fontSize: 15,
-              fontWeight: FontWeight.w500,
-              fontFamily: 'Poppins',
-            ),
-          ),
-          // keterangan kelas yang diampu
-          const Text(
-            'Kelas yang diampu',
-            style: TextStyle(
-              fontSize: 12,
-              color: Colors.grey,
-              fontFamily: 'Poppins',
-            ),
+              const SizedBox(width: 14),
+
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // sapaan guru
+                    Text(
+                      'Halo, $_namaGuru 👋',
+                      style: const TextStyle(
+                        fontSize: 17,
+                        fontWeight: FontWeight.w700,
+                        fontFamily: 'Poppins',
+                        color: AppColors.textPrimary,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    // keterangan kelas yang diampu
+                    const Text(
+                      'Kelas aktif yang sedang diampu',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: AppColors.textSecondary,
+                        fontFamily: 'Poppins',
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
 
-          const SizedBox(height: 10),
+          const SizedBox(height: 16),
 
           // Tampil loading atau data kelas yang diampu
           if (_isLoadingKelas)
@@ -216,69 +268,86 @@ class _GuruDashboardPageState extends State<GuruDashboardPage> {
             // Kalau loading selesai tapi data kelas kosong, tampilkan pesan bahwa guru belum punya kelas
             Container(
               width: double.infinity,
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
               decoration: BoxDecoration(
-                color: AppColors.background,
-                borderRadius: BorderRadius.circular(10),
+                color: AppColors.softCard,
+                borderRadius: BorderRadius.circular(12),
               ),
               child: const Text(
-                'Belum ada kelas yang diampu',
+                'Belum ada kelas aktif yang diampu',
                 style: TextStyle(
                   fontSize: 12,
-                  color: Colors.grey,
+                  color: AppColors.textSecondary,
                   fontFamily: 'Poppins',
                 ),
               ),
             )
           else
-            // Kalau data kelas ada, tampilkan semua data dari _kelasList
-            ..._kelasList.map(
-              (k) => Container(
-                width: double.infinity,
+            ..._kelasList.map((k) => _buildKelasItem(k)),
+        ],
+      ),
+    );
+  }
 
-                margin: const EdgeInsets.only(bottom: 8), // jarak antar item
+  Widget _buildKelasItem(KelasModel k) {
+    return Container(
+      width: double.infinity,
 
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 10,
-                ),
-
-                decoration: BoxDecoration(
-                  color: AppColors.background,
-                  borderRadius: BorderRadius.circular(10),
-                ),
-
-                // isi sub-card
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-
-                  children: [
-                    // nama kelas
-                    Text(
-                      k.namaKelas,
-                      style: const TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w600,
-                        fontFamily: 'Poppins',
-                      ),
-                    ),
-
-                    // jarak kecil
-                    const SizedBox(height: 2),
-
-                    // informasi kelas dan periode
-                    Text(
-                      '${k.peranGuru} · ${k.periode}',
-                      style: const TextStyle(
-                        fontSize: 11,
-                        color: Colors.grey,
-                        fontFamily: 'Poppins',
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+      margin: const EdgeInsets.only(bottom: 10),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: AppColors.softCard,
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 34,
+            height: 34,
+            decoration: BoxDecoration(
+              color: AppColors.card,
+              borderRadius: BorderRadius.circular(10),
             ),
+            child: const Icon(
+              Icons.groups_2_outlined,
+              size: 18,
+              color: AppColors.primary,
+            ),
+          ),
+
+          const SizedBox(width: 10),
+
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+
+              children: [
+                // nama kelas
+                Text(
+                  k.namaKelas,
+                  style: const TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                    fontFamily: 'Poppins',
+                    color: AppColors.textPrimary,
+                  ),
+                ),
+
+                // jarak kecil
+                const SizedBox(height: 2),
+
+                // informasi kelas dan periode
+                Text(
+                  '${k.peranGuru} · ${k.periode}',
+                  style: const TextStyle(
+                    fontSize: 11,
+                    color: AppColors.textSecondary,
+                    fontFamily: 'Poppins',
+                  ),
+                ),
+              ],
+            ),
+          ),
         ],
       ),
     );
@@ -295,16 +364,16 @@ class _GuruDashboardPageState extends State<GuruDashboardPage> {
     return GestureDetector(
       onTap: onTap, // aksi ketika menu di tekan
       child: Container(
-        margin: const EdgeInsets.only(bottom: 10),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        margin: const EdgeInsets.only(bottom: 14),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
         decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(14),
+          color: AppColors.card,
+          borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.04),
-              blurRadius: 6,
-              offset: const Offset(0, 2),
+              color: Colors.black.withValues(alpha: 0.06),
+              blurRadius: 9,
+              offset: const Offset(0, 3),
             ),
           ],
         ),
@@ -313,15 +382,15 @@ class _GuruDashboardPageState extends State<GuruDashboardPage> {
         child: Row(
           children: [
             Container(
-              width: 36,
-              height: 36,
+              width: 42,
+              height: 42,
 
               decoration: BoxDecoration(
-                color: AppColors.background,
-                borderRadius: BorderRadius.circular(10),
+                color: AppColors.softPrimary,
+                borderRadius: BorderRadius.circular(13),
               ),
 
-              child: Icon(icon, size: 20, color: AppColors.primary),
+              child: Icon(icon, size: 22, color: AppColors.primary),
             ),
 
             const SizedBox(width: 14),
@@ -329,15 +398,20 @@ class _GuruDashboardPageState extends State<GuruDashboardPage> {
             Expanded(
               child: Text(
                 label,
-                style: const TextStyle(fontSize: 14, fontFamily: 'Poppins'),
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.textPrimary,
+                  fontFamily: 'Poppins',
+                ),
               ),
             ),
 
             // ikon panah
             const Icon(
               Icons.chevron_right_rounded,
-              color: Colors.grey,
-              size: 20,
+              color: AppColors.accent,
+              size: 22,
             ),
           ],
         ),
