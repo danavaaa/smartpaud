@@ -103,22 +103,43 @@ class DetailSiswaPage extends StatelessWidget {
       child: Row(
         children: [
           // tombol kembali
-          GestureDetector(
+          InkWell(
             onTap: () => Navigator.pop(context),
-
-            child: const Icon(Icons.chevron_left_rounded, size: 28),
+            borderRadius: BorderRadius.circular(20),
+            child: const Icon(
+              Icons.chevron_left_rounded,
+              size: 30,
+              color: AppColors.textPrimary,
+            ),
           ),
 
           const SizedBox(width: 8),
 
           // Judul halaman
-          const Text(
-            'Detail Siswa',
+          const Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Detail Siswa',
 
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w600,
-              fontFamily: 'Poppins',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w700,
+                    fontFamily: 'Poppins',
+                    color: AppColors.textPrimary,
+                  ),
+                ),
+                SizedBox(height: 2),
+                Text(
+                  'Informasi siswa dan data orang tua',
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontFamily: 'Poppins',
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+              ],
             ),
           ),
         ],
@@ -126,23 +147,23 @@ class DetailSiswaPage extends StatelessWidget {
     );
   }
 
-  // widget card profil siswa dengan nama, NIS, status, dan avatar
+  //  Widget card profil siswa dengan nama, kelas, periode, status, dan avatar
   Widget _buildProfileCard() {
     // Mengecek apakah status siswa aktif
     final bool isAktif = siswa.status == 'Aktif';
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.card,
 
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(18),
 
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
+            color: Colors.black.withValues(alpha: 0.06),
+            blurRadius: 10,
+            offset: const Offset(0, 3),
           ),
         ],
       ),
@@ -151,9 +172,9 @@ class DetailSiswaPage extends StatelessWidget {
         children: [
           // avatar siswa
           CircleAvatar(
-            radius: 28,
+            radius: 34,
 
-            backgroundColor: AppColors.background,
+            backgroundColor: AppColors.softPrimary,
 
             child: Text(
               // Menampilkan inisial siswa
@@ -162,7 +183,7 @@ class DetailSiswaPage extends StatelessWidget {
               style: const TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.w700,
-                color: AppColors.secondary,
+                color: AppColors.primary,
                 fontFamily: 'Poppins',
               ),
             ),
@@ -181,41 +202,36 @@ class DetailSiswaPage extends StatelessWidget {
                   siswa.namaSiswa,
 
                   style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
+                    fontSize: 17,
+                    fontWeight: FontWeight.w700,
                     fontFamily: 'Poppins',
+                    color: AppColors.textPrimary,
                   ),
                 ),
 
-                const SizedBox(height: 2),
+                const SizedBox(height: 4),
 
-                // Nomor induk siswa
                 Text(
-                  'NIS · -',
-
+                  '${siswa.namaKelas} · ${siswa.periode}',
                   style: const TextStyle(
-                    fontSize: 12,
-                    color: Colors.grey,
+                    fontSize: 11,
+                    color: AppColors.textSecondary,
                     fontFamily: 'Poppins',
                   ),
                 ),
 
-                const SizedBox(height: 6),
+                const SizedBox(height: 8),
 
                 // badge status siswa
                 Container(
                   padding: const EdgeInsets.symmetric(
                     horizontal: 10,
-                    vertical: 3,
+                    vertical: 4,
                   ),
 
                   decoration: BoxDecoration(
                     // Warna badge berdasarkan status
-                    color:
-                        isAktif
-                            ? const Color(0xFFEAF3DE)
-                            : const Color(0xFFFCEBEB),
-
+                    color: isAktif ? AppColors.successBg : AppColors.dangerBg,
                     borderRadius: BorderRadius.circular(20),
                   ),
 
@@ -225,12 +241,13 @@ class DetailSiswaPage extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 11,
                       fontFamily: 'Poppins',
+                      fontWeight: FontWeight.w600,
 
                       // Warna text berdasarkan status
                       color:
                           isAktif
-                              ? const Color(0xFF3B6D11)
-                              : const Color(0xFFA32D2D),
+                              ? AppColors.successText
+                              : AppColors.dangerText,
                     ),
                   ),
                 ),
@@ -250,15 +267,15 @@ class DetailSiswaPage extends StatelessWidget {
       padding: const EdgeInsets.all(16),
 
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.card,
 
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(18),
 
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
-            blurRadius: 6,
-            offset: const Offset(0, 2),
+            color: Colors.black.withValues(alpha: 0.06),
+            blurRadius: 10,
+            offset: const Offset(0, 3),
           ),
         ],
       ),
@@ -271,14 +288,14 @@ class DetailSiswaPage extends StatelessWidget {
             title,
 
             style: const TextStyle(
-              fontSize: 13,
-              fontWeight: FontWeight.w600,
+              fontSize: 14,
+              fontWeight: FontWeight.w700,
               fontFamily: 'Poppins',
-              color: Color(0xFF444444),
+              color: AppColors.textPrimary,
             ),
           ),
 
-          const SizedBox(height: 12),
+          const SizedBox(height: 14),
 
           // list data informasi siswa
           ...rows.asMap().entries.map((entry) {
@@ -291,7 +308,11 @@ class DetailSiswaPage extends StatelessWidget {
                 _buildInfoRow(row),
 
                 if (index < rows.length - 1)
-                  const Divider(height: 16, thickness: 0.5),
+                  const Divider(
+                    height: 18,
+                    thickness: 0.5,
+                    color: Color(0xFFE2DDD3),
+                  ),
               ],
             );
           }),
@@ -303,32 +324,36 @@ class DetailSiswaPage extends StatelessWidget {
   // widget untuk membangun satu baris informasi
   Widget _buildInfoRow(_InfoRow row) {
     return Row(
-      // Label kiri & value kanan
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-
       children: [
-        // Label informasi
-        Text(
-          row.label,
+        Expanded(
+          flex: 4,
+          child: Text(
+            row.label,
 
-          style: const TextStyle(
-            fontSize: 12,
-            color: Colors.grey,
-            fontFamily: 'Poppins',
+            style: const TextStyle(
+              fontSize: 12,
+              color: AppColors.textSecondary,
+              fontFamily: 'Poppins',
+            ),
           ),
         ),
 
-        // value informasi
-        Text(
-          row.value,
+        const SizedBox(width: 10),
 
-          style: TextStyle(
-            fontSize: 12,
-            fontWeight: FontWeight.w500,
-            fontFamily: 'Poppins',
+        Expanded(
+          flex: 5,
+          child: Text(
+            row.value.isEmpty ? '-' : row.value,
+            textAlign: TextAlign.right,
+            overflow: TextOverflow.ellipsis,
+            maxLines: 2,
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              fontFamily: 'Poppins',
 
-            // Jika ada warna custom maka gunakan
-            color: row.valueColor ?? const Color(0xFF222222),
+              color: row.valueColor ?? AppColors.textPrimary,
+            ),
           ),
         ),
       ],
