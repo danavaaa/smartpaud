@@ -63,7 +63,7 @@ class DetailLaporanOrtuPage extends StatelessWidget {
     );
   }
 
-  // Widget untuk header halaman
+  // Widget header yang menampilkan tombol kembali dan informasi judul halaman
   Widget _buildHeader(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
@@ -71,22 +71,47 @@ class DetailLaporanOrtuPage extends StatelessWidget {
       child: Row(
         children: [
           // Tombol kembali
-          GestureDetector(
+          InkWell(
             onTap: () => Navigator.pop(context),
-
-            child: const Icon(Icons.chevron_left_rounded, size: 28),
+            borderRadius: BorderRadius.circular(20),
+            child: const Icon(
+              Icons.chevron_left_rounded,
+              size: 30,
+              color: AppColors.textPrimary,
+            ),
           ),
 
           const SizedBox(width: 8),
 
-          // Judul halaman
-          const Text(
-            'Detail Laporan',
+          // Menampilkan judul dan deskripsi singkat halaman
+          const Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Judul halaman
+                Text(
+                  'Detail Laporan',
 
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w600,
-              fontFamily: 'Poppins',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w700,
+                    fontFamily: 'Poppins',
+                    color: AppColors.textPrimary,
+                  ),
+                ),
+
+                SizedBox(height: 2),
+
+                // Keterangan halaman yang sedang dibuka
+                Text(
+                  'Informasi perkembangan literasi anak',
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontFamily: 'Poppins',
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+              ],
             ),
           ),
         ],
@@ -101,17 +126,17 @@ class DetailLaporanOrtuPage extends StatelessWidget {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         // Warna card
-        color: Colors.white,
+        color: AppColors.card,
 
         // Radius sudut card
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(16),
 
         // Shadow card
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
-            blurRadius: 6,
-            offset: const Offset(0, 2),
+            color: Colors.black.withValues(alpha: 0.06),
+            blurRadius: 8,
+            offset: const Offset(0, 3),
           ),
         ],
       ),
@@ -120,8 +145,8 @@ class DetailLaporanOrtuPage extends StatelessWidget {
         children: [
           // Avatar berisi inisial siswa
           CircleAvatar(
-            radius: 22,
-            backgroundColor: AppColors.background,
+            radius: 24,
+            backgroundColor: AppColors.softPrimary,
 
             child: Text(
               // Mengambil inisial dari nama siswa
@@ -129,8 +154,8 @@ class DetailLaporanOrtuPage extends StatelessWidget {
 
               style: const TextStyle(
                 fontSize: 14,
-                fontWeight: FontWeight.w600,
-                color: AppColors.secondary,
+                fontWeight: FontWeight.w700,
+                color: AppColors.primary,
                 fontFamily: 'Poppins',
               ),
             ),
@@ -148,13 +173,14 @@ class DetailLaporanOrtuPage extends StatelessWidget {
                   laporan.namaSiswa,
 
                   style: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
+                    fontSize: 15,
+                    fontWeight: FontWeight.w700,
                     fontFamily: 'Poppins',
+                    color: AppColors.textPrimary,
                   ),
                 ),
 
-                const SizedBox(height: 2),
+                const SizedBox(height: 3),
 
                 // Menampilkan nama kelas dan tanggal laporan
                 Text(
@@ -162,7 +188,7 @@ class DetailLaporanOrtuPage extends StatelessWidget {
 
                   style: const TextStyle(
                     fontSize: 11,
-                    color: Colors.grey,
+                    color: AppColors.textSecondary,
                     fontFamily: 'Poppins',
                   ),
                 ),
@@ -176,7 +202,7 @@ class DetailLaporanOrtuPage extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
 
               decoration: BoxDecoration(
-                color: const Color(0xFFEAF3DE),
+                color: AppColors.successBg,
                 borderRadius: BorderRadius.circular(20),
               ),
 
@@ -186,8 +212,8 @@ class DetailLaporanOrtuPage extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 11,
                   fontFamily: 'Poppins',
-                  color: Color(0xFF3B6D11),
-                  fontWeight: FontWeight.w500,
+                  color: AppColors.successText,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
             ),
@@ -202,22 +228,22 @@ class DetailLaporanOrtuPage extends StatelessWidget {
     if (laporan.fotoUrl != null && laporan.fotoUrl!.isNotEmpty) {
       return Container(
         width: double.infinity,
-        height: 180,
+        height: 190,
 
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: BorderRadius.circular(16),
 
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.04),
-              blurRadius: 6,
-              offset: const Offset(0, 2),
+              color: Colors.black.withValues(alpha: 0.06),
+              blurRadius: 8,
+              offset: const Offset(0, 3),
             ),
           ],
         ),
 
         child: ClipRRect(
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: BorderRadius.circular(16),
 
           child: Image.network(
             // Menampilkan gambar dari URL
@@ -240,28 +266,28 @@ class DetailLaporanOrtuPage extends StatelessWidget {
   Widget _buildFotoPlaceholder() {
     return Container(
       width: double.infinity,
-      height: 180,
+      height: 190,
 
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(14),
+        color: AppColors.card,
+        borderRadius: BorderRadius.circular(16),
 
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
-            blurRadius: 6,
-            offset: const Offset(0, 2),
+            color: Colors.black.withValues(alpha: 0.06),
+            blurRadius: 8,
+            offset: const Offset(0, 3),
           ),
         ],
       ),
 
-      child: Column(
+      child: const Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           // Icon placeholder gambar
-          Icon(Icons.image_outlined, size: 48, color: Colors.grey.shade400),
+          Icon(Icons.image_outlined, size: 48, color: AppColors.textSecondary),
 
-          const SizedBox(height: 8),
+          SizedBox(height: 8),
 
           // Judul placeholder
           Text(
@@ -269,12 +295,12 @@ class DetailLaporanOrtuPage extends StatelessWidget {
 
             style: TextStyle(
               fontSize: 13,
-              color: Colors.grey.shade400,
+              color: AppColors.textSecondary,
               fontFamily: 'Poppins',
             ),
           ),
 
-          const SizedBox(height: 4),
+          SizedBox(height: 4),
 
           // Informasi belum ada foto
           Text(
@@ -282,7 +308,7 @@ class DetailLaporanOrtuPage extends StatelessWidget {
 
             style: TextStyle(
               fontSize: 10,
-              color: Colors.grey.shade400,
+              color: AppColors.textSecondary,
               fontFamily: 'Poppins',
             ),
           ),
@@ -302,14 +328,14 @@ class DetailLaporanOrtuPage extends StatelessWidget {
       padding: const EdgeInsets.all(16),
 
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(14),
+        color: AppColors.card,
+        borderRadius: BorderRadius.circular(16),
 
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
-            blurRadius: 6,
-            offset: const Offset(0, 2),
+            color: Colors.black.withValues(alpha: 0.06),
+            blurRadius: 8,
+            offset: const Offset(0, 3),
           ),
         ],
       ),
@@ -321,9 +347,17 @@ class DetailLaporanOrtuPage extends StatelessWidget {
           Row(
             children: [
               // Icon card
-              Icon(icon, size: 18, color: AppColors.primary),
+              Container(
+                width: 34,
+                height: 34,
+                decoration: BoxDecoration(
+                  color: AppColors.softPrimary,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Icon(icon, size: 18, color: AppColors.primary),
+              ),
 
-              const SizedBox(width: 8),
+              const SizedBox(width: 10),
 
               // Judul card
               Expanded(
@@ -331,26 +365,26 @@ class DetailLaporanOrtuPage extends StatelessWidget {
                   title,
 
                   style: const TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w700,
                     fontFamily: 'Poppins',
-                    color: Color(0xFF444444),
+                    color: AppColors.textPrimary,
                   ),
                 ),
               ),
             ],
           ),
 
-          const SizedBox(height: 10),
+          const SizedBox(height: 12),
 
           // Container isi konten
           Container(
             width: double.infinity,
-            padding: const EdgeInsets.all(12),
+            padding: const EdgeInsets.all(14),
 
             decoration: BoxDecoration(
-              color: AppColors.background,
-              borderRadius: BorderRadius.circular(8),
+              color: AppColors.softCard,
+              borderRadius: BorderRadius.circular(12),
             ),
 
             child: Text(
@@ -361,6 +395,7 @@ class DetailLaporanOrtuPage extends StatelessWidget {
                 fontSize: 12,
                 fontFamily: 'Poppins',
                 height: 1.6,
+                color: AppColors.textPrimary,
               ),
             ),
           ),
