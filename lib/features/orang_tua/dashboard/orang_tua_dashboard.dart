@@ -127,12 +127,24 @@ class _OrangTuaDashboardPageState extends State<OrangTuaDashboardPage> {
               const Text(
                 'Dashboard Orang Tua',
                 style: TextStyle(
-                  fontSize: 12,
-                  color: Colors.grey,
+                  fontSize: 22,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.textPrimary,
                   fontFamily: 'Poppins',
                 ),
               ),
-              const SizedBox(height: 12),
+
+              const SizedBox(height: 4),
+
+              const Text(
+                'Pantau perkembangan literasi anak secara mudah',
+                style: TextStyle(
+                  fontSize: 12,
+                  color: AppColors.textSecondary,
+                  fontFamily: 'Poppins',
+                ),
+              ),
+              const SizedBox(height: 18),
 
               // Card header berisi sapaan dan dropdown pilih anak
               _buildHeaderCard(),
@@ -146,8 +158,9 @@ class _OrangTuaDashboardPageState extends State<OrangTuaDashboardPage> {
               const Text(
                 'Menu Cepat',
                 style: TextStyle(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w500,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.textPrimary,
                   fontFamily: 'Poppins',
                 ),
               ),
@@ -189,18 +202,18 @@ class _OrangTuaDashboardPageState extends State<OrangTuaDashboardPage> {
   Widget _buildHeaderCard() {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(18),
 
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-
+        color: AppColors.card,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: AppColors.softPrimary, width: 1),
         // Shadow card
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
+            color: Colors.black.withValues(alpha: 0.10),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
           ),
         ],
       ),
@@ -209,51 +222,86 @@ class _OrangTuaDashboardPageState extends State<OrangTuaDashboardPage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Judul card
-          const Text(
-            'Dashboard',
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.w600,
-              fontFamily: 'Poppins',
-            ),
-          ),
-          const SizedBox(height: 4),
+          Row(
+            children: [
+              Container(
+                width: 46,
+                height: 46,
+                decoration: BoxDecoration(
+                  color: AppColors.softPrimary,
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                child: const Icon(
+                  Icons.family_restroom_outlined,
+                  color: AppColors.primary,
+                  size: 24,
+                ),
+              ),
 
-          // Sapaan orang tua
-          Text(
-            'Halo, $_namaOrangTua 👋',
-            style: const TextStyle(
-              fontSize: 15,
-              fontWeight: FontWeight.w500,
-              fontFamily: 'Poppins',
-            ),
+              const SizedBox(width: 14),
+
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Selamat Datang',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: AppColors.textSecondary,
+                        fontFamily: 'Poppins',
+                      ),
+                    ),
+                    // Sapaan orang tua
+                    Text(
+                      'Halo, $_namaOrangTua 👋',
+                      style: const TextStyle(
+                        fontSize: 17,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.textPrimary,
+                        fontFamily: 'Poppins',
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
+          const SizedBox(height: 14),
 
           // Subtitle
           const Text(
-            'Pantau perkembangan anak anda dengan mudah',
+            'Pilih anak aktif untuk melihat laporan perkembangan terbaru.',
             style: TextStyle(
               fontSize: 12,
-              color: Colors.grey,
+              color: AppColors.textSecondary,
+              height: 1.5,
               fontFamily: 'Poppins',
             ),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 14),
 
           // Dropdown pilih anak
           if (_isLoadingAnak)
             // Jika data anak masih dalam proses diambil dari database, tampilkan loading di tengah layar
             const Center(
-              child: CircularProgressIndicator(color: AppColors.primary),
+              child: CircularProgressIndicator(color: AppColors.accent),
             )
           else if (_anakList.isEmpty)
-            // Jika loading selesai tetapi daftar anak kosong, tampilkan pesan informasi
-            const Text(
-              'Tidak ada data anak',
-              style: TextStyle(
-                fontSize: 12,
-                color: Colors.grey,
-                fontFamily: 'Poppins',
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+              decoration: BoxDecoration(
+                color: AppColors.softCard,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: const Text(
+                'Tidak ada data anak aktif',
+                style: TextStyle(
+                  fontSize: 12,
+                  color: AppColors.textSecondary,
+                  fontFamily: 'Poppins',
+                ),
               ),
             )
           else
@@ -261,8 +309,8 @@ class _OrangTuaDashboardPageState extends State<OrangTuaDashboardPage> {
               padding: const EdgeInsets.symmetric(horizontal: 12),
 
               decoration: BoxDecoration(
-                color: AppColors.background,
-                borderRadius: BorderRadius.circular(10),
+                color: AppColors.softPrimary,
+                borderRadius: BorderRadius.circular(12),
               ),
 
               child: DropdownButtonHideUnderline(
@@ -271,10 +319,10 @@ class _OrangTuaDashboardPageState extends State<OrangTuaDashboardPage> {
                   value: _selectedAnak,
 
                   isExpanded: true,
-
+                  dropdownColor: AppColors.card,
                   icon: const Icon(
                     Icons.keyboard_arrow_down_rounded,
-                    color: Colors.grey,
+                    color: AppColors.primary,
                   ),
 
                   // Generate item dropdown dari list anak
@@ -287,17 +335,20 @@ class _OrangTuaDashboardPageState extends State<OrangTuaDashboardPage> {
                             children: [
                               const Icon(
                                 Icons.person_outline_rounded,
-                                size: 16,
-                                color: AppColors.secondary,
+                                size: 18,
+                                color: AppColors.primary,
                               ),
                               const SizedBox(width: 8),
-
-                              // Menampilkan nama anak dan status anak
-                              Text(
-                                anak.nama,
-                                style: const TextStyle(
-                                  fontSize: 13,
-                                  fontFamily: 'Poppins',
+                              Expanded(
+                                // Menampilkan nama anak dan status anak
+                                child: Text(
+                                  anak.nama,
+                                  style: const TextStyle(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w600,
+                                    color: AppColors.textPrimary,
+                                    fontFamily: 'Poppins',
+                                  ),
                                 ),
                               ),
                             ],
@@ -328,14 +379,14 @@ class _OrangTuaDashboardPageState extends State<OrangTuaDashboardPage> {
       padding: const EdgeInsets.all(16),
 
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(14),
+        color: AppColors.card,
+        borderRadius: BorderRadius.circular(18),
 
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
-            blurRadius: 6,
-            offset: const Offset(0, 2),
+            color: Colors.black.withValues(alpha: 0.06),
+            blurRadius: 10,
+            offset: const Offset(0, 3),
           ),
         ],
       ),
@@ -346,21 +397,29 @@ class _OrangTuaDashboardPageState extends State<OrangTuaDashboardPage> {
           // Header laporan terbaru
           Row(
             children: [
-              const Icon(
-                Icons.access_time_rounded,
-                size: 16,
-                color: AppColors.secondary,
+              Container(
+                width: 34,
+                height: 34,
+                decoration: BoxDecoration(
+                  color: AppColors.softPrimary,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: const Icon(
+                  Icons.access_time_rounded,
+                  size: 18,
+                  color: AppColors.primary,
+                ),
               ),
-              const SizedBox(width: 8),
+              const SizedBox(width: 10),
 
               const Expanded(
                 child: Text(
                   'Laporan Terbaru',
                   style: TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w700,
                     fontFamily: 'Poppins',
-                    color: Color(0xFF444444),
+                    color: AppColors.textPrimary,
                   ),
                 ),
               ),
@@ -377,15 +436,16 @@ class _OrangTuaDashboardPageState extends State<OrangTuaDashboardPage> {
                 child: const Text(
                   'Lihat semua',
                   style: TextStyle(
-                    fontSize: 11,
-                    color: AppColors.secondary,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.primary,
                     fontFamily: 'Poppins',
                   ),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 14),
 
           if (_isLoadingLaporan)
             // Jika data laporan masih diambil dari database, tampilkan loading spinner di tengah
@@ -394,14 +454,19 @@ class _OrangTuaDashboardPageState extends State<OrangTuaDashboardPage> {
             )
           else if (_laporanList.isEmpty)
             // Jika loading selesai tetapi tidak ada laporan, tampilkan pesan bahwa laporan belum tersedia
-            const Center(
-              child: Padding(
-                padding: EdgeInsets.symmetric(vertical: 12),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(vertical: 14),
+              decoration: BoxDecoration(
+                color: AppColors.softCard,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: const Center(
                 child: Text(
                   'Belum ada laporan',
                   style: TextStyle(
                     fontSize: 12,
-                    color: Colors.grey,
+                    color: AppColors.textSecondary,
                     fontFamily: 'Poppins',
                   ),
                 ),
@@ -410,7 +475,7 @@ class _OrangTuaDashboardPageState extends State<OrangTuaDashboardPage> {
           else
             // Jika loading selesai dan laporan ada, tampilkan maksimal 2 laporan terbaru
             ..._laporanList
-                .take(2) // mengambil hanya 2 data pertama dari list
+                .take(3)
                 .map(
                   (l) => Padding(
                     padding: const EdgeInsets.only(bottom: 8),
@@ -419,8 +484,8 @@ class _OrangTuaDashboardPageState extends State<OrangTuaDashboardPage> {
                       padding: const EdgeInsets.all(12),
 
                       decoration: BoxDecoration(
-                        color: AppColors.background,
-                        borderRadius: BorderRadius.circular(10),
+                        color: AppColors.softCard,
+                        borderRadius: BorderRadius.circular(12),
                       ),
 
                       child: Row(
@@ -434,19 +499,20 @@ class _OrangTuaDashboardPageState extends State<OrangTuaDashboardPage> {
                                 Text(
                                   l.tanggal,
                                   style: const TextStyle(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w500,
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w700,
                                     fontFamily: 'Poppins',
+                                    color: AppColors.textPrimary,
                                   ),
                                 ),
-                                const SizedBox(height: 3),
+                                const SizedBox(height: 4),
 
                                 // Preview catatan laporan
                                 Text(
                                   l.preview,
                                   style: const TextStyle(
                                     fontSize: 11,
-                                    color: Colors.grey,
+                                    color: AppColors.textSecondary,
                                     fontFamily: 'Poppins',
                                   ),
                                 ),
@@ -460,19 +526,20 @@ class _OrangTuaDashboardPageState extends State<OrangTuaDashboardPage> {
                             // Badge status laporan
                             Container(
                               padding: const EdgeInsets.symmetric(
-                                horizontal: 8,
-                                vertical: 3,
+                                horizontal: 9,
+                                vertical: 4,
                               ),
                               decoration: BoxDecoration(
-                                color: const Color(0xFFEAF3DE),
+                                color: AppColors.successBg,
                                 borderRadius: BorderRadius.circular(20),
                               ),
                               child: const Text(
                                 'Baru',
                                 style: TextStyle(
                                   fontSize: 10,
+                                  fontWeight: FontWeight.w600,
                                   fontFamily: 'Poppins',
-                                  color: Color(0xFF3B6D11),
+                                  color: AppColors.successText,
                                 ),
                               ),
                             ),
@@ -496,18 +563,18 @@ class _OrangTuaDashboardPageState extends State<OrangTuaDashboardPage> {
       onTap: onTap,
 
       child: Container(
-        margin: const EdgeInsets.only(bottom: 10),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        margin: const EdgeInsets.only(bottom: 12),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 15),
 
         decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(14),
+          color: AppColors.card,
+          borderRadius: BorderRadius.circular(16),
 
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.04),
-              blurRadius: 6,
-              offset: const Offset(0, 2),
+              color: Colors.black.withValues(alpha: 0.06),
+              blurRadius: 9,
+              offset: const Offset(0, 3),
             ),
           ],
         ),
@@ -516,13 +583,13 @@ class _OrangTuaDashboardPageState extends State<OrangTuaDashboardPage> {
           children: [
             // Icon menu
             Container(
-              width: 36,
-              height: 36,
+              width: 42,
+              height: 42,
               decoration: BoxDecoration(
-                color: AppColors.background,
-                borderRadius: BorderRadius.circular(10),
+                color: AppColors.softPrimary,
+                borderRadius: BorderRadius.circular(13),
               ),
-              child: Icon(icon, size: 20, color: AppColors.primary),
+              child: Icon(icon, size: 22, color: AppColors.primary),
             ),
 
             const SizedBox(width: 14),
@@ -531,15 +598,20 @@ class _OrangTuaDashboardPageState extends State<OrangTuaDashboardPage> {
             Expanded(
               child: Text(
                 label,
-                style: const TextStyle(fontSize: 14, fontFamily: 'Poppins'),
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.textPrimary,
+                  fontFamily: 'Poppins',
+                ),
               ),
             ),
 
             // Icon panah
             const Icon(
               Icons.chevron_right_rounded,
-              color: Colors.grey,
-              size: 20,
+              color: AppColors.accent,
+              size: 22,
             ),
           ],
         ),
