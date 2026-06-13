@@ -164,30 +164,69 @@ class _RiwayatLaporanPageState extends State<RiwayatLaporanPage> {
     );
   }
 
+  // Fungsi untuk membuat dekorasi card yang dapat digunakan di beberapa widget dengan tampilan yang konsisten
+  BoxDecoration _cardDecoration({double radius = 16}) {
+    return BoxDecoration(
+      // Menentukan warna latar belakang card
+      color: AppColors.card,
+
+      // Mengatur tingkat kelengkungan sudut card
+      borderRadius: BorderRadius.circular(radius),
+
+      // Menambahkan efek bayangan agar card terlihat lebih menonjol
+      boxShadow: [
+        BoxShadow(
+          color: Colors.black.withValues(alpha: 0.06),
+          blurRadius: 9,
+          offset: const Offset(0, 3),
+        ),
+      ],
+    );
+  }
+
   // header halaman dengan tombol kembali dan judul
   Widget _buildHeader(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
-
       child: Row(
         children: [
           // Tombol kembali
-          GestureDetector(
+          InkWell(
             onTap: () => Navigator.pop(context),
-
-            child: const Icon(Icons.chevron_left_rounded, size: 28),
+            borderRadius: BorderRadius.circular(20),
+            child: const Icon(
+              Icons.chevron_left_rounded,
+              size: 30,
+              color: AppColors.textPrimary,
+            ),
           ),
 
           const SizedBox(width: 8),
 
           // Judul halaman
-          const Text(
-            'Riwayat Laporan',
-
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w600,
-              fontFamily: 'Poppins',
+          const Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Riwayat Laporan',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w700,
+                    fontFamily: 'Poppins',
+                    color: AppColors.textPrimary,
+                  ),
+                ),
+                SizedBox(height: 2),
+                Text(
+                  'Daftar laporan perkembangan siswa',
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontFamily: 'Poppins',
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+              ],
             ),
           ),
         ],
@@ -198,37 +237,22 @@ class _RiwayatLaporanPageState extends State<RiwayatLaporanPage> {
   // search bar untuk mencari laporan berdasarkan nama siswa
   Widget _buildSearchBar() {
     return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-
-        borderRadius: BorderRadius.circular(12),
-
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
-
-            blurRadius: 6,
-
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-
+      decoration: _cardDecoration(),
       child: TextField(
         // Controller input
         controller: _searchController,
-
         // saat input berubah, update search query
         onChanged: (val) => setState(() => _searchQuery = val),
-
-        style: const TextStyle(fontSize: 13, fontFamily: 'Poppins'),
-
+        style: const TextStyle(
+          fontSize: 13,
+          fontFamily: 'Poppins',
+          color: AppColors.textPrimary,
+        ),
         decoration: InputDecoration(
           // Placeholder
           hintText: 'Cari laporan siswa...',
-
           hintStyle: const TextStyle(
-            color: Colors.grey,
+            color: AppColors.textSecondary,
             fontSize: 13,
             fontFamily: 'Poppins',
           ),
@@ -236,8 +260,8 @@ class _RiwayatLaporanPageState extends State<RiwayatLaporanPage> {
           // Icon search
           prefixIcon: const Icon(
             Icons.search_rounded,
-            color: Colors.grey,
-            size: 20,
+            color: AppColors.textSecondary,
+            size: 22,
           ),
 
           // Tombol clear muncul jika ada input
@@ -247,22 +271,18 @@ class _RiwayatLaporanPageState extends State<RiwayatLaporanPage> {
                     onTap: () {
                       // Hapus isi search
                       _searchController.clear();
-
                       // Reset query
                       setState(() => _searchQuery = '');
                     },
-
                     child: const Icon(
                       Icons.close_rounded,
-                      color: Colors.grey,
+                      color: AppColors.textSecondary,
                       size: 18,
                     ),
                   )
                   : null,
-
           border: InputBorder.none,
-
-          contentPadding: const EdgeInsets.symmetric(vertical: 12),
+          contentPadding: const EdgeInsets.symmetric(vertical: 14),
         ),
       ),
     );
@@ -270,39 +290,45 @@ class _RiwayatLaporanPageState extends State<RiwayatLaporanPage> {
 
   // filter row dengan dropdown untuk memilih kelas dan periode laporan
   Widget _buildFilterRow() {
+    // Mengurutkan daftar kelas yang akan ditampilkan pada dropdown
+    final kelasItems =
+        _kelasItems.toList()..sort((a, b) {
+          if (a == 'Semua') return -1;
+          if (b == 'Semua') return 1;
+
+          // Mengurutkan nama kelas secara alfabet
+          return a.toLowerCase().compareTo(b.toLowerCase());
+        });
+
+    // Mengurutkan daftar periode ajaran berdasarkan kombinasi tahun ajaran dan semester
+    final periodeItems =
+        _periodeListData.toList()..sort((a, b) {
+          final textA = '${a['tahun_ajaran']} ${a['semester']}';
+          final textB = '${b['tahun_ajaran']} ${b['semester']}';
+
+          // Mengurutkan periode secara berurutan
+          return textA.compareTo(textB);
+        });
+
     return Row(
       children: [
         // dropdown kelas
         Expanded(
           child: _buildDropdown(
             value: _selectedKelas,
-
-            items: _kelasItems,
-
+            items: kelasItems,
             onChanged: (val) => setState(() => _selectedKelas = val!),
           ),
         ),
 
-        const SizedBox(width: 8),
+        const SizedBox(width: 10),
 
         // dropdown periode
         Expanded(
           child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10),
-            // Dekorasi container dropdown
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(10),
-              // Shadow agar terlihat seperti card
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.04),
-                  blurRadius: 6,
-                  offset: const Offset(0, 2),
-                ),
-              ],
-            ),
-
+            height: 52,
+            padding: const EdgeInsets.symmetric(horizontal: 12),
+            decoration: _cardDecoration(),
             child: DropdownButtonHideUnderline(
               // Menghilangkan garis bawah default dropdown
               child: DropdownButton<String?>(
@@ -311,8 +337,7 @@ class _RiwayatLaporanPageState extends State<RiwayatLaporanPage> {
                 // Icon panah dropdown
                 icon: const Icon(
                   Icons.keyboard_arrow_down_rounded,
-                  color: Colors.grey,
-                  size: 18,
+                  color: AppColors.textSecondary,
                 ),
                 // List item dropdown
                 items: [
@@ -321,12 +346,16 @@ class _RiwayatLaporanPageState extends State<RiwayatLaporanPage> {
                     value: null,
                     child: Text(
                       'Semua',
-                      style: TextStyle(fontSize: 12, fontFamily: 'Poppins'),
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        fontFamily: 'Poppins',
+                        color: AppColors.textPrimary,
+                      ),
                     ),
                   ),
-
                   // Generate item dropdown dari data periode
-                  ..._periodeListData.map((p) {
+                  ...periodeItems.map((p) {
                     return DropdownMenuItem<String?>(
                       // Value yang disimpan saat item dipilih
                       value: p['id'] as String,
@@ -334,9 +363,12 @@ class _RiwayatLaporanPageState extends State<RiwayatLaporanPage> {
                       // Text yang ditampilkan di dropdown
                       child: Text(
                         '${p['tahun_ajaran']} – ${p['semester']}',
+                        overflow: TextOverflow.ellipsis,
                         style: const TextStyle(
-                          fontSize: 12,
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
                           fontFamily: 'Poppins',
+                          color: AppColors.textPrimary,
                         ),
                       ),
                     );
@@ -363,55 +395,34 @@ class _RiwayatLaporanPageState extends State<RiwayatLaporanPage> {
     required ValueChanged<String?> onChanged,
   }) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10),
-
-      decoration: BoxDecoration(
-        color: Colors.white,
-
-        borderRadius: BorderRadius.circular(10),
-
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
-
-            blurRadius: 6,
-
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-
+      height: 52,
+      padding: const EdgeInsets.symmetric(horizontal: 12),
+      decoration: _cardDecoration(),
       child: DropdownButtonHideUnderline(
         child: DropdownButton<String>(
           value: value,
-
           isExpanded: true,
-
           icon: const Icon(
             Icons.keyboard_arrow_down_rounded,
-            color: Colors.grey,
-            size: 18,
+            color: AppColors.textSecondary,
           ),
-
           // Generate item dropdown
           items:
-              items
-                  .map(
-                    (e) => DropdownMenuItem(
-                      value: e,
-
-                      child: Text(
-                        e,
-
-                        style: const TextStyle(
-                          fontSize: 12,
-                          fontFamily: 'Poppins',
-                        ),
-                      ),
+              items.map((e) {
+                return DropdownMenuItem<String>(
+                  value: e,
+                  child: Text(
+                    e,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      fontFamily: 'Poppins',
+                      color: AppColors.textPrimary,
                     ),
-                  )
-                  .toList(),
-
+                  ),
+                );
+              }).toList(),
           onChanged: onChanged,
         ),
       ),
@@ -429,45 +440,22 @@ class _RiwayatLaporanPageState extends State<RiwayatLaporanPage> {
               builder: (_) => DetailLaporanPage(laporan: laporan),
             ),
           ),
-
       child: Container(
-        margin: const EdgeInsets.only(bottom: 10),
-
-        padding: const EdgeInsets.all(16),
-
-        decoration: BoxDecoration(
-          color: Colors.white,
-
-          borderRadius: BorderRadius.circular(14),
-
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.04),
-
-              blurRadius: 6,
-
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
-
+        margin: const EdgeInsets.only(bottom: 12),
+        padding: const EdgeInsets.all(14),
+        decoration: _cardDecoration(),
         child: Row(
           children: [
             // Avatar inisial siswa
             CircleAvatar(
-              radius: 20,
-
-              backgroundColor: AppColors.background,
-
+              radius: 22,
+              backgroundColor: AppColors.softPrimary,
               child: Text(
                 laporan.inisial,
-
                 style: const TextStyle(
                   fontSize: 12,
-                  fontWeight: FontWeight.w600,
-
-                  color: AppColors.secondary,
-
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.primary,
                   fontFamily: 'Poppins',
                 ),
               ),
@@ -479,29 +467,26 @@ class _RiwayatLaporanPageState extends State<RiwayatLaporanPage> {
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
-
                 children: [
                   // Nama siswa
                   Text(
                     laporan.namaSiswa,
-
                     style: const TextStyle(
                       fontSize: 14,
-                      fontWeight: FontWeight.w500,
-
+                      fontWeight: FontWeight.w700,
                       fontFamily: 'Poppins',
+                      color: AppColors.textPrimary,
                     ),
                   ),
 
-                  const SizedBox(height: 2),
+                  const SizedBox(height: 3),
 
                   // Kelas dan tanggal
                   Text(
                     '${laporan.namaKelas} · ${laporan.tanggal}',
-
                     style: const TextStyle(
                       fontSize: 11,
-                      color: Colors.grey,
+                      color: AppColors.textSecondary,
                       fontFamily: 'Poppins',
                     ),
                   ),
@@ -512,20 +497,17 @@ class _RiwayatLaporanPageState extends State<RiwayatLaporanPage> {
             // Status laporan
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-
               decoration: BoxDecoration(
-                color: const Color(0xFFEAF3DE),
-
+                color: AppColors.successBg,
                 borderRadius: BorderRadius.circular(20),
               ),
-
               child: const Text(
                 'Selesai',
-
                 style: TextStyle(
                   fontSize: 11,
+                  fontWeight: FontWeight.w600,
                   fontFamily: 'Poppins',
-                  color: Color(0xFF3B6D11),
+                  color: AppColors.successText,
                 ),
               ),
             ),
@@ -539,21 +521,21 @@ class _RiwayatLaporanPageState extends State<RiwayatLaporanPage> {
   Widget _buildEmptyState() {
     return const Padding(
       padding: EdgeInsets.symmetric(vertical: 40),
-
       child: Center(
         child: Column(
           children: [
             // Icon empty
-            Icon(Icons.article_outlined, size: 48, color: Colors.grey),
-
+            Icon(
+              Icons.article_outlined,
+              size: 48,
+              color: AppColors.textSecondary,
+            ),
             SizedBox(height: 8),
-
             // Text empty
             Text(
               'Belum ada laporan',
-
               style: TextStyle(
-                color: Colors.grey,
+                color: AppColors.textSecondary,
                 fontFamily: 'Poppins',
                 fontSize: 13,
               ),
