@@ -170,6 +170,26 @@ class _PreviewLaporanPageState extends State<PreviewLaporanPage> {
     );
   }
 
+  // Fungsi untuk membuat dekorasi card yang dapat digunakan di berbagai widget dengan tampilan yang konsisten
+  BoxDecoration _cardDecoration({double radius = 16}) {
+    return BoxDecoration(
+      // Menentukan warna latar belakang card
+      color: AppColors.card,
+
+      // Mengatur tingkat kelengkungan sudut card
+      borderRadius: BorderRadius.circular(radius),
+
+      // Menambahkan efek bayangan agar card terlihat lebih menonjol
+      boxShadow: [
+        BoxShadow(
+          color: Colors.black.withValues(alpha: 0.06),
+          blurRadius: 9,
+          offset: const Offset(0, 3),
+        ),
+      ],
+    );
+  }
+
   Widget _buildHeader(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
@@ -177,22 +197,43 @@ class _PreviewLaporanPageState extends State<PreviewLaporanPage> {
       child: Row(
         children: [
           // Tombol kembali
-          GestureDetector(
+          InkWell(
             onTap: () => Navigator.pop(context),
-
-            child: const Icon(Icons.chevron_left_rounded, size: 28),
+            borderRadius: BorderRadius.circular(20),
+            child: const Icon(
+              Icons.chevron_left_rounded,
+              size: 30,
+              color: AppColors.textPrimary,
+            ),
           ),
 
           const SizedBox(width: 8),
 
           // Judul halaman
-          const Text(
-            'Preview Hasil AI',
+          const Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Preview Hasil AI',
 
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w600,
-              fontFamily: 'Poppins',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w700,
+                    fontFamily: 'Poppins',
+                    color: AppColors.textPrimary,
+                  ),
+                ),
+                SizedBox(height: 2),
+                Text(
+                  'Periksa hasil laporan sebelum disimpan',
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontFamily: 'Poppins',
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+              ],
             ),
           ),
         ],
@@ -201,43 +242,23 @@ class _PreviewLaporanPageState extends State<PreviewLaporanPage> {
   }
 
   // card info siswa
-
   Widget _buildInfoSiswa() {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(16),
-
-      decoration: BoxDecoration(
-        color: Colors.white,
-
-        borderRadius: BorderRadius.circular(14),
-
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
-
-            blurRadius: 6,
-
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-
+      decoration: _cardDecoration(),
       child: Row(
         children: [
           // Avatar inisial siswa
           CircleAvatar(
-            radius: 22,
-
-            backgroundColor: AppColors.background,
-
+            radius: 24,
+            backgroundColor: AppColors.softPrimary,
             child: Text(
               _inisial(widget.namaSiswa),
-
               style: const TextStyle(
                 fontSize: 14,
-                fontWeight: FontWeight.w600,
-                color: AppColors.secondary,
+                fontWeight: FontWeight.w700,
+                color: AppColors.primary,
                 fontFamily: 'Poppins',
               ),
             ),
@@ -246,32 +267,34 @@ class _PreviewLaporanPageState extends State<PreviewLaporanPage> {
           const SizedBox(width: 12),
 
           // Data siswa
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-
-            children: [
-              // Nama siswa
-              Text(
-                widget.namaSiswa,
-
-                style: const TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                  fontFamily: 'Poppins',
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Nama siswa
+                Text(
+                  widget.namaSiswa,
+                  style: const TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w700,
+                    fontFamily: 'Poppins',
+                    color: AppColors.textPrimary,
+                  ),
                 ),
-              ),
 
-              // Kelas + tanggal
-              Text(
-                '${widget.namaKelas} · ${widget.tanggalDisplay}',
+                const SizedBox(height: 3),
 
-                style: const TextStyle(
-                  fontSize: 12,
-                  color: Colors.grey,
-                  fontFamily: 'Poppins',
+                // Kelas + tanggal
+                Text(
+                  '${widget.namaKelas} · ${widget.tanggalDisplay}',
+                  style: const TextStyle(
+                    fontSize: 11,
+                    color: AppColors.textSecondary,
+                    fontFamily: 'Poppins',
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ],
       ),
@@ -279,40 +302,19 @@ class _PreviewLaporanPageState extends State<PreviewLaporanPage> {
   }
 
   // card foto
-
   Widget _buildFotoCard() {
     return Container(
       width: double.infinity,
-
-      decoration: BoxDecoration(
-        color: Colors.white,
-
-        borderRadius: BorderRadius.circular(14),
-
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
-
-            blurRadius: 6,
-
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-
+      decoration: _cardDecoration(),
       child: ClipRRect(
         // Agar gambar ikut rounded
-        borderRadius: BorderRadius.circular(14),
-
+        borderRadius: BorderRadius.circular(16),
         child: Image.file(
           // File gambar
           widget.imageFile!,
-
           // Tinggi gambar
-          height: 180,
-
+          height: 190,
           width: double.infinity,
-
           // Crop gambar
           fit: BoxFit.cover,
         ),
@@ -321,7 +323,6 @@ class _PreviewLaporanPageState extends State<PreviewLaporanPage> {
   }
 
   // card umum
-
   Widget _buildCard({
     required IconData icon,
     required String title,
@@ -330,71 +331,55 @@ class _PreviewLaporanPageState extends State<PreviewLaporanPage> {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(16),
-
-      decoration: BoxDecoration(
-        color: Colors.white,
-
-        borderRadius: BorderRadius.circular(14),
-
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
-
-            blurRadius: 6,
-
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-
+      decoration: _cardDecoration(),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-
         children: [
           Row(
             children: [
-              // Icon card
-              Icon(icon, size: 18, color: AppColors.primary),
+              Container(
+                width: 34,
+                height: 34,
+                decoration: BoxDecoration(
+                  color: AppColors.softPrimary,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Icon(icon, size: 18, color: AppColors.primary),
+              ),
 
-              const SizedBox(width: 8),
+              const SizedBox(width: 10),
 
               // Judul card
               Expanded(
                 child: Text(
                   title,
-
                   style: const TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w700,
                     fontFamily: 'Poppins',
-                    color: Color(0xFF444444),
+                    color: AppColors.textPrimary,
                   ),
                 ),
               ),
             ],
           ),
 
-          const SizedBox(height: 10),
+          const SizedBox(height: 12),
 
           Container(
             width: double.infinity,
-            padding: const EdgeInsets.all(12),
-
+            padding: const EdgeInsets.all(14),
             decoration: BoxDecoration(
-              color: AppColors.background,
-
-              borderRadius: BorderRadius.circular(8),
+              color: AppColors.softCard,
+              borderRadius: BorderRadius.circular(12),
             ),
-
             child: Text(
               content,
-
               style: const TextStyle(
                 fontSize: 12,
                 fontFamily: 'Poppins',
-
-                // Jarak antar baris
                 height: 1.6,
+                color: AppColors.textPrimary,
               ),
             ),
           ),
@@ -404,7 +389,6 @@ class _PreviewLaporanPageState extends State<PreviewLaporanPage> {
   }
 
   // tombol aksi
-
   Widget _buildButtons(BuildContext context) {
     return Row(
       children: [
@@ -412,27 +396,26 @@ class _PreviewLaporanPageState extends State<PreviewLaporanPage> {
         Expanded(
           child: SizedBox(
             height: 52,
-
             child: OutlinedButton(
               // Kembali ke halaman sebelumnya
               onPressed: () => Navigator.pop(context),
-
               style: OutlinedButton.styleFrom(
-                backgroundColor: const Color(0xFFF1F1EB),
-
+                backgroundColor: AppColors.card,
+                foregroundColor: AppColors.textPrimary,
+                side: BorderSide(
+                  color: AppColors.accent.withValues(alpha: 0.45),
+                  width: 1,
+                ),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(16),
                 ),
-
-                side: BorderSide.none,
               ),
-
               child: const Text(
                 'Batal',
-
                 style: TextStyle(
-                  fontSize: 18,
-                  color: Colors.black87,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.textPrimary,
                   fontFamily: 'Poppins',
                 ),
               ),
@@ -446,38 +429,35 @@ class _PreviewLaporanPageState extends State<PreviewLaporanPage> {
         Expanded(
           child: SizedBox(
             height: 52,
-
             child: ElevatedButton(
               // Disable tombol saat loading
               onPressed: _isSaving ? null : _simpanLaporan,
-
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.primary,
-
+                foregroundColor: AppColors.buttonText,
+                elevation: 3,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(16),
                 ),
               ),
-
               child:
                   // Jika loading tampilkan spinner
                   _isSaving
                       ? const SizedBox(
                         width: 22,
                         height: 22,
-
                         child: CircularProgressIndicator(
-                          color: Colors.white,
+                          color: AppColors.buttonText,
                           strokeWidth: 2.5,
                         ),
                       )
                       // Jika tidak loading tampilkan text
                       : const Text(
                         'Simpan Laporan',
-
                         style: TextStyle(
-                          fontSize: 18,
-                          color: Colors.white,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.buttonText,
                           fontFamily: 'Poppins',
                         ),
                       ),

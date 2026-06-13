@@ -264,7 +264,7 @@ class _BuatLaporanPageState extends State<BuatLaporanPage> {
           // ambil isi ringkasan
           ringkasan = parts[0].replaceAll('RINGKASAN:', '').trim();
           // ambil isi rekomendasi
-          rekomendasi = 'REKOMENDASI:\n${parts[1].trim()}';
+          rekomendasi = parts[1].trim();
         } else {
           // jika format AI tidak sesuai, simpan semua teks sebagai ringkasan
           ringkasan = text;
