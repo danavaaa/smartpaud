@@ -7,6 +7,7 @@ import 'features/orang_tua/dashboard/orang_tua_dashboard.dart';
 import 'services/user_session.dart';
 import 'services/auth_service.dart';
 import 'core/theme/app_colors.dart';
+import 'features/splash/splash_page.dart';
 
 // Widget utama aplikasi
 class MyApp extends StatelessWidget {
@@ -58,7 +59,7 @@ class MyApp extends StatelessWidget {
 
       // Daftar bahasa yang didukung aplikasi
       supportedLocales: const [Locale('id', 'ID'), Locale('en', 'US')],
-      home: const AuthWrapper(),
+      home: const SplashPage(nextPage: AuthWrapper()),
     );
   }
 }

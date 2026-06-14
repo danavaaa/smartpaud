@@ -163,216 +163,321 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
-  // tampilan halaman login
+  // Widget untuk menampilkan logo, nama aplikasi, dan deskripsi singkat
+  Widget _buildLogoSection() {
+    return Column(
+      children: [
+        // Container logo aplikasi
+        Container(
+          width: 82,
+          height: 82,
+          decoration: BoxDecoration(
+            color: AppColors.primary,
+            borderRadius: BorderRadius.circular(24),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.14),
+                blurRadius: 14,
+                offset: const Offset(0, 6),
+              ),
+            ],
+          ),
+          child: const Icon(
+            Icons.menu_book_rounded,
+            color: AppColors.buttonText,
+            size: 42,
+          ),
+        ),
+
+        const SizedBox(height: 18),
+
+        // Nama aplikasi
+        const Text(
+          'SmartPAUD',
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            fontSize: 28,
+            fontWeight: FontWeight.w800,
+            color: AppColors.textPrimary,
+            fontFamily: 'Poppins',
+          ),
+        ),
+
+        const SizedBox(height: 6),
+
+        // Deskripsi singkat aplikasi
+        const Text(
+          'Monitoring Kegiatan Literasi Anak Usia Dini',
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            fontSize: 12,
+            color: AppColors.textSecondary,
+            fontFamily: 'Poppins',
+          ),
+        ),
+      ],
+    );
+  }
+
+  // Widget untuk menampilkan label pada field input
+  Widget _buildLabel(String text) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 7),
+      child: Align(
+        alignment: Alignment.centerLeft,
+        child: Text(
+          text,
+          style: const TextStyle(
+            fontSize: 13,
+            fontWeight: FontWeight.w600,
+            color: AppColors.textPrimary,
+            fontFamily: 'Poppins',
+          ),
+        ),
+      ),
+    );
+  }
+
+  // Widget field input yang digunakan untuk email dan password
+  Widget _buildInputField({
+    required TextEditingController controller,
+    required String hint,
+    required IconData icon,
+    required String? errorText,
+    required ValueChanged<String> onChanged,
+    bool isPassword = false,
+  }) {
+    return TextField(
+      controller: controller,
+
+      // Menentukan jenis keyboard sesuai tipe input
+      keyboardType:
+          isPassword ? TextInputType.text : TextInputType.emailAddress,
+
+      // Menyembunyikan karakter jika field password
+      obscureText: isPassword ? obscurePassword : false,
+
+      onChanged: onChanged,
+
+      style: const TextStyle(
+        fontSize: 13,
+        fontFamily: 'Poppins',
+        color: AppColors.textPrimary,
+      ),
+
+      decoration: InputDecoration(
+        hintText: hint,
+        hintStyle: const TextStyle(
+          fontSize: 13,
+          color: AppColors.textSecondary,
+          fontFamily: 'Poppins',
+        ),
+
+        // Icon di bagian kiri field
+        prefixIcon: Icon(icon, size: 20, color: AppColors.textSecondary),
+
+        // Tombol show/hide password
+        suffixIcon:
+            isPassword
+                ? IconButton(
+                  icon: Icon(
+                    obscurePassword
+                        ? Icons.visibility_off_outlined
+                        : Icons.visibility_outlined,
+                    color: AppColors.textSecondary,
+                    size: 20,
+                  ),
+                  onPressed: () {
+                    setState(() => obscurePassword = !obscurePassword);
+                  },
+                )
+                : null,
+
+        // Warna field berubah ketika terjadi error
+        filled: true,
+        fillColor:
+            errorText != null ? const Color(0xFFFFEBEE) : AppColors.softCard,
+
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 14,
+          vertical: 15,
+        ),
+
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(14),
+          borderSide: BorderSide.none,
+        ),
+
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(14),
+          borderSide:
+              errorText != null
+                  ? const BorderSide(color: Color(0xFFD32F2F), width: 1.2)
+                  : BorderSide.none,
+        ),
+
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(14),
+          borderSide: BorderSide(
+            color:
+                errorText != null ? const Color(0xFFD32F2F) : AppColors.primary,
+            width: 1.2,
+          ),
+        ),
+
+        // Menampilkan pesan error validasi
+        errorText: errorText,
+        errorStyle: const TextStyle(fontSize: 11, fontFamily: 'Poppins'),
+      ),
+    );
+  }
+
+  // Widget tombol login
+  Widget _buildLoginButton() {
+    return SizedBox(
+      width: double.infinity,
+      height: 50,
+      child: ElevatedButton(
+        // Menjalankan fungsi login saat tombol ditekan
+        onPressed: isLoading ? null : login,
+
+        style: ElevatedButton.styleFrom(
+          backgroundColor: AppColors.primary,
+          foregroundColor: AppColors.buttonText,
+          disabledBackgroundColor: AppColors.primary.withValues(alpha: 0.55),
+          elevation: 3,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(15),
+          ),
+          textStyle: const TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.w700,
+            fontFamily: 'Poppins',
+          ),
+        ),
+
+        // Menampilkan loading ketika proses login berlangsung
+        child:
+            isLoading
+                ? const SizedBox(
+                  width: 22,
+                  height: 22,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2.4,
+                    color: AppColors.buttonText,
+                  ),
+                )
+                : const Text('Login'),
+      ),
+    );
+  }
+
+  // Widget card yang berisi form login
+  Widget _buildLoginCard() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: AppColors.card,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const SizedBox(height: 4),
+
+          // Label email
+          _buildLabel('Email'),
+
+          // Input email
+          _buildInputField(
+            controller: emailController,
+            hint: 'Masukkan email',
+            icon: Icons.email_outlined,
+            errorText: emailError,
+            onChanged: (_) {
+              if (emailError != null) {
+                setState(() => emailError = null);
+              }
+            },
+          ),
+
+          const SizedBox(height: 16),
+
+          // Label password
+          _buildLabel('Password'),
+
+          // Input password
+          _buildInputField(
+            controller: passwordController,
+            hint: 'Masukkan password',
+            icon: Icons.lock_outline_rounded,
+            errorText: passwordError,
+            isPassword: true,
+            onChanged: (_) {
+              if (passwordError != null) {
+                setState(() => passwordError = null);
+              }
+            },
+          ),
+
+          const SizedBox(height: 24),
+
+          // Tombol login
+          _buildLoginButton(),
+        ],
+      ),
+    );
+  }
+
+  // Method build untuk menampilkan halaman login
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // latar belakang
       backgroundColor: AppColors.background,
+
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 32),
+            padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 24),
+
             child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 360),
+              constraints: const BoxConstraints(maxWidth: 380),
+
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const SizedBox(height: 40),
-                  // Judul Aplikasi
+                  const SizedBox(height: 24),
+
+                  // Menampilkan logo aplikasi
+                  _buildLogoSection(),
+
+                  const SizedBox(height: 34),
+
+                  // Menampilkan form login
+                  _buildLoginCard(),
+
+                  const SizedBox(height: 24),
+
+                  // Footer aplikasi
                   const Text(
-                    'SmartPAUD',
+                    'SmartPAUD • Sistem Monitoring Literasi PAUD',
                     textAlign: TextAlign.center,
                     style: TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.black,
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  // deskripsi aplikasi
-                  const Text(
-                    'Aplikasi Monitoring Kegiatan\nAnak Usia Dini',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 14,
-                      height: 1.6,
-                      color: Colors.black,
-                    ),
-                  ),
-                  const SizedBox(height: 48),
-                  // Input Email
-                  TextField(
-                    controller: emailController,
-                    keyboardType: TextInputType.emailAddress,
-                    // menghapus pesan eror saat user mengetik ulang
-                    onChanged: (_) {
-                      if (emailError != null) {
-                        setState(() => emailError = null);
-                      }
-                    },
-                    decoration: InputDecoration(
-                      hintText: 'Email',
-                      hintStyle: const TextStyle(
-                        fontSize: 16,
-                        color: Colors.black54,
-                      ),
-                      filled: true,
-                      fillColor:
-                          emailError != null
-                              ? const Color(0xFFFFEBEE)
-                              : const Color(0xFFF7F4F4),
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 18,
-                      ),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(6),
-                        borderSide: BorderSide.none,
-                      ),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(6),
-                        borderSide:
-                            emailError != null
-                                ? const BorderSide(
-                                  color: Color(0xFFD32F2F),
-                                  width: 1.5,
-                                )
-                                : BorderSide.none,
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(6),
-                        borderSide: BorderSide(
-                          color:
-                              emailError != null
-                                  ? const Color(0xFFD32F2F)
-                                  : AppColors.secondary,
-                          width: 1.5,
-                        ),
-                      ),
-                      // Pesan error validasi email
-                      errorText: emailError,
-                      errorStyle: const TextStyle(fontSize: 12),
+                      fontSize: 10,
+                      fontFamily: 'Poppins',
+                      color: AppColors.textSecondary,
                     ),
                   ),
 
-                  const SizedBox(height: 16),
-                  // Input Password
-                  TextField(
-                    controller: passwordController,
-                    // sembunyikan teks password
-                    obscureText: obscurePassword,
-                    // menghapus pesan eror saat user mengetik ulang
-                    onChanged: (_) {
-                      if (passwordError != null) {
-                        setState(() => passwordError = null);
-                      }
-                    },
-                    decoration: InputDecoration(
-                      hintText: 'Password',
-                      hintStyle: const TextStyle(
-                        fontSize: 16,
-                        color: Colors.black54,
-                      ),
-                      filled: true,
-                      fillColor:
-                          passwordError != null
-                              ? const Color(0xFFFFEBEE)
-                              : const Color(0xFFF7F4F4),
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 18,
-                      ),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(6),
-                        borderSide: BorderSide.none,
-                      ),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(6),
-                        borderSide:
-                            passwordError != null
-                                ? const BorderSide(
-                                  color: Color(0xFFD32F2F),
-                                  width: 1.5,
-                                )
-                                : BorderSide.none,
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(6),
-                        borderSide: BorderSide(
-                          color:
-                              passwordError != null
-                                  ? const Color(0xFFD32F2F)
-                                  : AppColors.secondary,
-                          width: 1.5,
-                        ),
-                      ),
-                      // Toggle show/hide password
-                      suffixIcon: IconButton(
-                        icon: Icon(
-                          obscurePassword
-                              ? Icons.visibility_off_outlined
-                              : Icons.visibility_outlined,
-                          color: Colors.black45,
-                          size: 20,
-                        ),
-                        onPressed: () {
-                          setState(() => obscurePassword = !obscurePassword);
-                        },
-                      ),
-                      // Pesan error validasi password
-                      errorText: passwordError,
-                      errorStyle: const TextStyle(fontSize: 12),
-                    ),
-                  ),
-
-                  const SizedBox(height: 32),
-                  // Tombol Login
-                  Container(
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(8),
-                      boxShadow: const [
-                        BoxShadow(
-                          color: Color.fromRGBO(0, 0, 0, 0.18),
-                          blurRadius: 6,
-                          offset: Offset(0, 4),
-                        ),
-                      ],
-                    ),
-                    child: SizedBox(
-                      width: 132,
-                      height: 42,
-                      child: ElevatedButton(
-                        // jika sedang loading, tombol tidak bisa ditekan
-                        onPressed: isLoading ? null : login,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.softPrimary,
-                          foregroundColor: AppColors.primaryDark,
-                          elevation: 0,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          textStyle: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                        // menampilkan indikator loading saat login sedang diproses, jika tidak tampilkan teks 'Login'
-                        child:
-                            isLoading
-                                ? const SizedBox(
-                                  width: 20,
-                                  height: 20,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                    color: Colors.black54,
-                                  ),
-                                )
-                                : const Text('Login'),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 80),
+                  const SizedBox(height: 24),
                 ],
               ),
             ),
