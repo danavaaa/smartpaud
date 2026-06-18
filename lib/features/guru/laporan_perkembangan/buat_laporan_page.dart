@@ -258,17 +258,45 @@ class _BuatLaporanPageState extends State<BuatLaporanPage> {
 
         String ringkasan = '';
         String rekomendasi = '';
-        // pisahkan hasil AI menjadi bagian ringkasan dan rekomendasi
-        if (text.contains('RINGKASAN:') && text.contains('REKOMENDASI:')) {
-          final parts = text.split('REKOMENDASI:');
-          // ambil isi ringkasan
-          ringkasan = parts[0].replaceAll('RINGKASAN:', '').trim();
-          // ambil isi rekomendasi
-          rekomendasi = parts[1].trim();
+
+        final cleanText = text.trim();
+
+        final rekomendasiPattern = RegExp(
+          r'(REKOMENDASI|SARAN|STIMULASI LANJUTAN)\s*:',
+          caseSensitive: false,
+        );
+
+        final ringkasanPattern = RegExp(r'RINGKASAN\s*:', caseSensitive: false);
+
+        final rekomendasiMatch = rekomendasiPattern.firstMatch(cleanText);
+
+        if (rekomendasiMatch != null) {
+          ringkasan =
+              cleanText
+                  .substring(0, rekomendasiMatch.start)
+                  .replaceAll(ringkasanPattern, '')
+                  .trim();
+
+          rekomendasi = cleanText.substring(rekomendasiMatch.end).trim();
         } else {
-          // jika format AI tidak sesuai, simpan semua teks sebagai ringkasan
-          ringkasan = text;
-          rekomendasi = '';
+          final tanpaLabelRingkasan =
+              cleanText.replaceAll(ringkasanPattern, '').trim();
+
+          final paragraf =
+              tanpaLabelRingkasan
+                  .split(RegExp(r'\n\s*\n'))
+                  .map((e) => e.trim())
+                  .where((e) => e.isNotEmpty)
+                  .toList();
+
+          if (paragraf.length >= 2) {
+            ringkasan = paragraf.first;
+            rekomendasi = paragraf.sublist(1).join('\n\n');
+          } else {
+            ringkasan = tanpaLabelRingkasan;
+            rekomendasi =
+                'Dampingi anak dalam kegiatan membaca secara rutin agar perkembangan literasi tetap terjaga dan terus meningkat.';
+          }
         }
 
         if (!mounted) return;
